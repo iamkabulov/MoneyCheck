@@ -1,0 +1,98 @@
+name: MoneyCheck
+
+options:
+  bundleIdPrefix: com.nursultan
+  xcodeVersion: 16.1
+  deploymentTarget:
+    iOS: "16.0"
+  postGenCommand: pod install; open MoneyCheck.xcworkspace;
+  groupOrdering:
+    - order: [MoneyCheck, XcodeGenExampleTests, XcodeGenExampleUITests]
+    - pattern: 'MoneyCheck'
+      order: [Application, Sources, Components]
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    MARKETING_VERSION: 1.0
+    CURRENT_PROJECT_VERSION: 1
+    TARGETED_DEVICE_FAMILY: 1, 2
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: [PremiumIcon]
+
+configs:
+  Debug:
+    buildConfiguration: Debug
+    settings:
+      SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+      DEBUG_INFORMATION_FORMAT: dwarf
+  Release:
+    buildConfiguration: Release
+    settings:
+      SWIFT_OPTIMIZATION_LEVEL: "-O"
+      DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+
+targets:
+  MoneyCheck:
+    type: application
+    platform: iOS
+    sources:
+      - path: MoneyCheck
+    dependencies:
+      - package: SwiftyEmail
+    entitlements:
+      path: MoneyCheck/MoneyCheck.entitlements
+      properties:
+        com.apple.developer.applesignin:
+          - Default
+    info:
+      path: MoneyCheck/Supporting files/Info.plist
+      properties:
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleExecutable: "$(EXECUTABLE_NAME)"
+        UILaunchStoryboardName: LaunchScreen
+        UIApplicationSceneManifest:
+          enabled: false
+        LSApplicationQueriesSchemes:
+          - googlegmail
+          - ms-outlook
+          - readdle-spark
+          - ymail
+        CFBundleIcons:
+          CFBundlePrimaryIcon:
+            CFBundleIconFiles:
+              - AppIcon
+          CFBundleAlternateIcons:
+            PremiumIcon:
+              CFBundleIconFiles:
+                - PremiumIcon
+        CFBundleURLTypes:
+          - CFBundleURLSchemes:
+              - "app-1-5417641030-ios-b23247a8c9179cee345641"
+          - CFBundleURLSchemes:
+              - "com.googleusercontent.apps.1417641030-mi9m22ahnns4q9oeded9ltehi5p907hj"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nursultan.MoneyCheck
+    resources:
+      - path: MoneyCheck/Preview Content/Preview Assets
+      - path: MoneyCheck/Assets
+
+packages:
+  SwiftyEmail:
+    url: https://github.com/MarcosAtMorais/SwiftyEmail.git
+    branch: main
+
+schemes:
+  MoneyCheck:
+    build:
+      targets:
+        MoneyCheck: [debug]
+    run:
+      config: Debug
+      executable: MoneyCheck
+    archive:
+      config: Release
+    shared: true
