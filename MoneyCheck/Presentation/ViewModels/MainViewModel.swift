@@ -13,12 +13,12 @@ final class MainViewModel {
     
     init(financeUseCase: FinanceUseCase) {
         self.financeUseCase = financeUseCase
-        loadData()
     }
     
     // MARK: - Public methods
     func loadData() {
         isLoading = true
+        print("Starting data load...")
         
         Publishers.Zip(
             financeUseCase.getWallets(),
@@ -29,8 +29,12 @@ final class MainViewModel {
             self?.isLoading = false
             if case .failure(let error) = completion {
                 self?.error = error
+                print("Error loading data: \(error)")
             }
         } receiveValue: { [weak self] wallets, categories in
+            print("Data loaded successfully:")
+            print("Wallets (\(wallets.count)): \(wallets.map { $0.name })")
+            print("Categories (\(categories.count)): \(categories.map { $0.name })")
             self?.wallets = wallets
             self?.categories = categories
         }

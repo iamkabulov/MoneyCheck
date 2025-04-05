@@ -16,9 +16,40 @@ struct WalletModel: Identifiable, Codable {
     }
 }
 
-enum WalletType: String, Codable {
-    case forte
-    case bcc
-    case kaspi
-    case deposit
+enum WalletType: String, Codable, CaseIterable {
+    case cash = "Наличные"
+    case card = "Карта"
+    case deposit = "Депозит"
+    
+    var icon: String {
+        switch self {
+        case .cash:
+            return "banknote.fill"
+        case .card:
+            return "creditcard.fill"
+        case .deposit:
+            return "building.columns.fill"
+        }
+    }
+    
+    var color: String {
+        switch self {
+        case .cash:
+            return "systemGreen"
+        case .card:
+            return "systemBlue"
+        case .deposit:
+            return "systemPurple"
+        }
+    }
+}
+
+// MARK: - Mock Data
+extension WalletModel {
+    static let mockData: [WalletModel] = [
+        WalletModel(name: "Наличные", type: .cash, balance: 1513, icon: "banknote"),
+        WalletModel(name: "Карта", type: .card, balance: 49531.72, icon: "creditcard"),
+        WalletModel(name: "Дебетовая карта", type: .card, balance: 700, icon: "creditcard"),
+        WalletModel(name: "Депозит", type: .deposit, balance: 1000000, icon: "bank")
+    ]
 } 

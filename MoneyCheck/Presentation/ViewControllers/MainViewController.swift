@@ -1,5 +1,6 @@
 import UIKit
 import Combine
+import SnapKit
 
 final class MainViewController: UIViewController, UICollectionViewDelegate {
     // MARK: - Properties
@@ -17,8 +18,17 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         collectionView.dragDelegate = self
         collectionView.dropDelegate = self
         collectionView.dragInteractionEnabled = true
-        collectionView.register(WalletCollectionViewCell.self, forCellWithReuseIdentifier: WalletCollectionViewCell.reuseIdentifier)
-        collectionView.register(CategoryCollectionViewCell.self, forCellWithReuseIdentifier: CategoryCollectionViewCell.reuseIdentifier)
+        collectionView.register(MoneyCollectionViewCell.self, forCellWithReuseIdentifier: MoneyCollectionViewCell.reuseIdentifier)
+        collectionView.register(
+            SectionHeaderView.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: SectionHeaderView.reuseIdentifier
+        )
+        collectionView.register(
+            UICollectionReusableView.self,
+            forSupplementaryViewOfKind: "background",
+            withReuseIdentifier: "background"
+        )
         return collectionView
     }()
     
@@ -38,6 +48,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         super.viewDidLoad()
         setupUI()
         setupBindings()
+        viewModel.loadData()
     }
     
     // MARK: - Private methods
@@ -45,16 +56,13 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         view.backgroundColor = .systemBackground
         title = "MoneyCheck"
         navigationController?.navigationBar.prefersLargeTitles = true
-        
+        collectionView.isScrollEnabled = false
         view.addSubview(collectionView)
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
         
-        NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+        collectionView.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
     }
     
     private func setupBindings() {
@@ -89,40 +97,106 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
                 return self?.createCategoriesSection()
             }
         }
+        
+        let config = UICollectionViewCompositionalLayoutConfiguration()
+        config.interSectionSpacing = 20
+        layout.configuration = config
+
+        // Регистрируем background view
+        NSCollectionLayoutDecorationItem.background(
+            elementKind: "background"
+        )
+        layout.register(
+            SectionBackgroundDecorationView.self,
+            forDecorationViewOfKind: "background"
+        )
+
         return layout
     }
     
     private func createWalletsSection() -> NSCollectionLayoutSection {
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                            heightDimension: .fractionalHeight(1.0))
+        // Размер элемента
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .absolute(70),
+            heightDimension: .absolute(90)
+        )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        
-        let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(100),
-                                             heightDimension: .absolute(100))
+        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+
+        // Размер группы
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .estimated(70),
+            heightDimension: .estimated(90)
+        )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
+        // Настройка секции
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .continuous
-        section.interGroupSpacing = 16
-        section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+        section.interGroupSpacing = 4
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 16, trailing: 16)
+
+        // Добавляем header
+        let headerSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(44)
+        )
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
+
+        // Добавляем background
+        let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
+        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         
+        section.boundarySupplementaryItems = [header]
+        section.decorationItems = [backgroundItem]
+
         return section
     }
     
     private func createCategoriesSection() -> NSCollectionLayoutSection {
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                            heightDimension: .fractionalHeight(1.0))
+        // Размер элемента
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .absolute(70),
+            heightDimension: .absolute(90)
+        )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+
+        // Размер группы
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .absolute(90)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: 5)
+        group.interItemSpacing = .fixed(0)
         
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                             heightDimension: .absolute(100))
-        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: 3)
-        group.interItemSpacing = .fixed(16)
-        
+        // Настройка секции
         let section = NSCollectionLayoutSection(group: group)
-        section.interGroupSpacing = 16
-        section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+        section.interGroupSpacing = 4
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 16, trailing: 16)
+
+        // Добавляем header
+        let headerSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(44)
+        )
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
+
+        // Добавляем background
+        let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
+        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         
+        section.boundarySupplementaryItems = [header]
+        section.decorationItems = [backgroundItem]
+
         return section
     }
     
@@ -140,24 +214,20 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         let containerView = UIView()
         containerView.backgroundColor = .systemBackground
         containerView.layer.cornerRadius = 16
-        containerView.translatesAutoresizingMaskIntoConstraints = false
         
         let titleLabel = UILabel()
         titleLabel.text = "Введите сумму"
         titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         
         let textField = UITextField()
         textField.placeholder = "Сумма"
         textField.keyboardType = .decimalPad
         textField.borderStyle = .roundedRect
-        textField.translatesAutoresizingMaskIntoConstraints = false
         
         let buttonsStack = UIStackView()
         buttonsStack.axis = .horizontal
         buttonsStack.distribution = .fillEqually
         buttonsStack.spacing = 8
-        buttonsStack.translatesAutoresizingMaskIntoConstraints = false
         
         let cancelButton = UIButton(type: .system)
         cancelButton.setTitle("Отмена", for: .normal)
@@ -201,25 +271,30 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         containerView.addSubview(buttonsStack)
         vc.view.addSubview(containerView)
         
-        NSLayoutConstraint.activate([
-            containerView.centerXAnchor.constraint(equalTo: vc.view.centerXAnchor),
-            containerView.centerYAnchor.constraint(equalTo: vc.view.centerYAnchor),
-            containerView.widthAnchor.constraint(equalToConstant: 270),
-            
-            titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 16),
-            titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-            titleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-            
-            textField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
-            textField.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-            textField.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-            
-            buttonsStack.topAnchor.constraint(equalTo: textField.bottomAnchor, constant: 16),
-            buttonsStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-            buttonsStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-            buttonsStack.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -16),
-            buttonsStack.heightAnchor.constraint(equalToConstant: 44)
-        ])
+        containerView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.equalTo(270)
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+        
+        textField.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+        
+        buttonsStack.snp.makeConstraints { make in
+            make.top.equalTo(textField.snp.bottom).offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+            make.bottom.equalToSuperview().offset(-16)
+            make.height.equalTo(44)
+        }
         
         // Добавляем обработчик нажатия на фон для закрытия
         let tapGesture = UITapGestureRecognizer(target: vc, action: #selector(UIViewController.dismiss))
@@ -247,15 +322,33 @@ extension MainViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MoneyCollectionViewCell.reuseIdentifier, for: indexPath) as! MoneyCollectionViewCell
         if indexPath.section == 0 {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: WalletCollectionViewCell.reuseIdentifier, for: indexPath) as! WalletCollectionViewCell
-            cell.configure(with: viewModel.wallets[indexPath.item])
-            return cell
+            cell.configureForWallet(viewModel.wallets[indexPath.item])
         } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryCollectionViewCell.reuseIdentifier, for: indexPath) as! CategoryCollectionViewCell
-            cell.configure(with: viewModel.categories[indexPath.item])
-            return cell
+            cell.configureForCategory(viewModel.categories[indexPath.item])
         }
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        if kind == UICollectionView.elementKindSectionHeader {
+            let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: kind,
+                withReuseIdentifier: SectionHeaderView.reuseIdentifier,
+                for: indexPath
+            ) as! SectionHeaderView
+            
+            if indexPath.section == 0 {
+                let totalBalance = viewModel.wallets.reduce(0) { $0 + $1.balance }
+                header.configure(title: "Кошельки", amount: totalBalance)
+            } else {
+                header.configure(title: "Категории")
+            }
+            
+            return header
+        }
+        return UICollectionReusableView()
     }
 }
 
