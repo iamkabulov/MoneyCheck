@@ -14,7 +14,7 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         return view
     }()
 
-    private let iconContainerView: UIView = {
+    let iconContainerView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 24
         return view

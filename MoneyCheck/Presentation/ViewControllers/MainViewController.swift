@@ -7,6 +7,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     private let viewModel: MainViewModel
     let router: MainRouter
     private var cancellables = Set<AnyCancellable>()
+    private var lastHighlightedIndexPath: IndexPath?
     
     // MARK: - UI Components
     private lazy var collectionView: UICollectionView = {
@@ -355,6 +356,13 @@ extension MainViewController: UICollectionViewDataSource {
 // MARK: - UICollectionViewDragDelegate
 extension MainViewController: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? MoneyCollectionViewCell,
+              let iconFrame = cell.iconContainerView.superview?.convert(cell.iconContainerView.frame, to: cell),
+              session.location(in: cell).y >= iconFrame.minY && 
+              session.location(in: cell).y <= iconFrame.maxY else {
+            return []
+        }
+
         if indexPath.section == 0 {
             let wallet = viewModel.wallets[indexPath.item]
             let itemProvider = NSItemProvider(object: "\(wallet.id)" as NSString)
@@ -363,6 +371,28 @@ extension MainViewController: UICollectionViewDragDelegate {
             return [dragItem]
         }
         return []
+    }
+
+    func collectionView(_ collectionView: UICollectionView, dropPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? MoneyCollectionViewCell else {
+            return nil
+        }
+        
+        let parameters = UIDragPreviewParameters()
+        let iconFrame = cell.iconContainerView.superview?.convert(cell.iconContainerView.frame, to: cell) ?? .zero
+        parameters.visiblePath = UIBezierPath(roundedRect: iconFrame, cornerRadius: cell.iconContainerView.layer.cornerRadius)
+        return parameters
+    }
+
+    func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? MoneyCollectionViewCell else {
+            return nil
+        }
+        
+        let parameters = UIDragPreviewParameters()
+        let iconFrame = cell.iconContainerView.superview?.convert(cell.iconContainerView.frame, to: cell) ?? .zero
+        parameters.visiblePath = UIBezierPath(roundedRect: iconFrame, cornerRadius: cell.iconContainerView.layer.cornerRadius)
+        return parameters
     }
 }
 
@@ -379,20 +409,39 @@ extension MainViewController: UICollectionViewDropDelegate {
     }
     
     func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
-        guard session.items.count == 1,
-              let destinationIndexPath = destinationIndexPath else {
-            return UICollectionViewDropProposal(operation: .forbidden)
+        // Убираем подсветку с предыдущей ячейки
+        if let lastPath = lastHighlightedIndexPath, lastPath != destinationIndexPath {
+            highlightCell(at: lastPath, isHighlighted: false)
         }
         
-        // Всегда используем .move для визуального эффекта
-        return UICollectionViewDropProposal(operation: .move)
+        // Подсвечиваем новую ячейку
+        if let destinationIndexPath = destinationIndexPath {
+            highlightCell(at: destinationIndexPath, isHighlighted: true)
+            lastHighlightedIndexPath = destinationIndexPath
+        }
+        
+        guard session.items.count == 1 else {
+            return UICollectionViewDropProposal(operation: .cancel)
+        }
+        
+        return UICollectionViewDropProposal(operation: .move, intent: .insertIntoDestinationIndexPath)
     }
     
-    func collectionView(_ collectionView: UICollectionView, dropPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-        let cell = collectionView.cellForItem(at: indexPath)
-        let parameters = UIDragPreviewParameters()
-        parameters.visiblePath = UIBezierPath(roundedRect: cell?.bounds ?? .zero, cornerRadius: 16)
-        return parameters
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: UIDropSession) {
+        // Убираем подсветку при завершении перетаскивания
+        if let lastPath = lastHighlightedIndexPath {
+            highlightCell(at: lastPath, isHighlighted: false)
+            lastHighlightedIndexPath = nil
+        }
+    }
+    
+    private func highlightCell(at indexPath: IndexPath, isHighlighted: Bool) {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? MoneyCollectionViewCell else { return }
+        
+        UIView.animate(withDuration: 0.2) {
+            cell.transform = isHighlighted ? CGAffineTransform(scaleX: 1.05, y: 1.05) : .identity
+            cell.alpha = isHighlighted ? 0.8 : 1.0
+        }
     }
 }
 
