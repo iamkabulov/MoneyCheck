@@ -3,6 +3,15 @@ import Combine
 import SnapKit
 
 final class MainViewController: UIViewController, UICollectionViewDelegate {
+    private enum Constants {
+        static let headerHeight: CGFloat = 30
+        enum Section {
+            static let topInset: CGFloat = 8
+            static let leadingInset: CGFloat = 16
+            static let trailingInset: CGFloat = 16
+            static let bottomInset: CGFloat = 8
+        }
+    }
     // MARK: - Properties
     private let viewModel: MainViewModel
     let router: MainRouter
@@ -105,7 +114,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         }
         
         let config = UICollectionViewCompositionalLayoutConfiguration()
-        config.interSectionSpacing = 20
+        config.interSectionSpacing = 10
         layout.configuration = config
         
         NSCollectionLayoutDecorationItem.background(elementKind: "background")
@@ -122,7 +131,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        
+
         // Размер группы
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .estimated(70),
@@ -134,12 +143,17 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .continuous
         section.interGroupSpacing = 4
-        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 16, trailing: 16)
-        
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: Constants.Section.topInset,
+            leading: Constants.Section.leadingInset,
+            bottom: Constants.Section.bottomInset,
+            trailing: Constants.Section.trailingInset
+        )
+
         // Добавляем header
         let headerSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(44)
+            heightDimension: .estimated(Constants.headerHeight)
         )
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
@@ -149,8 +163,8 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         
         // Добавляем background
         let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
-        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        
+        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: Constants.headerHeight, leading: 0, bottom: 0, trailing: 0)
+
         section.boundarySupplementaryItems = [header]
         section.decorationItems = [backgroundItem]
         
@@ -177,12 +191,17 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .continuous
         section.interGroupSpacing = 4
-        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 16, trailing: 16)
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: Constants.Section.topInset,
+            leading: Constants.Section.leadingInset,
+            bottom: Constants.Section.bottomInset,
+            trailing: Constants.Section.trailingInset
+        )
 
         // Добавляем header
         let headerSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(44)
+            heightDimension: .estimated(Constants.headerHeight)
         )
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
@@ -192,7 +211,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 
         // Добавляем background
         let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
-        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: Constants.headerHeight, leading: 0, bottom: 0, trailing: 0)
         
         section.boundarySupplementaryItems = [header]
         section.decorationItems = [backgroundItem]
@@ -220,12 +239,17 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Настройка секции
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 4
-        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 16, trailing: 16)
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: Constants.Section.topInset,
+            leading: Constants.Section.leadingInset,
+            bottom: Constants.Section.bottomInset,
+            trailing: Constants.Section.trailingInset
+        )
 
         // Добавляем header
         let headerSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(44)
+            heightDimension: .estimated(Constants.headerHeight)
         )
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
@@ -235,7 +259,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 
         // Добавляем background
         let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
-        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: Constants.headerHeight, leading: 0, bottom: 0, trailing: 0)
         
         section.boundarySupplementaryItems = [header]
         section.decorationItems = [backgroundItem]
@@ -421,14 +445,22 @@ extension MainViewController: UICollectionViewDragDelegate {
             return []
         }
 
-        if indexPath.section == 0 {
+        switch indexPath.section {
+        case 0: // Доходы
+            let income = viewModel.incomes[indexPath.item]
+            let itemProvider = NSItemProvider(object: "\(income.id)" as NSString)
+            let dragItem = UIDragItem(itemProvider: itemProvider)
+            dragItem.localObject = ("income", income)
+            return [dragItem]
+        case 1: // Кошельки
             let wallet = viewModel.wallets[indexPath.item]
             let itemProvider = NSItemProvider(object: "\(wallet.id)" as NSString)
             let dragItem = UIDragItem(itemProvider: itemProvider)
-            dragItem.localObject = wallet
+            dragItem.localObject = ("wallet", wallet)
             return [dragItem]
+        default:
+            return []
         }
-        return []
     }
 
     func collectionView(_ collectionView: UICollectionView, dropPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
@@ -459,30 +491,32 @@ extension MainViewController: UICollectionViewDropDelegate {
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
         guard let destinationIndexPath = coordinator.destinationIndexPath,
               let dragItem = coordinator.items.first?.dragItem,
-              let sourceWallet = dragItem.localObject as? WalletModel else {
+              let (sourceType, sourceObject) = dragItem.localObject as? (String, Any) else {
             return
         }
         
-        showAmountInput(sourceWallet: sourceWallet, destinationIndexPath: destinationIndexPath)
+        switch (sourceType, destinationIndexPath.section) {
+        case ("income", 1): // Из доходов в кошельки
+            if let income = sourceObject as? IncomeModel,
+               let targetWallet = viewModel.wallets[safe: destinationIndexPath.item] {
+                showAmountInput(title: "Добавить доход", sourceIncome: income, targetWallet: targetWallet)
+            }
+            
+        case ("wallet", 2): // Из кошельков в категории
+            if let sourceWallet = sourceObject as? WalletModel,
+               let targetCategory = viewModel.categories[safe: destinationIndexPath.item] {
+                showAmountInput(title: "Добавить \(targetCategory.type == .expense ? "расход" : "доход")", 
+                              sourceWallet: sourceWallet,
+                              targetCategory: targetCategory)
+            }
+            
+        default:
+            break
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
-        // Убираем подсветку с предыдущей ячейки
-        if let lastPath = lastHighlightedIndexPath, lastPath != destinationIndexPath {
-            highlightCell(at: lastPath, isHighlighted: false)
-        }
-        
-        // Подсвечиваем новую ячейку
-        if let destinationIndexPath = destinationIndexPath {
-            highlightCell(at: destinationIndexPath, isHighlighted: true)
-            lastHighlightedIndexPath = destinationIndexPath
-        }
-        
-        guard session.items.count == 1 else {
-            return UICollectionViewDropProposal(operation: .cancel)
-        }
-        
-        return UICollectionViewDropProposal(operation: .move, intent: .insertIntoDestinationIndexPath)
+        return UICollectionViewDropProposal(operation: .move)
     }
     
     func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: UIDropSession) {
@@ -502,9 +536,192 @@ extension MainViewController: UICollectionViewDropDelegate {
     }
 }
 
-// MARK: - Array Extension
-extension Array {
-    subscript(safe index: Int) -> Element? {
+// MARK: - Helper Methods
+private extension MainViewController {
+    func showAmountInput(title: String, sourceIncome income: IncomeModel, targetWallet wallet: WalletModel) {
+        let vc = UIViewController()
+        vc.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        vc.modalPresentationStyle = .overFullScreen
+        
+        let containerView = UIView()
+        containerView.backgroundColor = .systemBackground
+        containerView.layer.cornerRadius = 16
+        
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
+        
+        let textField = UITextField()
+        textField.placeholder = "Сумма"
+        textField.keyboardType = .decimalPad
+        textField.borderStyle = .roundedRect
+        
+        let buttonsStack = UIStackView()
+        buttonsStack.axis = .horizontal
+        buttonsStack.distribution = .fillEqually
+        buttonsStack.spacing = 8
+        
+        let cancelButton = UIButton(type: .system)
+        cancelButton.setTitle("Отмена", for: .normal)
+        cancelButton.addAction(UIAction { _ in
+            vc.dismiss(animated: true)
+        }, for: .touchUpInside)
+        
+        let okButton = UIButton(type: .system)
+        okButton.setTitle("OK", for: .normal)
+        okButton.addAction(UIAction { [weak self] _ in
+            guard let amountText = textField.text,
+                  let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
+                  amount > 0 else {
+                return
+            }
+            
+            var updatedIncome = income
+            var updatedWallet = wallet
+            
+            updatedIncome.amount += amount
+            updatedWallet.balance += amount
+            
+            self?.viewModel.updateIncome(updatedIncome)
+            self?.viewModel.updateWallet(updatedWallet)
+            
+            vc.dismiss(animated: true)
+        }, for: .touchUpInside)
+        
+        buttonsStack.addArrangedSubview(cancelButton)
+        buttonsStack.addArrangedSubview(okButton)
+        
+        containerView.addSubview(titleLabel)
+        containerView.addSubview(textField)
+        containerView.addSubview(buttonsStack)
+        vc.view.addSubview(containerView)
+        
+        containerView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.equalTo(270)
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+        
+        textField.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+        
+        buttonsStack.snp.makeConstraints { make in
+            make.top.equalTo(textField.snp.bottom).offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+            make.bottom.equalToSuperview().offset(-16)
+            make.height.equalTo(44)
+        }
+        
+        let tapGesture = UITapGestureRecognizer(target: vc, action: #selector(UIViewController.dismiss))
+        vc.view.addGestureRecognizer(tapGesture)
+        containerView.isUserInteractionEnabled = true
+        
+        present(vc, animated: true) {
+            textField.becomeFirstResponder()
+        }
+    }
+    
+    func showAmountInput(title: String, sourceWallet wallet: WalletModel, targetCategory category: CategoryModel) {
+        let vc = UIViewController()
+        vc.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        vc.modalPresentationStyle = .overFullScreen
+        
+        let containerView = UIView()
+        containerView.backgroundColor = .systemBackground
+        containerView.layer.cornerRadius = 16
+        
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
+        
+        let textField = UITextField()
+        textField.placeholder = "Сумма"
+        textField.keyboardType = .decimalPad
+        textField.borderStyle = .roundedRect
+        
+        let buttonsStack = UIStackView()
+        buttonsStack.axis = .horizontal
+        buttonsStack.distribution = .fillEqually
+        buttonsStack.spacing = 8
+        
+        let cancelButton = UIButton(type: .system)
+        cancelButton.setTitle("Отмена", for: .normal)
+        cancelButton.addAction(UIAction { _ in
+            vc.dismiss(animated: true)
+        }, for: .touchUpInside)
+        
+        let okButton = UIButton(type: .system)
+        okButton.setTitle("OK", for: .normal)
+        okButton.addAction(UIAction { [weak self] _ in
+            guard let amountText = textField.text,
+                  let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
+                  amount > 0 else {
+                return
+            }
+            
+            if category.type == .expense {
+                self?.viewModel.addExpense(from: wallet, to: category, amount: amount)
+            } else {
+                self?.viewModel.addIncome(to: wallet, from: category, amount: amount)
+            }
+            
+            vc.dismiss(animated: true)
+        }, for: .touchUpInside)
+        
+        buttonsStack.addArrangedSubview(cancelButton)
+        buttonsStack.addArrangedSubview(okButton)
+        
+        containerView.addSubview(titleLabel)
+        containerView.addSubview(textField)
+        containerView.addSubview(buttonsStack)
+        vc.view.addSubview(containerView)
+        
+        containerView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.equalTo(270)
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+        
+        textField.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+        
+        buttonsStack.snp.makeConstraints { make in
+            make.top.equalTo(textField.snp.bottom).offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+            make.bottom.equalToSuperview().offset(-16)
+            make.height.equalTo(44)
+        }
+        
+        let tapGesture = UITapGestureRecognizer(target: vc, action: #selector(UIViewController.dismiss))
+        vc.view.addGestureRecognizer(tapGesture)
+        containerView.isUserInteractionEnabled = true
+        
+        present(vc, animated: true) {
+            textField.becomeFirstResponder()
+        }
+    }
+}
+
+private extension Collection {
+    subscript(safe index: Index) -> Element? {
         return indices.contains(index) ? self[index] : nil
     }
 }
@@ -512,10 +729,7 @@ extension Array {
 // MARK: - UICollectionViewDelegate
 extension MainViewController {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if indexPath.section == 0 {
-            let wallet = viewModel.wallets[indexPath.item]
-            showAddMoneyInput(to: wallet)
-        }
+        //TODO: - СДЕЛАТЬ по тапу историю
     }
     
     private func showAddMoneyInput(to wallet: WalletModel) {
