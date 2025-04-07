@@ -50,12 +50,4 @@ extension CategoryModel {
         CategoryModel(name: ExpenseCategory.credits.rawValue, type: .expense, amount: 0, icon: "creditcard.fill", color: "systemRed"),
         CategoryModel(name: ExpenseCategory.gifts.rawValue, type: .expense, amount: 0, icon: "gift.fill", color: "systemRed")
     ]
-    
-    static let mockIncomes: [CategoryModel] = [
-        CategoryModel(name: "Доход", type: .income, amount: 300000, icon: "dollarsign.circle.fill", color: "systemGreen")
-    ]
-    
-    static var mockData: [CategoryModel] {
-        mockExpenses + mockIncomes
-    }
 } 

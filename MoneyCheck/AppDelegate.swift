@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -14,9 +15,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         window = UIWindow(frame: UIScreen.main.bounds)
         
+        // Initialize CoreData and mock data
+        let coreDataManager = CoreDataManager.shared
+        coreDataManager.initializeMockDataIfNeeded()
+        
         // Initialize repositories
-        let walletRepository = WalletRepositoryImpl()
-        let categoryRepository = CategoryRepositoryImpl()
+        let walletRepository = CoreDataWalletRepository()
+        let categoryRepository = CoreDataCategoryRepository()
         
         // Initialize use case
         let financeUseCase = FinanceUseCaseImpl(walletRepository: walletRepository, categoryRepository: categoryRepository)
@@ -38,6 +43,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.makeKeyAndVisible()
         
         return true
+    }
+    
+    // MARK: - Core Data stack
+    lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "MoneyCheck")
+        container.loadPersistentStores { description, error in
+            if let error = error {
+                fatalError("Unable to load persistent stores: \(error)")
+            }
+        }
+        return container
+    }()
+    
+    // MARK: - Core Data Saving support
+    func saveContext() {
+        let context = persistentContainer.viewContext
+        if context.hasChanges {
+            do {
+                try context.save()
+            } catch {
+                let error = error as NSError
+                fatalError("Unresolved error \(error), \(error.userInfo)")
+            }
+        }
     }
 }
 

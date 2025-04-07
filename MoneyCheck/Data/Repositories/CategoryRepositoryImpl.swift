@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 final class CategoryRepositoryImpl: CategoryRepository {
-    private var categories: [CategoryModel] = CategoryModel.mockData
+    private var categories: [CategoryModel] = CategoryModel.mockExpenses
 
     func getCategories() -> AnyPublisher<[CategoryModel], Error> {
         Just(categories)

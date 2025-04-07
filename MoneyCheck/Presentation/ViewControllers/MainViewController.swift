@@ -341,10 +341,10 @@ extension MainViewController: UICollectionViewDataSource {
             ) as! SectionHeaderView
             
             if indexPath.section == 0 {
-                let totalBalance = viewModel.wallets.reduce(0) { $0 + $1.balance }
-                header.configure(title: "Кошельки", amount: totalBalance)
+                header.configure(title: "Кошельки", amount: viewModel.totalBalance)
             } else {
-                header.configure(title: "Категории")
+                let totalAmount = indexPath.item == 0 ? viewModel.totalExpenses : viewModel.totalIncome
+                header.configure(title: "Категории", amount: totalAmount)
             }
             
             return header
@@ -438,9 +438,8 @@ extension MainViewController: UICollectionViewDropDelegate {
     private func highlightCell(at indexPath: IndexPath, isHighlighted: Bool) {
         guard let cell = collectionView.cellForItem(at: indexPath) as? MoneyCollectionViewCell else { return }
         
-        UIView.animate(withDuration: 0.2) {
-            cell.transform = isHighlighted ? CGAffineTransform(scaleX: 1.05, y: 1.05) : .identity
-            cell.alpha = isHighlighted ? 0.8 : 1.0
+        UIView.animate(withDuration: 0.1) {
+            cell.alpha = isHighlighted ? 0.9 : 1.0
         }
     }
 }
@@ -449,6 +448,104 @@ extension MainViewController: UICollectionViewDropDelegate {
 extension Array {
     subscript(safe index: Int) -> Element? {
         return indices.contains(index) ? self[index] : nil
+    }
+}
+
+// MARK: - UICollectionViewDelegate
+extension MainViewController {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if indexPath.section == 0 {
+            let wallet = viewModel.wallets[indexPath.item]
+            showAddMoneyInput(to: wallet)
+        }
+    }
+    
+    private func showAddMoneyInput(to wallet: WalletModel) {
+        let vc = UIViewController()
+        vc.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        vc.modalPresentationStyle = .overFullScreen
+        
+        let containerView = UIView()
+        containerView.backgroundColor = .systemBackground
+        containerView.layer.cornerRadius = 16
+        
+        let titleLabel = UILabel()
+        titleLabel.text = "Добавить в \(wallet.name)"
+        titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
+        
+        let textField = UITextField()
+        textField.placeholder = "Сумма"
+        textField.keyboardType = .decimalPad
+        textField.borderStyle = .roundedRect
+        
+        let buttonsStack = UIStackView()
+        buttonsStack.axis = .horizontal
+        buttonsStack.distribution = .fillEqually
+        buttonsStack.spacing = 8
+        
+        let cancelButton = UIButton(type: .system)
+        cancelButton.setTitle("Отмена", for: .normal)
+        cancelButton.addAction(UIAction { _ in
+            vc.dismiss(animated: true)
+        }, for: .touchUpInside)
+        
+        let okButton = UIButton(type: .system)
+        okButton.setTitle("Добавить", for: .normal)
+        okButton.addAction(UIAction { [weak self] _ in
+            guard let amountText = textField.text,
+                  let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
+                  amount > 0 else {
+                return
+            }
+            
+            var updatedWallet = wallet
+            updatedWallet.balance += amount
+            self?.viewModel.updateWallet(updatedWallet)
+            
+            vc.dismiss(animated: true)
+        }, for: .touchUpInside)
+        
+        buttonsStack.addArrangedSubview(cancelButton)
+        buttonsStack.addArrangedSubview(okButton)
+        
+        containerView.addSubview(titleLabel)
+        containerView.addSubview(textField)
+        containerView.addSubview(buttonsStack)
+        vc.view.addSubview(containerView)
+        
+        containerView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.equalTo(270)
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+        
+        textField.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+        
+        buttonsStack.snp.makeConstraints { make in
+            make.top.equalTo(textField.snp.bottom).offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+            make.bottom.equalToSuperview().offset(-16)
+            make.height.equalTo(44)
+        }
+        
+        // Добавляем обработчик нажатия на фон для закрытия
+        let tapGesture = UITapGestureRecognizer(target: vc, action: #selector(UIViewController.dismiss))
+        vc.view.addGestureRecognizer(tapGesture)
+        containerView.isUserInteractionEnabled = true
+        
+        present(vc, animated: true) {
+            textField.becomeFirstResponder()
+        }
     }
 } 
 

@@ -11,6 +11,19 @@ final class MainViewModel {
     @Published private(set) var error: Error?
     @Published private(set) var isLoading = false
     
+    // MARK: - Calculated properties
+    var totalBalance: Double {
+        wallets.reduce(0) { $0 + $1.balance }
+    }
+    
+    var totalExpenses: Double {
+        categories.filter { $0.type == .expense }.reduce(0) { $0 + $1.amount }
+    }
+    
+    var totalIncome: Double {
+        categories.filter { $0.type == .income }.reduce(0) { $0 + $1.amount }
+    }
+    
     init(financeUseCase: FinanceUseCase) {
         self.financeUseCase = financeUseCase
     }
@@ -42,33 +55,83 @@ final class MainViewModel {
     }
     
     func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double) {
-        financeUseCase.transferMoney(from: sourceWallet, to: targetWallet, amount: amount)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                if case .failure(let error) = completion {
-                    self?.error = error
-                }
-            } receiveValue: { [weak self] _ in
-                self?.loadData()
+        guard sourceWallet.balance >= amount else {
+            error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Недостаточно средств"])
+            return
+        }
+        
+        var updatedSourceWallet = sourceWallet
+        var updatedTargetWallet = targetWallet
+        
+        updatedSourceWallet.balance -= amount
+        updatedTargetWallet.balance += amount
+        
+        Publishers.Zip(
+            financeUseCase.updateWallet(updatedSourceWallet),
+            financeUseCase.updateWallet(updatedTargetWallet)
+        )
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] completion in
+            if case .failure(let error) = completion {
+                self?.error = error
             }
-            .store(in: &cancellables)
+        } receiveValue: { [weak self] _ in
+            self?.loadData()
+        }
+        .store(in: &cancellables)
     }
     
     func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double) {
-        financeUseCase.addExpense(from: wallet, to: category, amount: amount)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                if case .failure(let error) = completion {
-                    self?.error = error
-                }
-            } receiveValue: { [weak self] _ in
-                self?.loadData()
+        guard wallet.balance >= amount else {
+            error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Недостаточно средств"])
+            return
+        }
+        
+        var updatedWallet = wallet
+        var updatedCategory = category
+        
+        updatedWallet.balance -= amount
+        updatedCategory.amount += amount
+        
+        Publishers.Zip(
+            financeUseCase.updateWallet(updatedWallet),
+            financeUseCase.updateCategory(updatedCategory)
+        )
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] completion in
+            if case .failure(let error) = completion {
+                self?.error = error
             }
-            .store(in: &cancellables)
+        } receiveValue: { [weak self] _ in
+            self?.loadData()
+        }
+        .store(in: &cancellables)
     }
     
     func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double) {
-        financeUseCase.addIncome(to: wallet, from: category, amount: amount)
+        var updatedWallet = wallet
+        var updatedCategory = category
+        
+        updatedWallet.balance += amount
+        updatedCategory.amount += amount
+        
+        Publishers.Zip(
+            financeUseCase.updateWallet(updatedWallet),
+            financeUseCase.updateCategory(updatedCategory)
+        )
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] completion in
+            if case .failure(let error) = completion {
+                self?.error = error
+            }
+        } receiveValue: { [weak self] _ in
+            self?.loadData()
+        }
+        .store(in: &cancellables)
+    }
+    
+    func updateWallet(_ wallet: WalletModel) {
+        financeUseCase.updateWallet(wallet)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] completion in
                 if case .failure(let error) = completion {
