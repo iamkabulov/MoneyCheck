@@ -38,7 +38,7 @@ enum ExpenseCategory: String, Codable {
 
 // MARK: - Mock Data
 extension CategoryModel {
-    static let mockExpenses: [CategoryModel] = [
+    static let mockData: [CategoryModel] = [
         CategoryModel(name: ExpenseCategory.products.rawValue, type: .expense, amount: 0, icon: "cart.fill", color: "systemRed"),
         CategoryModel(name: ExpenseCategory.transport.rawValue, type: .expense, amount: 0, icon: "car.fill", color: "systemRed"),
         CategoryModel(name: ExpenseCategory.fastFood.rawValue, type: .expense, amount: 0, icon: "takeoutbag.and.cup.and.straw.fill", color: "systemRed"),

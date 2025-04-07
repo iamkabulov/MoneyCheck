@@ -8,6 +8,7 @@ final class MainViewModel {
     // MARK: - Published properties
     @Published private(set) var wallets: [WalletModel] = []
     @Published private(set) var categories: [CategoryModel] = []
+    @Published private(set) var incomes: [IncomeModel] = []
     @Published private(set) var error: Error?
     @Published private(set) var isLoading = false
     
@@ -21,7 +22,7 @@ final class MainViewModel {
     }
     
     var totalIncome: Double {
-        categories.filter { $0.type == .income }.reduce(0) { $0 + $1.amount }
+        incomes.reduce(0) { $0 + $1.amount }
     }
     
     init(financeUseCase: FinanceUseCase) {
@@ -33,9 +34,10 @@ final class MainViewModel {
         isLoading = true
         print("Starting data load...")
         
-        Publishers.Zip(
+        Publishers.CombineLatest3(
             financeUseCase.getWallets(),
-            financeUseCase.getCategories()
+            financeUseCase.getCategories(),
+            financeUseCase.getIncomes()
         )
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
@@ -44,21 +46,19 @@ final class MainViewModel {
                 self?.error = error
                 print("Error loading data: \(error)")
             }
-        } receiveValue: { [weak self] wallets, categories in
+        } receiveValue: { [weak self] wallets, categories, incomes in
             print("Data loaded successfully:")
             print("Wallets (\(wallets.count)): \(wallets.map { $0.name })")
             print("Categories (\(categories.count)): \(categories.map { $0.name })")
+            print("Incomes (\(incomes.count)): \(incomes.map { $0.name })")
             self?.wallets = wallets
             self?.categories = categories
+            self?.incomes = incomes
         }
         .store(in: &cancellables)
     }
     
     func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double) {
-        guard sourceWallet.balance >= amount else {
-            error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Недостаточно средств"])
-            return
-        }
         
         var updatedSourceWallet = sourceWallet
         var updatedTargetWallet = targetWallet
@@ -82,10 +82,6 @@ final class MainViewModel {
     }
     
     func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double) {
-        guard wallet.balance >= amount else {
-            error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Недостаточно средств"])
-            return
-        }
         
         var updatedWallet = wallet
         var updatedCategory = category
@@ -132,6 +128,19 @@ final class MainViewModel {
     
     func updateWallet(_ wallet: WalletModel) {
         financeUseCase.updateWallet(wallet)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.error = error
+                }
+            } receiveValue: { [weak self] _ in
+                self?.loadData()
+            }
+            .store(in: &cancellables)
+    }
+    
+    func updateIncome(_ income: IncomeModel) {
+        financeUseCase.updateIncome(income)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] completion in
                 if case .failure(let error) = completion {

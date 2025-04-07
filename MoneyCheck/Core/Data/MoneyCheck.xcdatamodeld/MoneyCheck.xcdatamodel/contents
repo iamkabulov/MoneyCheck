@@ -15,4 +15,11 @@
         <attribute name="name" optional="NO" attributeType="String"/>
         <attribute name="type" optional="NO" attributeType="String"/>
     </entity>
+    <entity name="Income" representedClassName="Income" syncable="YES" codeGenerationType="class">
+        <attribute name="amount" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="color" optional="NO" attributeType="String"/>
+        <attribute name="icon" optional="NO" attributeType="String"/>
+        <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" optional="NO" attributeType="String"/>
+    </entity>
 </model> 

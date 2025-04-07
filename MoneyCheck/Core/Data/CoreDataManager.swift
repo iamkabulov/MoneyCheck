@@ -94,10 +94,37 @@ final class CoreDataManager {
         saveContext()
     }
     
+    // MARK: - Income Methods
+    func createIncome(name: String, amount: Double, icon: String, color: String) -> Income {
+        let income = Income(context: context)
+        income.id = UUID()
+        income.name = name
+        income.amount = amount
+        income.icon = icon
+        income.color = color
+        saveContext()
+        return income
+    }
+    
+    func fetchIncomes() -> [Income] {
+        let request: NSFetchRequest<Income> = Income.fetchRequest()
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("Error fetching incomes: \(error)")
+            return []
+        }
+    }
+    
+    func updateIncome(_ income: Income) {
+        saveContext()
+    }
+    
     // MARK: - Mock Data Initialization
     func initializeMockDataIfNeeded() {
         let wallets = fetchWallets()
         let categories = fetchCategories()
+        let incomes = fetchIncomes()
         
         if wallets.isEmpty {
             // Создаем мок кошельки
@@ -113,8 +140,8 @@ final class CoreDataManager {
         }
         
         if categories.isEmpty {
-            // Создаем мок категории
-            let mockCategories = CategoryModel.mockExpenses
+            // Создаем мок категории расходов
+            let mockCategories = CategoryModel.mockData
             for category in mockCategories {
                 createCategory(
                     name: category.name,
@@ -122,6 +149,19 @@ final class CoreDataManager {
                     amount: category.amount,
                     icon: category.icon,
                     color: category.color
+                )
+            }
+        }
+        
+        if incomes.isEmpty {
+            // Создаем мок доходы
+            let mockIncomes = IncomeModel.mockData
+            for income in mockIncomes {
+                createIncome(
+                    name: income.name,
+                    amount: income.amount,
+                    icon: income.icon,
+                    color: income.color
                 )
             }
         }

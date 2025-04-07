@@ -92,27 +92,69 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     
     private func createCompositionalLayout() -> UICollectionViewLayout {
         let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, _ in
-            if sectionIndex == 0 {
+            switch sectionIndex {
+            case 0:
+                return self?.createIncomesSection()
+            case 1:
                 return self?.createWalletsSection()
-            } else {
+            case 2:
                 return self?.createCategoriesSection()
+            default:
+                return nil
             }
         }
         
         let config = UICollectionViewCompositionalLayoutConfiguration()
         config.interSectionSpacing = 20
         layout.configuration = config
-
-        // Регистрируем background view
-        NSCollectionLayoutDecorationItem.background(
-            elementKind: "background"
-        )
-        layout.register(
-            SectionBackgroundDecorationView.self,
-            forDecorationViewOfKind: "background"
-        )
-
+        
+        NSCollectionLayoutDecorationItem.background(elementKind: "background")
+        layout.register(SectionBackgroundDecorationView.self, forDecorationViewOfKind: "background")
+        
         return layout
+    }
+    
+    private func createIncomesSection() -> NSCollectionLayoutSection {
+        // Размер элемента
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .absolute(70),
+            heightDimension: .absolute(90)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        
+        // Размер группы
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .estimated(70),
+            heightDimension: .estimated(90)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        
+        // Настройка секции
+        let section = NSCollectionLayoutSection(group: group)
+        section.orthogonalScrollingBehavior = .continuous
+        section.interGroupSpacing = 4
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 16, trailing: 16)
+        
+        // Добавляем header
+        let headerSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(44)
+        )
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
+        
+        // Добавляем background
+        let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
+        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        
+        section.boundarySupplementaryItems = [header]
+        section.decorationItems = [backgroundItem]
+        
+        return section
     }
     
     private func createWalletsSection() -> NSCollectionLayoutSection {
@@ -311,23 +353,35 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 // MARK: - UICollectionViewDataSource
 extension MainViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 2
+        return 3 // Incomes, Wallets, Categories
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if section == 0 {
-            return viewModel.wallets.count
-        } else {
-            return viewModel.categories.count
+        switch section {
+        case 0: return viewModel.incomes.count
+        case 1: return viewModel.wallets.count
+        case 2: return viewModel.categories.count
+        default: return 0
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MoneyCollectionViewCell.reuseIdentifier, for: indexPath) as! MoneyCollectionViewCell
-        if indexPath.section == 0 {
+        switch indexPath.section {
+        case 0:
+            let income = viewModel.incomes[indexPath.item]
+            cell.configure(
+                name: income.name,
+                amount: income.amount,
+                icon: income.icon,
+                color: income.color
+            )
+        case 1:
             cell.configureForWallet(viewModel.wallets[indexPath.item])
-        } else {
+        case 2:
             cell.configureForCategory(viewModel.categories[indexPath.item])
+        default:
+            break
         }
         return cell
     }
@@ -340,11 +394,15 @@ extension MainViewController: UICollectionViewDataSource {
                 for: indexPath
             ) as! SectionHeaderView
             
-            if indexPath.section == 0 {
+            switch indexPath.section {
+            case 0:
+                header.configure(title: "Доходы", amount: viewModel.totalIncome)
+            case 1:
                 header.configure(title: "Кошельки", amount: viewModel.totalBalance)
-            } else {
-                let totalAmount = indexPath.item == 0 ? viewModel.totalExpenses : viewModel.totalIncome
-                header.configure(title: "Категории", amount: totalAmount)
+            case 2:
+                header.configure(title: "Категории", amount: viewModel.totalExpenses)
+            default:
+                break
             }
             
             return header
