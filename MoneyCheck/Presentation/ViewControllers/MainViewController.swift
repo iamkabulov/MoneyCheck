@@ -283,7 +283,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         containerView.layer.cornerRadius = 16
         
         let titleLabel = UILabel()
-        titleLabel.text = "Введите сумму"
+        titleLabel.text = "Перевести из \(sourceWallet.name)"
         titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
         
         let textField = UITextField()
@@ -311,20 +311,9 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
                 return
             }
             
-            if destinationIndexPath.section == 0 {
-                // Перенос между кошельками
-                let targetWallet = self?.viewModel.wallets[destinationIndexPath.item]
-                if sourceWallet.id != targetWallet?.id {
-                    self?.viewModel.transferMoney(from: sourceWallet, to: targetWallet!, amount: amount)
-                }
-            } else {
-                // Расход или доход
-                let category = self?.viewModel.categories[destinationIndexPath.item]
-                if category?.type == .expense {
-                    self?.viewModel.addExpense(from: sourceWallet, to: category!, amount: amount)
-                } else {
-                    self?.viewModel.addIncome(to: sourceWallet, from: category!, amount: amount)
-                }
+            if destinationIndexPath.section == 1,
+               let targetWallet = self?.viewModel.wallets[destinationIndexPath.item] {
+                self?.viewModel.transferMoney(from: sourceWallet, to: targetWallet, amount: amount)
             }
             
             vc.dismiss(animated: true)
@@ -363,7 +352,6 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             make.height.equalTo(44)
         }
         
-        // Добавляем обработчик нажатия на фон для закрытия
         let tapGesture = UITapGestureRecognizer(target: vc, action: #selector(UIViewController.dismiss))
         vc.view.addGestureRecognizer(tapGesture)
         containerView.isUserInteractionEnabled = true
@@ -500,6 +488,13 @@ extension MainViewController: UICollectionViewDropDelegate {
             if let income = sourceObject as? IncomeModel,
                let targetWallet = viewModel.wallets[safe: destinationIndexPath.item] {
                 showAmountInput(title: "Добавить доход", sourceIncome: income, targetWallet: targetWallet)
+            }
+            
+        case ("wallet", 1): // Между кошельками
+            if let sourceWallet = sourceObject as? WalletModel,
+               let targetWallet = viewModel.wallets[safe: destinationIndexPath.item],
+               sourceWallet.id != targetWallet.id {
+                showAmountInput(sourceWallet: sourceWallet, destinationIndexPath: destinationIndexPath)
             }
             
         case ("wallet", 2): // Из кошельков в категории
