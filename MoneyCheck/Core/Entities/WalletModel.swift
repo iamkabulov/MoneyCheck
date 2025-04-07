@@ -35,11 +35,11 @@ enum WalletType: String, Codable, CaseIterable {
     var color: String {
         switch self {
         case .cash:
-            return "systemGreen"
+            return "#34C759" // systemGreen
         case .card:
-            return "systemBlue"
+            return "#007AFF" // systemBlue
         case .deposit:
-            return "systemPurple"
+            return "#AF52DE" // systemPurple
         }
     }
 }

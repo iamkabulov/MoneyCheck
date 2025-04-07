@@ -57,21 +57,19 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
     }
     
     // MARK: - Configuration
-    func configure(name: String, amount: Double, icon: String, color: String, defaultColor: UIColor = .systemBlue) {
+    func configure(name: String, amount: Double, icon: String, color: String) {
         nameLabel.text = name
         amountLabel.text = formatAmount(amount)
         iconImageView.image = UIImage(systemName: icon)
-        iconContainerView.backgroundColor = UIColor(named: color) ?? defaultColor
+        iconContainerView.backgroundColor = UIColor(hex: color)
     }
     
     func configureForCategory(_ category: CategoryModel) {
-        let defaultColor: UIColor = category.type == .expense ? .systemRed : .systemGreen
         configure(
             name: category.name,
             amount: category.amount,
             icon: category.icon,
-            color: category.color,
-            defaultColor: defaultColor
+            color: category.color
         )
     }
     

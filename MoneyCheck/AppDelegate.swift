@@ -34,13 +34,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize view model
         let viewModel = MainViewModel(financeUseCase: financeUseCase)
         
-        // Initialize view controller
-        let viewController = MainViewController(viewModel: viewModel, router: MainRouterImpl(financeUseCase: financeUseCase))
+        // Initialize router without view controller
+        let router = MainRouterImpl(viewController: nil)
+        
+        // Initialize view controller with router
+        let viewController = MainViewController(viewModel: viewModel, router: router)
         
         // Set view controller to router
-        if let router = viewController.router as? MainRouterImpl {
-            router.viewController = viewController
-        }
+        router.viewController = viewController
         
         let navigationController = UINavigationController(rootViewController: viewController)
         

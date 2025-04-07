@@ -17,6 +17,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     let router: MainRouter
     private var cancellables = Set<AnyCancellable>()
     private var lastHighlightedIndexPath: IndexPath?
+    private var pendingTransferWallet: WalletModel?
     
     // MARK: - UI Components
     private lazy var collectionView: UICollectionView = {
@@ -64,7 +65,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     // MARK: - Private methods
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        title = "MoneyCheck"
+        title = "Money Check"
         navigationController?.navigationBar.prefersLargeTitles = true
         collectionView.isScrollEnabled = false
         view.addSubview(collectionView)
@@ -274,91 +275,8 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     }
     
     private func showAmountInput(sourceWallet: WalletModel, destinationIndexPath: IndexPath) {
-        let vc = UIViewController()
-        vc.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-        vc.modalPresentationStyle = .overFullScreen
-        
-        let containerView = UIView()
-        containerView.backgroundColor = .systemBackground
-        containerView.layer.cornerRadius = 16
-        
-        let titleLabel = UILabel()
-        titleLabel.text = "Перевести из \(sourceWallet.name)"
-        titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
-        
-        let textField = UITextField()
-        textField.placeholder = "Сумма"
-        textField.keyboardType = .decimalPad
-        textField.borderStyle = .roundedRect
-        
-        let buttonsStack = UIStackView()
-        buttonsStack.axis = .horizontal
-        buttonsStack.distribution = .fillEqually
-        buttonsStack.spacing = 8
-        
-        let cancelButton = UIButton(type: .system)
-        cancelButton.setTitle("Отмена", for: .normal)
-        cancelButton.addAction(UIAction { _ in
-            vc.dismiss(animated: true)
-        }, for: .touchUpInside)
-        
-        let okButton = UIButton(type: .system)
-        okButton.setTitle("OK", for: .normal)
-        okButton.addAction(UIAction { [weak self] _ in
-            guard let amountText = textField.text,
-                  let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
-                  amount > 0 else {
-                return
-            }
-            
-            if destinationIndexPath.section == 1,
-               let targetWallet = self?.viewModel.wallets[destinationIndexPath.item] {
-                self?.viewModel.transferMoney(from: sourceWallet, to: targetWallet, amount: amount)
-            }
-            
-            vc.dismiss(animated: true)
-        }, for: .touchUpInside)
-        
-        buttonsStack.addArrangedSubview(cancelButton)
-        buttonsStack.addArrangedSubview(okButton)
-        
-        containerView.addSubview(titleLabel)
-        containerView.addSubview(textField)
-        containerView.addSubview(buttonsStack)
-        vc.view.addSubview(containerView)
-        
-        containerView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.width.equalTo(270)
-        }
-        
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
-        }
-        
-        textField.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
-        }
-        
-        buttonsStack.snp.makeConstraints { make in
-            make.top.equalTo(textField.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
-            make.bottom.equalToSuperview().offset(-16)
-            make.height.equalTo(44)
-        }
-        
-        let tapGesture = UITapGestureRecognizer(target: vc, action: #selector(UIViewController.dismiss))
-        vc.view.addGestureRecognizer(tapGesture)
-        containerView.isUserInteractionEnabled = true
-        
-        present(vc, animated: true) {
-            textField.becomeFirstResponder()
-        }
+        guard let targetWallet = viewModel.wallet(at: destinationIndexPath) else { return }
+        showTransferBottomSheet(for: .wallet(sourceWallet: sourceWallet, targetWallet: targetWallet))
     }
 }
 
@@ -436,16 +354,18 @@ extension MainViewController: UICollectionViewDragDelegate {
         switch indexPath.section {
         case 0: // Доходы
             let income = viewModel.incomes[indexPath.item]
-            let itemProvider = NSItemProvider(object: "\(income.id)" as NSString)
+            let itemProvider = NSItemProvider()
             let dragItem = UIDragItem(itemProvider: itemProvider)
             dragItem.localObject = ("income", income)
             return [dragItem]
+            
         case 1: // Кошельки
             let wallet = viewModel.wallets[indexPath.item]
-            let itemProvider = NSItemProvider(object: "\(wallet.id)" as NSString)
+            let itemProvider = NSItemProvider()
             let dragItem = UIDragItem(itemProvider: itemProvider)
             dragItem.localObject = ("wallet", wallet)
             return [dragItem]
+            
         default:
             return []
         }
@@ -478,32 +398,30 @@ extension MainViewController: UICollectionViewDragDelegate {
 extension MainViewController: UICollectionViewDropDelegate {
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
         guard let destinationIndexPath = coordinator.destinationIndexPath,
-              let dragItem = coordinator.items.first?.dragItem,
-              let (sourceType, sourceObject) = dragItem.localObject as? (String, Any) else {
+              let item = coordinator.items.first else {
+            return
+        }
+        
+        guard let (sourceType, sourceObject) = item.dragItem.localObject as? (String, Any) else {
             return
         }
         
         switch (sourceType, destinationIndexPath.section) {
-        case ("income", 1): // Из доходов в кошельки
-            if let income = sourceObject as? IncomeModel,
-               let targetWallet = viewModel.wallets[safe: destinationIndexPath.item] {
-                showAmountInput(title: "Добавить доход", sourceIncome: income, targetWallet: targetWallet)
-            }
+        case ("income", 1):
+            guard let income = sourceObject as? IncomeModel,
+                  let wallet = viewModel.wallet(at: destinationIndexPath) else { return }
+            showTransferBottomSheet(for: .income(sourceIncome: income, targetWallet: wallet))
             
-        case ("wallet", 1): // Между кошельками
-            if let sourceWallet = sourceObject as? WalletModel,
-               let targetWallet = viewModel.wallets[safe: destinationIndexPath.item],
-               sourceWallet.id != targetWallet.id {
-                showAmountInput(sourceWallet: sourceWallet, destinationIndexPath: destinationIndexPath)
-            }
+        case ("wallet", 1):
+            guard let sourceWallet = sourceObject as? WalletModel,
+                  let targetWallet = viewModel.wallet(at: destinationIndexPath),
+                  sourceWallet.id != targetWallet.id else { return }
+            showTransferBottomSheet(for: .wallet(sourceWallet: sourceWallet, targetWallet: targetWallet))
             
-        case ("wallet", 2): // Из кошельков в категории
-            if let sourceWallet = sourceObject as? WalletModel,
-               let targetCategory = viewModel.categories[safe: destinationIndexPath.item] {
-                showAmountInput(title: "Добавить \(targetCategory.type == .expense ? "расход" : "доход")", 
-                              sourceWallet: sourceWallet,
-                              targetCategory: targetCategory)
-            }
+        case ("wallet", 2):
+            guard let wallet = sourceObject as? WalletModel,
+                  let category = viewModel.category(at: destinationIndexPath) else { return }
+            showTransferBottomSheet(for: .category(sourceWallet: wallet, targetCategory: category))
             
         default:
             break
@@ -533,185 +451,8 @@ extension MainViewController: UICollectionViewDropDelegate {
 
 // MARK: - Helper Methods
 private extension MainViewController {
-    func showAmountInput(title: String, sourceIncome income: IncomeModel, targetWallet wallet: WalletModel) {
-        let vc = UIViewController()
-        vc.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-        vc.modalPresentationStyle = .overFullScreen
-        
-        let containerView = UIView()
-        containerView.backgroundColor = .systemBackground
-        containerView.layer.cornerRadius = 16
-        
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
-        
-        let textField = UITextField()
-        textField.placeholder = "Сумма"
-        textField.keyboardType = .decimalPad
-        textField.borderStyle = .roundedRect
-        
-        let buttonsStack = UIStackView()
-        buttonsStack.axis = .horizontal
-        buttonsStack.distribution = .fillEqually
-        buttonsStack.spacing = 8
-        
-        let cancelButton = UIButton(type: .system)
-        cancelButton.setTitle("Отмена", for: .normal)
-        cancelButton.addAction(UIAction { _ in
-            vc.dismiss(animated: true)
-        }, for: .touchUpInside)
-        
-        let okButton = UIButton(type: .system)
-        okButton.setTitle("OK", for: .normal)
-        okButton.addAction(UIAction { [weak self] _ in
-            guard let amountText = textField.text,
-                  let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
-                  amount > 0 else {
-                return
-            }
-            
-            var updatedIncome = income
-            var updatedWallet = wallet
-            
-            updatedIncome.amount += amount
-            updatedWallet.balance += amount
-            
-            self?.viewModel.updateIncome(updatedIncome)
-            self?.viewModel.updateWallet(updatedWallet)
-            
-            vc.dismiss(animated: true)
-        }, for: .touchUpInside)
-        
-        buttonsStack.addArrangedSubview(cancelButton)
-        buttonsStack.addArrangedSubview(okButton)
-        
-        containerView.addSubview(titleLabel)
-        containerView.addSubview(textField)
-        containerView.addSubview(buttonsStack)
-        vc.view.addSubview(containerView)
-        
-        containerView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.width.equalTo(270)
-        }
-        
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
-        }
-        
-        textField.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
-        }
-        
-        buttonsStack.snp.makeConstraints { make in
-            make.top.equalTo(textField.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
-            make.bottom.equalToSuperview().offset(-16)
-            make.height.equalTo(44)
-        }
-        
-        let tapGesture = UITapGestureRecognizer(target: vc, action: #selector(UIViewController.dismiss))
-        vc.view.addGestureRecognizer(tapGesture)
-        containerView.isUserInteractionEnabled = true
-        
-        present(vc, animated: true) {
-            textField.becomeFirstResponder()
-        }
-    }
-    
-    func showAmountInput(title: String, sourceWallet wallet: WalletModel, targetCategory category: CategoryModel) {
-        let vc = UIViewController()
-        vc.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-        vc.modalPresentationStyle = .overFullScreen
-        
-        let containerView = UIView()
-        containerView.backgroundColor = .systemBackground
-        containerView.layer.cornerRadius = 16
-        
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = .systemFont(ofSize: 17, weight: .semibold)
-        
-        let textField = UITextField()
-        textField.placeholder = "Сумма"
-        textField.keyboardType = .decimalPad
-        textField.borderStyle = .roundedRect
-        
-        let buttonsStack = UIStackView()
-        buttonsStack.axis = .horizontal
-        buttonsStack.distribution = .fillEqually
-        buttonsStack.spacing = 8
-        
-        let cancelButton = UIButton(type: .system)
-        cancelButton.setTitle("Отмена", for: .normal)
-        cancelButton.addAction(UIAction { _ in
-            vc.dismiss(animated: true)
-        }, for: .touchUpInside)
-        
-        let okButton = UIButton(type: .system)
-        okButton.setTitle("OK", for: .normal)
-        okButton.addAction(UIAction { [weak self] _ in
-            guard let amountText = textField.text,
-                  let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
-                  amount > 0 else {
-                return
-            }
-            
-            if category.type == .expense {
-                self?.viewModel.addExpense(from: wallet, to: category, amount: amount)
-            } else {
-                self?.viewModel.addIncome(to: wallet, from: category, amount: amount)
-            }
-            
-            vc.dismiss(animated: true)
-        }, for: .touchUpInside)
-        
-        buttonsStack.addArrangedSubview(cancelButton)
-        buttonsStack.addArrangedSubview(okButton)
-        
-        containerView.addSubview(titleLabel)
-        containerView.addSubview(textField)
-        containerView.addSubview(buttonsStack)
-        vc.view.addSubview(containerView)
-        
-        containerView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.width.equalTo(270)
-        }
-        
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
-        }
-        
-        textField.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
-        }
-        
-        buttonsStack.snp.makeConstraints { make in
-            make.top.equalTo(textField.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
-            make.bottom.equalToSuperview().offset(-16)
-            make.height.equalTo(44)
-        }
-        
-        let tapGesture = UITapGestureRecognizer(target: vc, action: #selector(UIViewController.dismiss))
-        vc.view.addGestureRecognizer(tapGesture)
-        containerView.isUserInteractionEnabled = true
-        
-        present(vc, animated: true) {
-            textField.becomeFirstResponder()
-        }
+    func showTransferBottomSheet(for transferType: TransferType) {
+        router.showTransferBottomSheet(for: transferType, delegate: self)
     }
 }
 
@@ -813,6 +554,39 @@ extension MainViewController {
         present(vc, animated: true) {
             textField.becomeFirstResponder()
         }
+    }
+}
+
+// MARK: - TransferBottomSheetDelegate
+extension MainViewController: TransferBottomSheetDelegate {
+    func transferBottomSheet(_ viewController: TransferBottomSheetViewController, didConfirmAmount amount: Double) {
+        switch viewController.transferType {
+        case .income(let income, let wallet):
+            var updatedIncome = income
+            var updatedWallet = wallet
+            
+            updatedIncome.amount += amount
+            updatedWallet.balance += amount
+            
+            viewModel.updateIncome(updatedIncome)
+            viewModel.updateWallet(updatedWallet)
+            
+        case .wallet(let source, let target):
+            viewModel.transferMoney(from: source, to: target, amount: amount)
+            
+        case .category(let wallet, let category):
+            if category.type == .expense {
+                viewModel.addExpense(from: wallet, to: category, amount: amount)
+            } else {
+                viewModel.addIncome(to: wallet, from: category, amount: amount)
+            }
+        }
+    }
+    
+    func transferBottomSheetDidCancel(_ viewController: TransferBottomSheetViewController) {
+        // Очищаем состояние, если нужно
+        pendingTransferWallet = nil
+        lastHighlightedIndexPath = nil
     }
 } 
 

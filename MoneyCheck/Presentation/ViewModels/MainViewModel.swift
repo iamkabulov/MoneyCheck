@@ -151,4 +151,15 @@ final class MainViewModel {
             }
             .store(in: &cancellables)
     }
+    
+    // MARK: - Helper Methods
+    func wallet(at indexPath: IndexPath) -> WalletModel? {
+        guard indexPath.item < wallets.count else { return nil }
+        return wallets[indexPath.item]
+    }
+    
+    func category(at indexPath: IndexPath) -> CategoryModel? {
+        guard indexPath.item < categories.count else { return nil }
+        return categories[indexPath.item]
+    }
 } 
