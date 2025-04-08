@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 final class MainViewModel {
-    private let financeUseCase: FinanceUseCase
+    let financeUseCase: FinanceUseCase
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Published properties
@@ -32,7 +32,6 @@ final class MainViewModel {
     // MARK: - Public methods
     func loadData() {
         isLoading = true
-        print("Starting data load...")
         
         Publishers.CombineLatest3(
             financeUseCase.getWallets(),
@@ -47,10 +46,6 @@ final class MainViewModel {
                 print("Error loading data: \(error)")
             }
         } receiveValue: { [weak self] wallets, categories, incomes in
-            print("Data loaded successfully:")
-            print("Wallets (\(wallets.count)): \(wallets.map { $0.name })")
-            print("Categories (\(categories.count)): \(categories.map { $0.name })")
-            print("Incomes (\(incomes.count)): \(incomes.map { $0.name })")
             self?.wallets = wallets
             self?.categories = categories
             self?.incomes = incomes
@@ -66,13 +61,28 @@ final class MainViewModel {
         updatedSourceWallet.balance -= amount
         updatedTargetWallet.balance += amount
         
-        Publishers.Zip(
+        let transaction = TransactionModel(
+            amount: amount,
+            type: .transfer,
+            sourceId: sourceWallet.id,
+            sourceName: sourceWallet.name,
+            sourceIcon: sourceWallet.icon,
+            sourceColor: "#007AFF",
+            destinationId: targetWallet.id,
+            destinationName: targetWallet.name,
+            destinationIcon: targetWallet.icon,
+            destinationColor: "#007AFF"
+        )
+        
+        Publishers.Zip3(
             financeUseCase.updateWallet(updatedSourceWallet),
-            financeUseCase.updateWallet(updatedTargetWallet)
+            financeUseCase.updateWallet(updatedTargetWallet),
+            financeUseCase.addTransaction(transaction)
         )
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {
+                print("❌ MainViewModel: Transfer failed with error: \(error)")
                 self?.error = error
             }
         } receiveValue: { [weak self] _ in
@@ -89,13 +99,28 @@ final class MainViewModel {
         updatedWallet.balance -= amount
         updatedCategory.amount += amount
         
-        Publishers.Zip(
+        let transaction = TransactionModel(
+            amount: amount,
+            type: .expense,
+            sourceId: wallet.id,
+            sourceName: wallet.name,
+            sourceIcon: wallet.icon,
+            sourceColor: "#007AFF",
+            destinationId: category.id,
+            destinationName: category.name,
+            destinationIcon: category.icon,
+            destinationColor: category.color
+        )
+        
+        Publishers.Zip3(
             financeUseCase.updateWallet(updatedWallet),
-            financeUseCase.updateCategory(updatedCategory)
+            financeUseCase.updateCategory(updatedCategory),
+            financeUseCase.addTransaction(transaction)
         )
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {
+                print("❌ MainViewModel: Adding expense failed with error: \(error)")
                 self?.error = error
             }
         } receiveValue: { [weak self] _ in
@@ -105,19 +130,39 @@ final class MainViewModel {
     }
     
     func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double) {
+        print("💰 MainViewModel: Adding income")
+        print("   From: \(category.name) (\(category.id))")
+        print("   To: \(wallet.name) (\(wallet.id))")
+        print("   Amount: \(amount)")
+        
         var updatedWallet = wallet
         var updatedCategory = category
         
         updatedWallet.balance += amount
         updatedCategory.amount += amount
         
-        Publishers.Zip(
+        let transaction = TransactionModel(
+            amount: amount,
+            type: .income,
+            sourceId: category.id,
+            sourceName: category.name,
+            sourceIcon: category.icon,
+            sourceColor: category.color,
+            destinationId: wallet.id,
+            destinationName: wallet.name,
+            destinationIcon: wallet.icon,
+            destinationColor: "#007AFF"
+        )
+        
+        Publishers.Zip3(
             financeUseCase.updateWallet(updatedWallet),
-            financeUseCase.updateCategory(updatedCategory)
+            financeUseCase.updateCategory(updatedCategory),
+            financeUseCase.addTransaction(transaction)
         )
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {
+                print("❌ MainViewModel: Adding income failed with error: \(error)")
                 self?.error = error
             }
         } receiveValue: { [weak self] _ in
@@ -150,6 +195,44 @@ final class MainViewModel {
                 self?.loadData()
             }
             .store(in: &cancellables)
+    }
+    
+    func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double) {
+        
+        var updatedIncome = income
+        var updatedWallet = wallet
+        
+        updatedIncome.amount += amount
+        updatedWallet.balance += amount
+        
+        let transaction = TransactionModel(
+            amount: amount,
+            type: .income,
+            sourceId: income.id,
+            sourceName: income.name,
+            sourceIcon: income.icon,
+            sourceColor: income.color,
+            destinationId: wallet.id,
+            destinationName: wallet.name,
+            destinationIcon: wallet.icon,
+            destinationColor: "#007AFF"
+        )
+        
+        Publishers.Zip3(
+            financeUseCase.updateIncome(updatedIncome),
+            financeUseCase.updateWallet(updatedWallet),
+            financeUseCase.addTransaction(transaction)
+        )
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] completion in
+            if case .failure(let error) = completion {
+                print("❌ MainViewModel: Adding income transaction failed with error: \(error)")
+                self?.error = error
+            }
+        } receiveValue: { [weak self] _ in
+            self?.loadData()
+        }
+        .store(in: &cancellables)
     }
     
     // MARK: - Helper Methods

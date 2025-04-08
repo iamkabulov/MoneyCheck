@@ -120,6 +120,53 @@ final class CoreDataManager {
         saveContext()
     }
     
+    // MARK: - Transaction Methods
+    func createTransaction(
+        id: UUID,
+        date: Date,
+        amount: Double,
+        type: String,
+        sourceId: UUID,
+        sourceName: String,
+        sourceIcon: String,
+        sourceColor: String,
+        destinationId: UUID,
+        destinationName: String,
+        destinationIcon: String,
+        destinationColor: String
+    ) -> Transaction {
+        
+        let transaction = Transaction(context: context)
+        transaction.id = id
+        transaction.date = date
+        transaction.amount = amount
+        transaction.type = type
+        transaction.sourceId = sourceId
+        transaction.sourceName = sourceName
+        transaction.sourceIcon = sourceIcon
+        transaction.sourceColor = sourceColor
+        transaction.destinationId = destinationId
+        transaction.destinationName = destinationName
+        transaction.destinationIcon = destinationIcon
+        transaction.destinationColor = destinationColor
+        
+        saveContext()
+        return transaction
+    }
+    
+    func fetchTransactions() -> [Transaction] {
+        let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+        
+        do {
+            let transactions = try context.fetch(request)
+            return transactions
+        } catch {
+            print("❌ CoreDataManager: Error fetching transactions: \(error)")
+            return []
+        }
+    }
+    
     // MARK: - Mock Data Initialization
     func initializeMockDataIfNeeded() {
         let wallets = fetchWallets()
@@ -127,43 +174,28 @@ final class CoreDataManager {
         let incomes = fetchIncomes()
         
         if wallets.isEmpty {
-            // Создаем мок кошельки
-            let mockWallets = WalletModel.mockData
-            for wallet in mockWallets {
-                createWallet(
-                    name: wallet.name,
-                    type: wallet.type.rawValue,
-                    balance: wallet.balance,
-                    icon: wallet.icon
-                )
-            }
+            _ = createWallet(name: "Наличные", type: "cash", balance: 50000, icon: "banknote")
+            _ = createWallet(name: "Карта", type: "card", balance: 150000, icon: "creditcard")
+            _ = createWallet(name: "Дебетовая карта", type: "card", balance: 75000, icon: "creditcard")
+            _ = createWallet(name: "Депозит", type: "deposit", balance: 1000000, icon: "building.columns")
         }
         
         if categories.isEmpty {
-            // Создаем мок категории расходов
-            let mockCategories = CategoryModel.mockData
-            for category in mockCategories {
-                createCategory(
-                    name: category.name,
-                    type: category.type.rawValue,
-                    amount: category.amount,
-                    icon: category.icon,
-                    color: category.color
-                )
-            }
+            _ = createCategory(name: "Продукты", type: "Расход", amount: 0, icon: "cart", color: "#FF6B6B")
+            _ = createCategory(name: "Транспорт", type: "Расход", amount: 0, icon: "bus", color: "#4ECDC4")
+            _ = createCategory(name: "Фаст фуд", type: "Расход", amount: 0, icon: "fork.knife", color: "#FFD93D")
+            _ = createCategory(name: "Подписки", type: "Расход", amount: 0, icon: "repeat", color: "#FF8066")
+            _ = createCategory(name: "Развлечения", type: "Расход", amount: 0, icon: "gamecontroller", color: "#95E1D3")
+            _ = createCategory(name: "Ремонт", type: "Расход", amount: 0, icon: "hammer", color: "#A8E6CF")
+            _ = createCategory(name: "Здоровье", type: "Расход", amount: 0, icon: "heart", color: "#FF9A9E")
+            _ = createCategory(name: "Путешествия", type: "Расход", amount: 0, icon: "airplane", color: "#81C784")
+            _ = createCategory(name: "Кредиты", type: "Расход", amount: 0, icon: "creditcard", color: "#FFB74D")
+            _ = createCategory(name: "Подарки", type: "Расход", amount: 0, icon: "gift", color: "#F48FB1")
         }
         
         if incomes.isEmpty {
-            // Создаем мок доходы
-            let mockIncomes = IncomeModel.mockData
-            for income in mockIncomes {
-                createIncome(
-                    name: income.name,
-                    amount: income.amount,
-                    icon: income.icon,
-                    color: income.color
-                )
-            }
+            _ = createIncome(name: "Доходы", amount: 500000, icon: "dollarsign.circle", color: "#4CAF50")
+            _ = createIncome(name: "Прибыль", amount: 250000, icon: "chart.line.uptrend.xyaxis", color: "#2196F3")
         }
     }
 } 

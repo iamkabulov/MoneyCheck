@@ -1,0 +1,122 @@
+import UIKit
+import SnapKit
+
+final class TransactionCell: UITableViewCell {
+    private let containerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .secondarySystemBackground
+        view.layer.cornerRadius = 12
+        return view
+    }()
+    
+    private let iconContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemBlue
+        view.layer.cornerRadius = 20
+        return view
+    }()
+    
+    private let iconImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.tintColor = .white
+        return imageView
+    }()
+    
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        return label
+    }()
+    
+    private let dateLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 14)
+        label.textColor = .secondaryLabel
+        return label
+    }()
+    
+    private let amountLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        return label
+    }()
+    
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupUI() {
+        selectionStyle = .none
+        backgroundColor = .clear
+        
+        contentView.addSubview(containerView)
+        containerView.addSubview(iconContainerView)
+        iconContainerView.addSubview(iconImageView)
+        containerView.addSubview(titleLabel)
+        containerView.addSubview(dateLabel)
+        containerView.addSubview(amountLabel)
+        
+        containerView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(8)
+        }
+        
+        iconContainerView.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(12)
+            make.centerY.equalToSuperview()
+            make.size.equalTo(40)
+        }
+        
+        iconImageView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.size.equalTo(24)
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.left.equalTo(iconContainerView.snp.right).offset(12)
+            make.top.equalToSuperview().offset(12)
+        }
+        
+        dateLabel.snp.makeConstraints { make in
+            make.left.equalTo(titleLabel)
+            make.top.equalTo(titleLabel.snp.bottom).offset(4)
+        }
+        
+        amountLabel.snp.makeConstraints { make in
+            make.right.equalToSuperview().offset(-12)
+            make.centerY.equalToSuperview()
+        }
+    }
+    
+    func configure(with transaction: TransactionModel) {
+        switch transaction.type {
+        case .transfer:
+            iconImageView.image = UIImage(systemName: transaction.destinationIcon)
+            iconContainerView.backgroundColor = UIColor(hex: transaction.destinationColor)
+            titleLabel.text = "Перевод в \(transaction.destinationName)"
+            amountLabel.textColor = .systemBlue
+            amountLabel.text = "-\(transaction.amount) ₸"
+            
+        case .expense:
+            iconImageView.image = UIImage(systemName: transaction.destinationIcon)
+            iconContainerView.backgroundColor = UIColor(hex: transaction.destinationColor)
+            titleLabel.text = "Расход на \(transaction.destinationName)"
+            amountLabel.textColor = .systemRed
+            amountLabel.text = "-\(transaction.amount) ₸"
+            
+        case .income:
+            iconImageView.image = UIImage(systemName: transaction.sourceIcon)
+            iconContainerView.backgroundColor = UIColor(hex: transaction.sourceColor)
+            titleLabel.text = "Доход от \(transaction.sourceName)"
+            amountLabel.textColor = .systemGreen
+            amountLabel.text = "+\(transaction.amount) ₸"
+        }
+        
+        dateLabel.text = transaction.date.formatted(date: .abbreviated, time: .shortened)
+    }
+} 

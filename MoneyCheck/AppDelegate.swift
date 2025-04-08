@@ -23,19 +23,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let walletRepository = CoreDataWalletRepository()
         let categoryRepository = CoreDataCategoryRepository()
         let incomeRepository = CoreDataIncomeRepository()
+        let transactionRepository = CoreDataTransactionRepository()
         
         // Initialize use case
         let financeUseCase = FinanceUseCaseImpl(
             walletRepository: walletRepository,
             categoryRepository: categoryRepository,
-            incomeRepository: incomeRepository
+            incomeRepository: incomeRepository,
+            transactionRepository: transactionRepository
         )
         
         // Initialize view model
         let viewModel = MainViewModel(financeUseCase: financeUseCase)
         
         // Initialize router without view controller
-        let router = MainRouterImpl(viewController: nil)
+        let router = MainRouterImpl(viewController: nil, financeUseCase: financeUseCase)
         
         // Initialize view controller with router
         let viewController = MainViewController(viewModel: viewModel, router: router)

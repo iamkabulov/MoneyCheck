@@ -5,20 +5,29 @@ protocol FinanceUseCase {
     func getWallets() -> AnyPublisher<[WalletModel], Error>
     func getCategories() -> AnyPublisher<[CategoryModel], Error>
     func getIncomes() -> AnyPublisher<[IncomeModel], Error>
+    func getTransactions() -> AnyPublisher<[TransactionModel], Error>
     func updateWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error>
     func updateCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>
     func updateIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error>
+    func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
 }
 
 final class FinanceUseCaseImpl: FinanceUseCase {
     private let walletRepository: WalletRepository
     private let categoryRepository: CategoryRepository
     private let incomeRepository: IncomeRepository
+    private let transactionRepository: TransactionRepository
     
-    init(walletRepository: WalletRepository, categoryRepository: CategoryRepository, incomeRepository: IncomeRepository) {
+    init(
+        walletRepository: WalletRepository,
+        categoryRepository: CategoryRepository,
+        incomeRepository: IncomeRepository,
+        transactionRepository: TransactionRepository
+    ) {
         self.walletRepository = walletRepository
         self.categoryRepository = categoryRepository
         self.incomeRepository = incomeRepository
+        self.transactionRepository = transactionRepository
     }
     
     func getWallets() -> AnyPublisher<[WalletModel], Error> {
@@ -33,6 +42,10 @@ final class FinanceUseCaseImpl: FinanceUseCase {
         return incomeRepository.getIncomes()
     }
     
+    func getTransactions() -> AnyPublisher<[TransactionModel], Error> {
+        return transactionRepository.getTransactions()
+    }
+    
     func updateWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error> {
         return walletRepository.updateWallet(wallet)
     }
@@ -43,5 +56,9 @@ final class FinanceUseCaseImpl: FinanceUseCase {
     
     func updateIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error> {
         return incomeRepository.updateIncome(income)
+    }
+    
+    func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error> {
+        return transactionRepository.addTransaction(transaction)
     }
 } 

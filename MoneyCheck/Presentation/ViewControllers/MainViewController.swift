@@ -465,7 +465,22 @@ private extension Collection {
 // MARK: - UICollectionViewDelegate
 extension MainViewController {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        //TODO: - СДЕЛАТЬ по тапу историю
+        switch indexPath.section {
+        case 0: // Income
+            if let income = viewModel.incomes[safe: indexPath.item] {
+                router.showTransactions(for: .income(income))
+            }
+        case 1: // Wallets
+            if let wallet = viewModel.wallets[safe: indexPath.item] {
+                router.showTransactions(for: .wallet(wallet))
+            }
+        case 2: // Categories
+            if let category = viewModel.categories[safe: indexPath.item] {
+                router.showTransactions(for: .category(category))
+            }
+        default:
+            break
+        }
     }
     
     private func showAddMoneyInput(to wallet: WalletModel) {
@@ -562,14 +577,7 @@ extension MainViewController: TransferBottomSheetDelegate {
     func transferBottomSheet(_ viewController: TransferBottomSheetViewController, didConfirmAmount amount: Double) {
         switch viewController.transferType {
         case .income(let income, let wallet):
-            var updatedIncome = income
-            var updatedWallet = wallet
-            
-            updatedIncome.amount += amount
-            updatedWallet.balance += amount
-            
-            viewModel.updateIncome(updatedIncome)
-            viewModel.updateWallet(updatedWallet)
+            viewModel.addIncomeTransaction(from: income, to: wallet, amount: amount)
             
         case .wallet(let source, let target):
             viewModel.transferMoney(from: source, to: target, amount: amount)
@@ -589,6 +597,4 @@ extension MainViewController: TransferBottomSheetDelegate {
         lastHighlightedIndexPath = nil
     }
 } 
-
-
 

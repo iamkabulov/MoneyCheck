@@ -22,4 +22,18 @@
         <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="name" optional="NO" attributeType="String"/>
     </entity>
+    <entity name="Transaction" representedClassName="Transaction" syncable="YES" codeGenerationType="class">
+        <attribute name="amount" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="date" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="destinationColor" optional="NO" attributeType="String"/>
+        <attribute name="destinationIcon" optional="NO" attributeType="String"/>
+        <attribute name="destinationId" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="destinationName" optional="NO" attributeType="String"/>
+        <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="sourceColor" optional="NO" attributeType="String"/>
+        <attribute name="sourceIcon" optional="NO" attributeType="String"/>
+        <attribute name="sourceId" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="sourceName" optional="NO" attributeType="String"/>
+        <attribute name="type" optional="NO" attributeType="String"/>
+    </entity>
 </model> 
