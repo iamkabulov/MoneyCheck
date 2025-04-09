@@ -57,4 +57,37 @@ final class CoreDataTransactionRepository: TransactionRepository {
             promise(.success(()))
         }.eraseToAnyPublisher()
     }
+    
+    func updateTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error> {
+        return Future { [weak self] promise in
+            guard let self = self else { return }
+            
+            let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", transaction.id as CVarArg)
+            
+            do {
+                let transactions = try self.coreDataManager.context.fetch(request)
+                if let existingTransaction = transactions.first {
+                    existingTransaction.date = transaction.date
+                    existingTransaction.amount = transaction.amount
+                    existingTransaction.type = transaction.type.rawValue
+                    existingTransaction.sourceId = transaction.sourceId
+                    existingTransaction.sourceName = transaction.sourceName
+                    existingTransaction.sourceIcon = transaction.sourceIcon
+                    existingTransaction.sourceColor = transaction.sourceColor
+                    existingTransaction.destinationId = transaction.destinationId
+                    existingTransaction.destinationName = transaction.destinationName
+                    existingTransaction.destinationIcon = transaction.destinationIcon
+                    existingTransaction.destinationColor = transaction.destinationColor
+                    
+                    self.coreDataManager.saveContext()
+                    promise(.success(()))
+                } else {
+                    promise(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Transaction not found"])))
+                }
+            } catch {
+                promise(.failure(error))
+            }
+        }.eraseToAnyPublisher()
+    }
 } 

@@ -130,10 +130,6 @@ final class MainViewModel {
     }
     
     func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double) {
-        print("💰 MainViewModel: Adding income")
-        print("   From: \(category.name) (\(category.id))")
-        print("   To: \(wallet.name) (\(wallet.id))")
-        print("   Amount: \(amount)")
         
         var updatedWallet = wallet
         var updatedCategory = category

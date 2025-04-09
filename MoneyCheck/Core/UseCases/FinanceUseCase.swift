@@ -10,6 +10,7 @@ protocol FinanceUseCase {
     func updateCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>
     func updateIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error>
     func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
+    func updateTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
 }
 
 final class FinanceUseCaseImpl: FinanceUseCase {
@@ -60,5 +61,9 @@ final class FinanceUseCaseImpl: FinanceUseCase {
     
     func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error> {
         return transactionRepository.addTransaction(transaction)
+    }
+    
+    func updateTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error> {
+        return transactionRepository.updateTransaction(transaction)
     }
 } 

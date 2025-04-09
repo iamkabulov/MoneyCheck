@@ -2,6 +2,8 @@ import UIKit
 import SnapKit
 
 final class TransactionCell: UITableViewCell {
+    static let reuseIdentifier = String(describing: TransactionCell.self)
+
     private let containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .secondarySystemBackground
@@ -42,6 +44,8 @@ final class TransactionCell: UITableViewCell {
         return label
     }()
     
+    private var currentWalletId: UUID?
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -63,11 +67,12 @@ final class TransactionCell: UITableViewCell {
         containerView.addSubview(amountLabel)
         
         containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
+            make.leading.trailing.equalToSuperview()
+            make.top.bottom.equalToSuperview().inset(4)
         }
         
         iconContainerView.snp.makeConstraints { make in
-            make.left.equalToSuperview().offset(12)
+            make.leading.equalToSuperview().inset(12)
             make.centerY.equalToSuperview()
             make.size.equalTo(40)
         }
@@ -78,41 +83,53 @@ final class TransactionCell: UITableViewCell {
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.left.equalTo(iconContainerView.snp.right).offset(12)
+            make.leading.equalTo(iconContainerView.snp.trailing).offset(12)
             make.top.equalToSuperview().offset(12)
         }
         
         dateLabel.snp.makeConstraints { make in
-            make.left.equalTo(titleLabel)
+            make.leading.equalTo(titleLabel)
             make.top.equalTo(titleLabel.snp.bottom).offset(4)
         }
         
         amountLabel.snp.makeConstraints { make in
-            make.right.equalToSuperview().offset(-12)
+            make.trailing.equalToSuperview().offset(-12)
             make.centerY.equalToSuperview()
         }
     }
     
-    func configure(with transaction: TransactionModel) {
+    func configure(with transaction: TransactionModel, currentWalletId: UUID) {
+        self.currentWalletId = currentWalletId
+        
         switch transaction.type {
         case .transfer:
-            iconImageView.image = UIImage(systemName: transaction.destinationIcon)
-            iconContainerView.backgroundColor = UIColor(hex: transaction.destinationColor)
-            titleLabel.text = "Перевод в \(transaction.destinationName)"
-            amountLabel.textColor = .systemBlue
-            amountLabel.text = "-\(transaction.amount) ₸"
+            if transaction.destinationId == currentWalletId {
+                // Входящий перевод (мы получатели)
+                iconImageView.image = UIImage(systemName: transaction.sourceIcon)
+                iconContainerView.backgroundColor = UIColor(hex: transaction.sourceColor)
+                titleLabel.text = transaction.sourceName
+                amountLabel.textColor = .systemGreen
+                amountLabel.text = "+\(transaction.amount) ₸"
+            } else {
+                // Исходящий перевод (мы отправители)
+                iconImageView.image = UIImage(systemName: transaction.destinationIcon)
+                iconContainerView.backgroundColor = UIColor(hex: transaction.destinationColor)
+                titleLabel.text = transaction.destinationName
+                amountLabel.textColor = .systemBlue
+                amountLabel.text = "-\(transaction.amount) ₸"
+            }
             
         case .expense:
             iconImageView.image = UIImage(systemName: transaction.destinationIcon)
             iconContainerView.backgroundColor = UIColor(hex: transaction.destinationColor)
-            titleLabel.text = "Расход на \(transaction.destinationName)"
+            titleLabel.text = transaction.destinationName
             amountLabel.textColor = .systemRed
             amountLabel.text = "-\(transaction.amount) ₸"
             
         case .income:
             iconImageView.image = UIImage(systemName: transaction.sourceIcon)
             iconContainerView.backgroundColor = UIColor(hex: transaction.sourceColor)
-            titleLabel.text = "Доход от \(transaction.sourceName)"
+            titleLabel.text = transaction.sourceName
             amountLabel.textColor = .systemGreen
             amountLabel.text = "+\(transaction.amount) ₸"
         }
