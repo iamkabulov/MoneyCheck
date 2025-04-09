@@ -35,19 +35,3 @@ enum ExpenseCategory: String, Codable {
     case credits = "Кредиты"
     case gifts = "Подарки"
 }
-
-// MARK: - Mock Data
-extension CategoryModel {
-    static let mockData: [CategoryModel] = [
-        CategoryModel(name: ExpenseCategory.products.rawValue, type: .expense, amount: 0, icon: "cart.fill", color: "#FF3B30"),
-        CategoryModel(name: ExpenseCategory.transport.rawValue, type: .expense, amount: 0, icon: "car.fill", color: "#FF3B30"),
-        CategoryModel(name: ExpenseCategory.fastFood.rawValue, type: .expense, amount: 0, icon: "takeoutbag.and.cup.and.straw.fill", color: "#FF3B30"),
-        CategoryModel(name: ExpenseCategory.subscriptions.rawValue, type: .expense, amount: 0, icon: "star.fill", color: "#FF3B30"),
-        CategoryModel(name: ExpenseCategory.entertainment.rawValue, type: .expense, amount: 0, icon: "tv.fill", color: "#FF3B30"),
-        CategoryModel(name: ExpenseCategory.repair.rawValue, type: .expense, amount: 0, icon: "hammer.fill", color: "#FF3B30"),
-        CategoryModel(name: ExpenseCategory.health.rawValue, type: .expense, amount: 0, icon: "heart.fill", color: "#FF3B30"),
-        CategoryModel(name: ExpenseCategory.travel.rawValue, type: .expense, amount: 0, icon: "airplane", color: "#FF3B30"),
-        CategoryModel(name: ExpenseCategory.credits.rawValue, type: .expense, amount: 0, icon: "creditcard.fill", color: "#FF3B30"),
-        CategoryModel(name: ExpenseCategory.gifts.rawValue, type: .expense, amount: 0, icon: "gift.fill", color: "#FF3B30")
-    ]
-} 

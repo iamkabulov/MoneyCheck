@@ -15,11 +15,3 @@ struct IncomeModel: Identifiable, Codable {
         self.color = color
     }
 }
-
-// MARK: - Mock Data
-extension IncomeModel {
-    static let mockData: [IncomeModel] = [
-        IncomeModel(name: "Доходы", amount: 0, icon: "dollarsign.circle.fill", color: "#99C503"),
-        IncomeModel(name: "Прибыль", amount: 0, icon: "chart.line.uptrend.xyaxis", color: "#34C759")
-    ]
-} 

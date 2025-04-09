@@ -43,13 +43,3 @@ enum WalletType: String, Codable, CaseIterable {
         }
     }
 }
-
-// MARK: - Mock Data
-extension WalletModel {
-    static let mockData: [WalletModel] = [
-        WalletModel(name: "Наличные", type: .cash, balance: 1513, icon: "banknote"),
-        WalletModel(name: "Карта", type: .card, balance: 49531.72, icon: "creditcard"),
-        WalletModel(name: "Дебетовая карта", type: .card, balance: 700, icon: "creditcard"),
-        WalletModel(name: "Депозит", type: .deposit, balance: 1000000, icon: "bank")
-    ]
-} 
