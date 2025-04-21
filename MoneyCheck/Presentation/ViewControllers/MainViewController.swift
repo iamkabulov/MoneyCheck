@@ -55,6 +55,10 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     }
     
     // MARK: - Lifecycle
+    override func viewWillAppear(_ animated: Bool) {
+        viewModel.loadData()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -65,9 +69,9 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     // MARK: - Private methods
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        title = "Money Check"
+        title = "Финансы"
         navigationController?.navigationBar.prefersLargeTitles = true
-        collectionView.isScrollEnabled = false
+//        collectionView.isScrollEnabled = false
         view.addSubview(collectionView)
         
         collectionView.snp.makeConstraints { make in
@@ -288,28 +292,56 @@ extension MainViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch section {
-        case 0: return viewModel.incomes.count
-        case 1: return viewModel.wallets.count
-        case 2: return viewModel.categories.count
+        case 0: return viewModel.incomes.count + 1
+        case 1: return viewModel.wallets.count + 1
+        case 2: return viewModel.categories.count + 1
         default: return 0
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MoneyCollectionViewCell.reuseIdentifier, for: indexPath) as! MoneyCollectionViewCell
+        
         switch indexPath.section {
         case 0:
-            let income = viewModel.incomes[indexPath.item]
-            cell.configure(
-                name: income.name,
-                amount: income.amount,
-                icon: income.icon,
-                color: income.color
-            )
+            if indexPath.item == viewModel.incomes.count {
+                cell.configure(
+                    name: "",
+                    amount: nil,
+                    icon: "plus.circle.fill",
+                    color: "#4CAF50"
+                )
+            } else {
+                let income = viewModel.incomes[indexPath.item]
+                cell.configure(
+                    name: income.name,
+                    amount: income.amount,
+                    icon: income.icon,
+                    color: income.color
+                )
+            }
         case 1:
-            cell.configureForWallet(viewModel.wallets[indexPath.item])
+            if indexPath.item == viewModel.wallets.count {
+                cell.configure(
+                    name: "",
+                    amount: nil,
+                    icon: "plus.circle.fill",
+                    color: "#007AFF"
+                )
+            } else {
+                cell.configureForWallet(viewModel.wallets[indexPath.item])
+            }
         case 2:
-            cell.configureForCategory(viewModel.categories[indexPath.item])
+            if indexPath.item == viewModel.categories.count {
+                cell.configure(
+                    name: "",
+                    amount: nil,
+                    icon: "plus.circle.fill",
+                    color: "#FF6B6B"
+                )
+            } else {
+                cell.configureForCategory(viewModel.categories[indexPath.item])
+            }
         default:
             break
         }
@@ -353,19 +385,23 @@ extension MainViewController: UICollectionViewDragDelegate {
 
         switch indexPath.section {
         case 0: // Доходы
-            let income = viewModel.incomes[indexPath.item]
-            let itemProvider = NSItemProvider()
-            let dragItem = UIDragItem(itemProvider: itemProvider)
-            dragItem.localObject = ("income", income)
-            return [dragItem]
-            
+            if indexPath.item < viewModel.incomes.count {
+                let income = viewModel.incomes[indexPath.item]
+                let itemProvider = NSItemProvider()
+                let dragItem = UIDragItem(itemProvider: itemProvider)
+                dragItem.localObject = ("income", income)
+                return [dragItem]
+            }
+            return []
         case 1: // Кошельки
-            let wallet = viewModel.wallets[indexPath.item]
-            let itemProvider = NSItemProvider()
-            let dragItem = UIDragItem(itemProvider: itemProvider)
-            dragItem.localObject = ("wallet", wallet)
-            return [dragItem]
-            
+            if indexPath.item < viewModel.wallets.count {
+                let wallet = viewModel.wallets[indexPath.item]
+                let itemProvider = NSItemProvider()
+                let dragItem = UIDragItem(itemProvider: itemProvider)
+                dragItem.localObject = ("wallet", wallet)
+                return [dragItem]
+            }
+            return []
         default:
             return []
         }
@@ -467,15 +503,21 @@ extension MainViewController {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch indexPath.section {
         case 0: // Income
-            if let income = viewModel.incomes[safe: indexPath.item] {
+            if indexPath.item == viewModel.incomes.count {
+                router.showAddNewItem(navigationController: self.navigationController ?? UINavigationController(), type: .income)
+            } else if let income = viewModel.incomes[safe: indexPath.item] {
                 router.showTransactions(for: .income(income))
             }
         case 1: // Wallets
-            if let wallet = viewModel.wallets[safe: indexPath.item] {
+            if indexPath.item == viewModel.wallets.count {
+                router.showAddNewItem(navigationController: self.navigationController ?? UINavigationController(), type: .wallet)
+            } else if let wallet = viewModel.wallets[safe: indexPath.item] {
                 router.showTransactions(for: .wallet(wallet))
             }
         case 2: // Categories
-            if let category = viewModel.categories[safe: indexPath.item] {
+            if indexPath.item == viewModel.categories.count {
+                router.showAddNewItem(navigationController: self.navigationController ?? UINavigationController(), type: .category)
+            } else if let category = viewModel.categories[safe: indexPath.item] {
                 router.showTransactions(for: .category(category))
             }
         default:

@@ -34,4 +34,18 @@ final class CoreDataIncomeRepository: IncomeRepository {
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
     }
+    
+    func addIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error> {
+        let newIncome = Income(context: coreDataManager.context)
+        newIncome.id = income.id
+        newIncome.name = income.name
+        newIncome.amount = income.amount
+        newIncome.icon = income.icon
+        newIncome.color = income.color
+        coreDataManager.saveContext()
+        
+        return Just(())
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher()
+    }
 } 

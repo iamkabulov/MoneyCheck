@@ -23,13 +23,15 @@ final class CoreDataCategoryRepository: CategoryRepository {
     }
     
     func addCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error> {
-        coreDataManager.createCategory(
-            name: category.name,
-            type: category.type.rawValue,
-            amount: category.amount,
-            icon: category.icon,
-            color: category.color
-        )
+        let newCategory = Category(context: coreDataManager.context)
+        newCategory.id = category.id
+        newCategory.name = category.name
+        newCategory.type = category.type.rawValue
+        newCategory.amount = category.amount
+        newCategory.icon = category.icon
+        newCategory.color = category.color
+        coreDataManager.saveContext()
+        
         return Just(())
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()

@@ -11,6 +11,9 @@ protocol FinanceUseCase {
     func updateIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error>
     func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
     func updateTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
+    func createIncome(name: String, icon: String, color: String) -> AnyPublisher<Void, Error>
+    func createWallet(name: String, type: WalletType, icon: String) -> AnyPublisher<Void, Error>
+    func createCategory(name: String, icon: String, color: String) -> AnyPublisher<Void, Error>
 }
 
 final class FinanceUseCaseImpl: FinanceUseCase {
@@ -65,5 +68,39 @@ final class FinanceUseCaseImpl: FinanceUseCase {
     
     func updateTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error> {
         return transactionRepository.updateTransaction(transaction)
+    }
+    
+    func createIncome(name: String, icon: String, color: String) -> AnyPublisher<Void, Error> {
+        let income = IncomeModel(
+            id: UUID(),
+            name: name,
+            amount: 0,
+            icon: icon,
+            color: color
+        )
+        return incomeRepository.addIncome(income)
+    }
+    
+    func createWallet(name: String, type: WalletType, icon: String) -> AnyPublisher<Void, Error> {
+        let wallet = WalletModel(
+            id: UUID(),
+            name: name,
+            type: type,
+            balance: 0,
+            icon: icon
+        )
+        return walletRepository.addWallet(wallet)
+    }
+    
+    func createCategory(name: String, icon: String, color: String) -> AnyPublisher<Void, Error> {
+        let category = CategoryModel(
+            id: UUID(),
+            name: name,
+            type: .expense,
+            amount: 0,
+            icon: icon,
+            color: color
+        )
+        return categoryRepository.addCategory(category)
     }
 } 

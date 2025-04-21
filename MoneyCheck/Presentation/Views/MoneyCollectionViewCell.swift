@@ -5,12 +5,8 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
     static let reuseIdentifier = String(describing: MoneyCollectionViewCell.self)
     
     // MARK: - UI Components
-    private let containerView: UIStackView = {
-        let view = UIStackView()
-        view.axis = .vertical
-        view.spacing = 0
-        view.distribution = .equalCentering
-        view.alignment = .center
+    private let containerView: UIView = {
+        let view = UIView()
         return view
     }()
 
@@ -57,9 +53,45 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
     }
     
     // MARK: - Configuration
-    func configure(name: String, amount: Double, icon: String, color: String) {
+    func configure(
+        name: String,
+        amount: Double?,
+        icon: String,
+        color: String
+    ) {
+        if name.isEmpty {
+            nameLabel.isHidden = true
+            amountLabel.isHidden = true
+            iconContainerView.snp.remakeConstraints { make in
+                make.center.equalToSuperview()
+                make.size.equalTo(48)
+            }
+        } else {
+            nameLabel.isHidden = false
+            amountLabel.isHidden = (amount == nil)
+            
+            iconContainerView.snp.remakeConstraints { make in
+                make.top.equalTo(nameLabel.snp.bottom).offset(4)
+                make.centerX.equalToSuperview()
+                make.size.equalTo(48)
+            }
+            
+            if amount == nil {
+                amountLabel.snp.remakeConstraints { make in
+                    make.height.equalTo(0)
+                }
+            } else {
+                amountLabel.snp.remakeConstraints { make in
+                    make.top.equalTo(iconContainerView.snp.bottom).offset(4)
+                    make.leading.trailing.equalToSuperview()
+                }
+            }
+        }
+        
         nameLabel.text = name
-        amountLabel.text = formatAmount(amount)
+        if let amount = amount {
+            amountLabel.text = formatAmount(amount)
+        }
         iconImageView.image = UIImage(systemName: icon)
         iconContainerView.backgroundColor = UIColor(hex: color)
     }
@@ -85,17 +117,17 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
     // MARK: - Private Methods
     private func setupUI() {
         contentView.addSubview(containerView)
+        containerView.addSubview(nameLabel)
+        containerView.addSubview(iconContainerView)
+        containerView.addSubview(amountLabel)
         iconContainerView.addSubview(iconImageView)
-        containerView.addArrangedSubview(nameLabel)
-        containerView.addArrangedSubview(iconContainerView)
-        containerView.addArrangedSubview(amountLabel)
 
         containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.edges.equalToSuperview().inset(4)
         }
 
-        iconContainerView.snp.makeConstraints { make in
-            make.height.width.equalTo(48)
+        nameLabel.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
         }
 
         iconImageView.snp.makeConstraints { make in
@@ -121,6 +153,6 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         nameLabel.text = nil
         amountLabel.text = nil
         iconImageView.image = nil
-        containerView.backgroundColor = nil
+        iconContainerView.backgroundColor = nil
     }
 } 

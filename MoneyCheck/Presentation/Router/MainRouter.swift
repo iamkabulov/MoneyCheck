@@ -3,6 +3,7 @@ import UIKit
 protocol MainRouter {
     func showTransferBottomSheet(for transferType: TransferType, delegate: TransferBottomSheetDelegate?)
     func showTransactions(for item: TransactionItem)
+    func showAddNewItem(navigationController: UINavigationController, type: AddItemType)
 }
 
 enum TransactionItem {
@@ -28,6 +29,20 @@ enum TransactionItem {
 }
 
 final class MainRouterImpl: MainRouter {
+    func showAddNewItem(
+        navigationController: UINavigationController,
+        type: AddItemType
+    ) {
+        let vc = AddItemViewController(
+            type: type,
+            financeUseCase: financeUseCase
+        )
+        navigationController.pushViewController(
+            vc,
+            animated: true
+        )
+    }
+
     weak var viewController: UIViewController?
     private let financeUseCase: FinanceUseCase
     
