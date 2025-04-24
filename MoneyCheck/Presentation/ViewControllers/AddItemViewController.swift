@@ -188,7 +188,7 @@ class AddItemViewController: UIViewController {
         }
         
         colorsCollectionView.snp.makeConstraints { make in
-            make.height.equalTo(44)
+            make.height.equalTo(50)
         }
         
         saveButton.snp.makeConstraints { make in
@@ -352,12 +352,6 @@ final class IconCell: UICollectionViewCell {
         return imageView
     }()
     
-    private let containerView: UIView = {
-        let view = UIView()
-        view.layer.cornerRadius = 12
-        return view
-    }()
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -368,30 +362,21 @@ final class IconCell: UICollectionViewCell {
     }
     
     private func setupUI() {
-        contentView.addSubview(containerView)
-        containerView.addSubview(iconView)
-        
-        containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(4)
-        }
+        contentView.layer.cornerRadius = self.bounds.width / 2
+        contentView.addSubview(iconView)
         
         iconView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.size.equalTo(24)
+            make.edges.equalToSuperview().inset(12)
         }
     }
     
     func configure(with icon: String, color: String, selectedIcon: String) {
         iconView.image = UIImage(systemName: icon)
-        containerView.backgroundColor = UIColor(hex: color)
+        contentView.backgroundColor = UIColor(hex: color)
         if selectedIcon == icon {
-            containerView.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
-            containerView.layer.borderWidth = 2
-            containerView.layer.borderColor = UIColor.systemBlue.cgColor
+            transform = CGAffineTransform(scaleX: 1, y: 1)
         } else {
-            containerView.transform = .identity
-            containerView.layer.borderWidth = 0
-            containerView.layer.borderColor = UIColor.clear.cgColor
+            transform = CGAffineTransform(scaleX: 0.7, y: 0.7)
         }
     }
 }
@@ -409,19 +394,15 @@ final class ColorCell: UICollectionViewCell {
     }
     
     private func setupUI() {
-        layer.cornerRadius = 22
+        layer.cornerRadius = self.bounds.width / 2
     }
     
     func configure(with color: String, selectedColor: String) {
         backgroundColor = UIColor(hex: color)
         if selectedColor == color {
-            transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
-            layer.borderWidth = 2
-            layer.borderColor = UIColor.systemBlue.cgColor
+            transform = CGAffineTransform(scaleX: 1, y: 1)
         } else {
-            transform = .identity
-            layer.borderWidth = 0
-            layer.borderColor = UIColor.clear.cgColor
+            transform = CGAffineTransform(scaleX: 0.7, y: 0.7)
         }
     }
 }
