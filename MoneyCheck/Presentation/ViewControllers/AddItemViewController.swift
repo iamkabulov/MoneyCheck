@@ -134,11 +134,8 @@ class AddItemViewController: UIViewController {
         setupKeyboardHandling()
         
         title = itemType.title
-        selectedColor = itemType.defaultColor
+        selectedColor = colors.first
         selectedIcon = icons.first
-        
-        colorsCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .left)
-        iconsCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .left)
     }
     
     // MARK: - Private Methods
@@ -313,12 +310,12 @@ extension AddItemViewController: UICollectionViewDataSource {
         if collectionView == iconsCollectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "IconCell", for: indexPath) as! IconCell
             let icon = icons[indexPath.item]
-            cell.configure(with: icon, color: selectedColor ?? itemType.defaultColor)
+            cell.configure(with: icon, color: selectedColor ?? itemType.defaultColor, selectedIcon: self.selectedIcon ?? "")
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as! ColorCell
             let color = colors[indexPath.item]
-            cell.configure(with: color)
+            cell.configure(with: color, selectedColor: self.selectedColor ?? "")
             return cell
         }
     }
@@ -333,6 +330,7 @@ extension AddItemViewController: UICollectionViewDelegate {
         } else {
             selectedColor = colors[indexPath.item]
             iconsCollectionView.reloadData()
+            colorsCollectionView.reloadData()
         }
     }
 }
@@ -360,14 +358,6 @@ final class IconCell: UICollectionViewCell {
         return view
     }()
     
-    override var isSelected: Bool {
-        didSet {
-            containerView.transform = isSelected ? CGAffineTransform(scaleX: 0.9, y: 0.9) : .identity
-            containerView.layer.borderWidth = isSelected ? 2 : 0
-            containerView.layer.borderColor = UIColor.systemBlue.cgColor
-        }
-    }
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -391,21 +381,23 @@ final class IconCell: UICollectionViewCell {
         }
     }
     
-    func configure(with icon: String, color: String) {
+    func configure(with icon: String, color: String, selectedIcon: String) {
         iconView.image = UIImage(systemName: icon)
         containerView.backgroundColor = UIColor(hex: color)
+        if selectedIcon == icon {
+            containerView.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+            containerView.layer.borderWidth = 2
+            containerView.layer.borderColor = UIColor.systemBlue.cgColor
+        } else {
+            containerView.transform = .identity
+            containerView.layer.borderWidth = 0
+            containerView.layer.borderColor = UIColor.clear.cgColor
+        }
     }
 }
 
 // MARK: - ColorCell
 final class ColorCell: UICollectionViewCell {
-    override var isSelected: Bool {
-        didSet {
-            transform = isSelected ? CGAffineTransform(scaleX: 0.9, y: 0.9) : .identity
-            layer.borderWidth = isSelected ? 2 : 0
-            layer.borderColor = UIColor.systemBlue.cgColor
-        }
-    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -420,26 +412,16 @@ final class ColorCell: UICollectionViewCell {
         layer.cornerRadius = 22
     }
     
-    func configure(with color: String) {
+    func configure(with color: String, selectedColor: String) {
         backgroundColor = UIColor(hex: color)
-    }
-}
-
-// MARK: - UIColor Extension
-private extension UIColor {
-    convenience init?(hex: String) {
-        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
-        
-        var rgb: UInt64 = 0
-        
-        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else {
-            return nil
+        if selectedColor == color {
+            transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+            layer.borderWidth = 2
+            layer.borderColor = UIColor.systemBlue.cgColor
+        } else {
+            transform = .identity
+            layer.borderWidth = 0
+            layer.borderColor = UIColor.clear.cgColor
         }
-        
-        self.init(red: CGFloat((rgb & 0xFF0000) >> 16) / 255.0,
-                 green: CGFloat((rgb & 0x00FF00) >> 8) / 255.0,
-                 blue: CGFloat(rgb & 0x0000FF) / 255.0,
-                 alpha: 1.0)
     }
 }
