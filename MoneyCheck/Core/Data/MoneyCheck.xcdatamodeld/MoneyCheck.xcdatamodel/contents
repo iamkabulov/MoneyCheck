@@ -1,39 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22522" systemVersion="24C5029f" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
-    <entity name="Wallet" representedClassName="Wallet" syncable="YES" codeGenerationType="class">
-        <attribute name="balance" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="icon" optional="NO" attributeType="String"/>
-        <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="name" optional="NO" attributeType="String"/>
-        <attribute name="type" optional="NO" attributeType="String"/>
-    </entity>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24B91" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
     <entity name="Category" representedClassName="Category" syncable="YES" codeGenerationType="class">
-        <attribute name="amount" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="color" optional="NO" attributeType="String"/>
-        <attribute name="icon" optional="NO" attributeType="String"/>
-        <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="name" optional="NO" attributeType="String"/>
-        <attribute name="type" optional="NO" attributeType="String"/>
+        <attribute name="amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="color" attributeType="String"/>
+        <attribute name="icon" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="type" attributeType="String"/>
     </entity>
     <entity name="Income" representedClassName="Income" syncable="YES" codeGenerationType="class">
-        <attribute name="amount" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="color" optional="NO" attributeType="String"/>
-        <attribute name="icon" optional="NO" attributeType="String"/>
-        <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="name" optional="NO" attributeType="String"/>
+        <attribute name="amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="color" attributeType="String"/>
+        <attribute name="icon" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String"/>
     </entity>
     <entity name="Transaction" representedClassName="Transaction" syncable="YES" codeGenerationType="class">
-        <attribute name="amount" optional="NO" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="date" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="destinationColor" optional="NO" attributeType="String"/>
-        <attribute name="destinationIcon" optional="NO" attributeType="String"/>
-        <attribute name="destinationId" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="destinationName" optional="NO" attributeType="String"/>
-        <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="sourceColor" optional="NO" attributeType="String"/>
-        <attribute name="sourceIcon" optional="NO" attributeType="String"/>
-        <attribute name="sourceId" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="sourceName" optional="NO" attributeType="String"/>
-        <attribute name="type" optional="NO" attributeType="String"/>
+        <attribute name="amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="date" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="destinationColor" attributeType="String"/>
+        <attribute name="destinationIcon" attributeType="String"/>
+        <attribute name="destinationId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="destinationName" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="sourceColor" attributeType="String"/>
+        <attribute name="sourceIcon" attributeType="String"/>
+        <attribute name="sourceId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="sourceName" attributeType="String"/>
+        <attribute name="type" attributeType="String"/>
     </entity>
-</model> 
+    <entity name="Wallet" representedClassName="Wallet" syncable="YES" codeGenerationType="class">
+        <attribute name="balance" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="color" optional="YES" attributeType="String"/>
+        <attribute name="icon" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="type" attributeType="String"/>
+    </entity>
+</model>

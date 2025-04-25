@@ -32,13 +32,14 @@ final class CoreDataManager {
     }
     
     // MARK: - Wallet Methods
-    func createWallet(name: String, type: String, balance: Double, icon: String) -> Wallet {
+    func createWallet(name: String, type: String, balance: Double, icon: String, color: String) -> Wallet {
         let wallet = Wallet(context: context)
         wallet.id = UUID()
         wallet.name = name
         wallet.type = type
         wallet.balance = balance
         wallet.icon = icon
+        wallet.color = color
         saveContext()
         return wallet
     }
@@ -174,10 +175,10 @@ final class CoreDataManager {
         let incomes = fetchIncomes()
         
         if wallets.isEmpty {
-            _ = createWallet(name: "Наличные", type: "cash", balance: 50000, icon: "banknote")
-            _ = createWallet(name: "Карта", type: "card", balance: 150000, icon: "creditcard")
-            _ = createWallet(name: "Дебетовая карта", type: "card", balance: 75000, icon: "creditcard")
-            _ = createWallet(name: "Депозит", type: "deposit", balance: 1000000, icon: "building.columns")
+            _ = createWallet(name: "Наличные", type: "cash", balance: 50000, icon: "banknote", color: "#FFD93D")
+            _ = createWallet(name: "Карта", type: "card", balance: 150000, icon: "creditcard", color: "#FF8066")
+            _ = createWallet(name: "Дебетовая карта", type: "card", balance: 75000, icon: "creditcard", color: "#95E1D3")
+            _ = createWallet(name: "Депозит", type: "deposit", balance: 1000000, icon: "building.columns", color: "#A8E6CF")
         }
         
         if categories.isEmpty {

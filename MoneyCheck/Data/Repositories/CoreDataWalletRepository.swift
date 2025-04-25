@@ -13,7 +13,8 @@ final class CoreDataWalletRepository: WalletRepository {
                 name: wallet.name ?? "",
                 type: WalletType(rawValue: wallet.type ?? "") ?? .cash,
                 balance: wallet.balance,
-                icon: wallet.icon ?? ""
+                icon: wallet.icon ?? "",
+                color: wallet.color ?? ""
             )
         }
         return Just(walletModels)
@@ -26,7 +27,8 @@ final class CoreDataWalletRepository: WalletRepository {
             name: wallet.name,
             type: wallet.type.rawValue,
             balance: wallet.balance,
-            icon: wallet.icon
+            icon: wallet.icon,
+            color: wallet.color
         )
         return Just(())
             .setFailureType(to: Error.self)

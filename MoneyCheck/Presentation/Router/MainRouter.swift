@@ -29,20 +29,6 @@ enum TransactionItem {
 }
 
 final class MainRouterImpl: MainRouter {
-    func showAddNewItem(
-        navigationController: UINavigationController,
-        type: AddItemType
-    ) {
-        let vc = AddItemViewController(
-            type: type,
-            financeUseCase: financeUseCase
-        )
-        navigationController.pushViewController(
-            vc,
-            animated: true
-        )
-    }
-
     weak var viewController: UIViewController?
     private let financeUseCase: FinanceUseCase
     
@@ -62,5 +48,10 @@ final class MainRouterImpl: MainRouter {
         let transactionsVC = TransactionsViewController(viewModel: transactionsVM)
         transactionsVC.title = item.title
         viewController?.navigationController?.pushViewController(transactionsVC, animated: true)
+    }
+
+    func showAddNewItem(navigationController: UINavigationController, type: AddItemType) {
+        let vc = AddItemViewController(viewModel: AddItemViewModel(type: type,financeUseCase: financeUseCase))
+        navigationController.pushViewController(vc, animated: true)
     }
 }

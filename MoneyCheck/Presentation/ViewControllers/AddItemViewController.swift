@@ -2,50 +2,10 @@ import UIKit
 import SnapKit
 import Combine
 
-enum AddItemType {
-    case income
-    case wallet
-    case category
-    
-    var title: String {
-        switch self {
-        case .income: return "Новый доход"
-        case .wallet: return "Новый кошелек"
-        case .category: return "Новая категория"
-        }
-    }
-    
-    var defaultColor: String {
-        switch self {
-        case .income: return "#4CAF50"
-        case .wallet: return "#2196F3"
-        case .category: return "#F44336"
-        }
-    }
-}
-
 class AddItemViewController: UIViewController {
     // MARK: - Properties
-    private let financeUseCase: FinanceUseCase
-    private let itemType: AddItemType
+    private let viewModel: AddItemViewModel
     private var cancellables = Set<AnyCancellable>()
-    
-    private let icons = [
-        "creditcard", "wallet.pass", "banknote", "dollarsign.circle",
-        "cart", "bag", "basket", "gift",
-        "house", "car", "bus", "airplane",
-        "fork.knife", "cup.and.saucer", "wineglass",
-        "heart", "star", "person", "gamecontroller",
-        "plus.circle.fill"
-    ]
-    
-    private let colors = [
-        "#4CAF50", "#2196F3", "#F44336", "#FFC107", "#9C27B0",
-        "#FF9800", "#00BCD4", "#795548", "#607D8B", "#E91E63"
-    ]
-    
-    private var selectedIcon: String?
-    private var selectedColor: String?
     
     // MARK: - UI Components
     private lazy var scrollView: UIScrollView = {
@@ -79,12 +39,12 @@ class AddItemViewController: UIViewController {
         layout.minimumInteritemSpacing = 8
         layout.minimumLineSpacing = 8
         layout.itemSize = CGSize(width: 60, height: 60)
-
+        
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.register(IconCell.self, forCellWithReuseIdentifier: "IconCell")
+        collectionView.register(IconCell.self, forCellWithReuseIdentifier: IconCell.reuseIdentifier)
         collectionView.showsHorizontalScrollIndicator = false
         return collectionView
     }()
@@ -94,13 +54,13 @@ class AddItemViewController: UIViewController {
         layout.scrollDirection = .horizontal
         layout.minimumInteritemSpacing = 8
         layout.minimumLineSpacing = 8
-        layout.itemSize = CGSize(width: 44, height: 44)
+        layout.itemSize = CGSize(width: 50, height: 50)
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.register(ColorCell.self, forCellWithReuseIdentifier: "ColorCell")
+        collectionView.register(ColorCell.self, forCellWithReuseIdentifier: ColorCell.reuseIdentifier)
         collectionView.showsHorizontalScrollIndicator = false
         return collectionView
     }()
@@ -116,9 +76,8 @@ class AddItemViewController: UIViewController {
     }()
     
     // MARK: - Initialization
-    init(type: AddItemType, financeUseCase: FinanceUseCase) {
-        self.itemType = type
-        self.financeUseCase = financeUseCase
+    init(viewModel: AddItemViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -132,13 +91,31 @@ class AddItemViewController: UIViewController {
         setupUI()
         setupConstraints()
         setupKeyboardHandling()
+        setupBindings()
         
-        title = itemType.title
-        selectedColor = colors.first
-        selectedIcon = icons.first
+        title = viewModel.title
     }
     
     // MARK: - Private Methods
+    private func setupBindings() {
+        nameField.textPublisher
+            .assign(to: \.name, on: viewModel)
+            .store(in: &cancellables)
+        
+        viewModel.$selectedIcon
+            .sink { [weak self] _ in
+                self?.iconsCollectionView.reloadData()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$selectedColor
+            .sink { [weak self] _ in
+                self?.colorsCollectionView.reloadData()
+                self?.iconsCollectionView.reloadData()
+            }
+            .store(in: &cancellables)
+    }
+    
     private func setupUI() {
         view.backgroundColor = .systemBackground
         
@@ -248,25 +225,7 @@ class AddItemViewController: UIViewController {
     
     // MARK: - Actions
     @objc private func saveButtonTapped() {
-        guard let name = nameField.text, !name.isEmpty,
-              let icon = selectedIcon,
-              let color = selectedColor else {
-            // TODO: Show error
-            return
-        }
-        
-        let publisher: AnyPublisher<Void, Error>
-        
-        switch itemType {
-        case .income:
-            publisher = financeUseCase.createIncome(name: name, icon: icon, color: color)
-        case .wallet:
-            publisher = financeUseCase.createWallet(name: name, type: .card, icon: icon)
-        case .category:
-            publisher = financeUseCase.createCategory(name: name, icon: icon, color: color)
-        }
-        
-        publisher
+        viewModel.saveItem()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] completion in
                 switch completion {
@@ -300,22 +259,26 @@ class AddItemViewController: UIViewController {
 extension AddItemViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == iconsCollectionView {
-            return icons.count
+            return viewModel.icons.count
         } else {
-            return colors.count
+            return viewModel.colors.count
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if collectionView == iconsCollectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "IconCell", for: indexPath) as! IconCell
-            let icon = icons[indexPath.item]
-            cell.configure(with: icon, color: selectedColor ?? itemType.defaultColor, selectedIcon: self.selectedIcon ?? "")
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: IconCell.reuseIdentifier, for: indexPath) as? IconCell else {
+                return UICollectionViewCell()
+            }
+            let icon = viewModel.icons[indexPath.item]
+            cell.configure(with: icon, color: viewModel.selectedColor ?? "", selectedIcon: viewModel.selectedIcon ?? "")
             return cell
         } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as! ColorCell
-            let color = colors[indexPath.item]
-            cell.configure(with: color, selectedColor: self.selectedColor ?? "")
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ColorCell.reuseIdentifier, for: indexPath) as? ColorCell else {
+                return UICollectionViewCell()
+            }
+            let color = viewModel.colors[indexPath.item]
+            cell.configure(with: color, selectedColor: viewModel.selectedColor ?? "")
             return cell
         }
     }
@@ -325,12 +288,12 @@ extension AddItemViewController: UICollectionViewDataSource {
 extension AddItemViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == iconsCollectionView {
-            selectedIcon = icons[indexPath.item]
+            viewModel.selectedIcon = viewModel.icons[indexPath.item]
             iconsCollectionView.reloadData()
         } else {
-            selectedColor = colors[indexPath.item]
-            iconsCollectionView.reloadData()
+            viewModel.selectedColor = viewModel.colors[indexPath.item]
             colorsCollectionView.reloadData()
+            iconsCollectionView.reloadData()
         }
     }
 }
@@ -340,69 +303,5 @@ extension AddItemViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
-    }
-}
-
-// MARK: - IconCell
-final class IconCell: UICollectionViewCell {
-    private let iconView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = .white
-        return imageView
-    }()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupUI()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func setupUI() {
-        contentView.layer.cornerRadius = self.bounds.width / 2
-        contentView.addSubview(iconView)
-        
-        iconView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(12)
-        }
-    }
-    
-    func configure(with icon: String, color: String, selectedIcon: String) {
-        iconView.image = UIImage(systemName: icon)
-        contentView.backgroundColor = UIColor(hex: color)
-        if selectedIcon == icon {
-            transform = CGAffineTransform(scaleX: 1, y: 1)
-        } else {
-            transform = CGAffineTransform(scaleX: 0.7, y: 0.7)
-        }
-    }
-}
-
-// MARK: - ColorCell
-final class ColorCell: UICollectionViewCell {
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupUI()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func setupUI() {
-        layer.cornerRadius = self.bounds.width / 2
-    }
-    
-    func configure(with color: String, selectedColor: String) {
-        backgroundColor = UIColor(hex: color)
-        if selectedColor == color {
-            transform = CGAffineTransform(scaleX: 1, y: 1)
-        } else {
-            transform = CGAffineTransform(scaleX: 0.7, y: 0.7)
-        }
     }
 }

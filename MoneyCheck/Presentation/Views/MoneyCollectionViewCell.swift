@@ -109,8 +109,8 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         configure(
             name: wallet.name,
             amount: wallet.balance,
-            icon: wallet.type.icon,
-            color: wallet.type.color
+            icon: wallet.icon,
+            color: wallet.color
         )
     }
     

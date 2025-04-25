@@ -12,7 +12,7 @@ protocol FinanceUseCase {
     func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
     func updateTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
     func createIncome(name: String, icon: String, color: String) -> AnyPublisher<Void, Error>
-    func createWallet(name: String, type: WalletType, icon: String) -> AnyPublisher<Void, Error>
+    func createWallet(name: String, icon: String, color: String) -> AnyPublisher<Void, Error>
     func createCategory(name: String, icon: String, color: String) -> AnyPublisher<Void, Error>
 }
 
@@ -81,13 +81,14 @@ final class FinanceUseCaseImpl: FinanceUseCase {
         return incomeRepository.addIncome(income)
     }
     
-    func createWallet(name: String, type: WalletType, icon: String) -> AnyPublisher<Void, Error> {
+    func createWallet(name: String, icon: String, color: String) -> AnyPublisher<Void, Error> {
         let wallet = WalletModel(
             id: UUID(),
             name: name,
-            type: type,
+            type: .card,
             balance: 0,
-            icon: icon
+            icon: icon,
+            color: color
         )
         return walletRepository.addWallet(wallet)
     }
