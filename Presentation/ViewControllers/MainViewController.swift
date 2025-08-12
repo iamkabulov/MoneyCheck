@@ -18,8 +18,9 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     private var cancellables = Set<AnyCancellable>()
     private var lastHighlightedIndexPath: IndexPath?
     private var pendingTransferWallet: WalletModel?
-    private let impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
-
+    private let impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+    private var dragOverlayView: UIView?
+    
     // MARK: - UI Components
     private lazy var collectionView: UICollectionView = {
         let layout = createCompositionalLayout()
@@ -43,18 +44,18 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         )
         return collectionView
     }()
-
+    
     // MARK: - Initialization
     init(viewModel: MainViewModel, router: MainRouter) {
         self.viewModel = viewModel
         self.router = router
         super.init(nibName: nil, bundle: nil)
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     // MARK: - Lifecycle
     override func viewWillAppear(_ animated: Bool) {
         viewModel.loadData()
@@ -66,22 +67,21 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         setupBindings()
         viewModel.loadData()
     }
-
+    
     // MARK: - Private methods
     private func setupUI() {
         view.backgroundColor = .systemBackground
         title = "Финансы"
         navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.largeTitleDisplayMode = .automatic
 //        collectionView.isScrollEnabled = false
         view.addSubview(collectionView)
-
+        
         collectionView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
-
+    
     private func setupBindings() {
         viewModel.$wallets
             .receive(on: DispatchQueue.main)
@@ -89,14 +89,14 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
                 self?.collectionView.reloadData()
             }
             .store(in: &cancellables)
-
+        
         viewModel.$categories
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.collectionView.reloadData()
             }
             .store(in: &cancellables)
-
+        
         viewModel.$error
             .receive(on: DispatchQueue.main)
             .compactMap { $0 }
@@ -105,7 +105,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             }
             .store(in: &cancellables)
     }
-
+    
     private func createCompositionalLayout() -> UICollectionViewLayout {
         let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, _ in
             switch sectionIndex {
@@ -119,17 +119,17 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
                 return nil
             }
         }
-
+        
         let config = UICollectionViewCompositionalLayoutConfiguration()
         config.interSectionSpacing = 10
         layout.configuration = config
-
+        
         NSCollectionLayoutDecorationItem.background(elementKind: "background")
         layout.register(SectionBackgroundDecorationView.self, forDecorationViewOfKind: "background")
-
+        
         return layout
     }
-
+    
     private func createIncomesSection() -> NSCollectionLayoutSection {
         // Размер элемента
         let itemSize = NSCollectionLayoutSize(
@@ -145,7 +145,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             heightDimension: .estimated(90)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-
+        
         // Настройка секции
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .continuous
@@ -167,17 +167,17 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             elementKind: UICollectionView.elementKindSectionHeader,
             alignment: .top
         )
-
+        
         // Добавляем background
         let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
         backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: Constants.headerHeight, leading: 0, bottom: 0, trailing: 0)
 
         section.boundarySupplementaryItems = [header]
         section.decorationItems = [backgroundItem]
-
+        
         return section
     }
-
+    
     private func createWalletsSection() -> NSCollectionLayoutSection {
         // Размер элемента
         let itemSize = NSCollectionLayoutSize(
@@ -193,7 +193,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             heightDimension: .estimated(90)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-
+        
         // Настройка секции
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .continuous
@@ -219,13 +219,13 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Добавляем background
         let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
         backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: Constants.headerHeight, leading: 0, bottom: 0, trailing: 0)
-
+        
         section.boundarySupplementaryItems = [header]
         section.decorationItems = [backgroundItem]
 
         return section
     }
-
+    
     private func createCategoriesSection() -> NSCollectionLayoutSection {
         // Размер элемента
         let itemSize = NSCollectionLayoutSize(
@@ -240,9 +240,9 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             widthDimension: .fractionalWidth(1.0),
             heightDimension: .absolute(90)
         )
-        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitem: item, count: 5)
         group.interItemSpacing = .fixed(0)
-
+        
         // Настройка секции
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 4
@@ -267,19 +267,19 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Добавляем background
         let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
         backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: Constants.headerHeight, leading: 0, bottom: 0, trailing: 0)
-
+        
         section.boundarySupplementaryItems = [header]
         section.decorationItems = [backgroundItem]
 
         return section
     }
-
+    
     private func showError(_ error: Error) {
         let alert = UIAlertController(title: "Ошибка", message: error.localizedDescription, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
-
+    
     private func showAmountInput(sourceWallet: WalletModel, destinationIndexPath: IndexPath) {
         guard let targetWallet = viewModel.wallet(at: destinationIndexPath) else { return }
         showTransferBottomSheet(for: .wallet(sourceWallet: sourceWallet, targetWallet: targetWallet))
@@ -291,7 +291,7 @@ extension MainViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 3 // Incomes, Wallets, Categories
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch section {
         case 0: return viewModel.incomes.count + 1
@@ -300,10 +300,10 @@ extension MainViewController: UICollectionViewDataSource {
         default: return 0
         }
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MoneyCollectionViewCell.reuseIdentifier, for: indexPath) as! MoneyCollectionViewCell
-
+        
         switch indexPath.section {
         case 0:
             if indexPath.item == viewModel.incomes.count {
@@ -349,7 +349,7 @@ extension MainViewController: UICollectionViewDataSource {
         }
         return cell
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {
             let header = collectionView.dequeueReusableSupplementaryView(
@@ -357,7 +357,7 @@ extension MainViewController: UICollectionViewDataSource {
                 withReuseIdentifier: SectionHeaderView.reuseIdentifier,
                 for: indexPath
             ) as! SectionHeaderView
-
+            
             switch indexPath.section {
             case 0:
                 header.configure(title: "Доходы", amount: viewModel.totalIncome)
@@ -368,7 +368,7 @@ extension MainViewController: UICollectionViewDataSource {
             default:
                 break
             }
-
+            
             return header
         }
         return UICollectionReusableView()
@@ -385,6 +385,9 @@ extension MainViewController: UICollectionViewDragDelegate {
             return []
         }
 
+        // Поддерживающий оверлей: показываем текст/сумму, вырезаем иконку
+        addDragOverlay(for: cell)
+
         switch indexPath.section {
         case 0: // Доходы
             if indexPath.item < viewModel.incomes.count {
@@ -392,6 +395,17 @@ extension MainViewController: UICollectionViewDragDelegate {
                 let itemProvider = NSItemProvider()
                 let dragItem = UIDragItem(itemProvider: itemProvider)
                 dragItem.localObject = ("income", income)
+                
+                // Кастомный превью: поднимаем только иконку
+                dragItem.previewProvider = { [weak self] in
+                    guard let self = self,
+                          let cell = self.collectionView.cellForItem(at: indexPath) as? MoneyCollectionViewCell else { return nil }
+                    let iconView = cell.iconContainerView
+                    let parameters = UIDragPreviewParameters()
+                    parameters.visiblePath = UIBezierPath(roundedRect: iconView.bounds, cornerRadius: iconView.layer.cornerRadius)
+                    return UIDragPreview(view: iconView, parameters: parameters)
+                }
+                
                 impactFeedbackGenerator.prepare()
                 return [dragItem]
             }
@@ -402,6 +416,17 @@ extension MainViewController: UICollectionViewDragDelegate {
                 let itemProvider = NSItemProvider()
                 let dragItem = UIDragItem(itemProvider: itemProvider)
                 dragItem.localObject = ("wallet", wallet)
+                
+                // Кастомный превью: поднимаем только иконку
+                dragItem.previewProvider = { [weak self] in
+                    guard let self = self,
+                          let cell = self.collectionView.cellForItem(at: indexPath) as? MoneyCollectionViewCell else { return nil }
+                    let iconView = cell.iconContainerView
+                    let parameters = UIDragPreviewParameters()
+                    parameters.visiblePath = UIBezierPath(roundedRect: iconView.bounds, cornerRadius: iconView.layer.cornerRadius)
+                    return UIDragPreview(view: iconView, parameters: parameters)
+                }
+                
                 impactFeedbackGenerator.prepare()
                 return [dragItem]
             }
@@ -411,16 +436,20 @@ extension MainViewController: UICollectionViewDragDelegate {
         }
     }
 
-    func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+    func collectionView(_ collectionView: UICollectionView, dropPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
         guard let cell = collectionView.cellForItem(at: indexPath) as? MoneyCollectionViewCell else {
             return nil
         }
-
-        impactFeedbackGenerator.impactOccurred()
+        
         let parameters = UIDragPreviewParameters()
         let iconFrame = cell.iconContainerView.superview?.convert(cell.iconContainerView.frame, to: cell) ?? .zero
         parameters.visiblePath = UIBezierPath(roundedRect: iconFrame, cornerRadius: cell.iconContainerView.layer.cornerRadius)
         return parameters
+    }
+
+    func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        // Возвращаем nil, чтобы использовать dragItem.previewProvider и не скрывать текст/сумму в ячейке
+        return nil
     }
 }
 
@@ -431,38 +460,38 @@ extension MainViewController: UICollectionViewDropDelegate {
               let item = coordinator.items.first else {
             return
         }
-
+        
         guard let (sourceType, sourceObject) = item.dragItem.localObject as? (String, Any) else {
             return
         }
-
+        
         switch (sourceType, destinationIndexPath.section) {
         case ("income", 1):
             guard let income = sourceObject as? IncomeModel,
                   let wallet = viewModel.wallet(at: destinationIndexPath) else { return }
             showTransferBottomSheet(for: .income(sourceIncome: income, targetWallet: wallet))
-
+            
         case ("wallet", 1):
             guard let sourceWallet = sourceObject as? WalletModel,
                   let targetWallet = viewModel.wallet(at: destinationIndexPath),
                   sourceWallet.id != targetWallet.id else { return }
             showTransferBottomSheet(for: .wallet(sourceWallet: sourceWallet, targetWallet: targetWallet))
-
+            
         case ("wallet", 2):
             guard let wallet = sourceObject as? WalletModel,
                   let category = viewModel.category(at: destinationIndexPath) else { return }
             showTransferBottomSheet(for: .category(sourceWallet: wallet, targetCategory: category))
-
+            
         default:
             break
         }
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
         // Получаем источник из локальной сессии drag
         let localDragItem = session.localDragSession?.items.first
         let sourceTuple = localDragItem?.localObject as? (String, Any)
-
+        
         // Снимаем подсветку, если ушли с ячейки
         guard let indexPath = destinationIndexPath, let (sourceType, sourceObject) = sourceTuple else {
             if let lastPath = lastHighlightedIndexPath {
@@ -471,9 +500,9 @@ extension MainViewController: UICollectionViewDropDelegate {
             }
             return UICollectionViewDropProposal(operation: .move)
         }
-
+        
         let isValid = validateDrop(sourceType: sourceType, sourceObject: sourceObject, to: indexPath)
-
+        
         if isValid {
             if lastHighlightedIndexPath != indexPath {
                 if let lastPath = lastHighlightedIndexPath {
@@ -490,25 +519,26 @@ extension MainViewController: UICollectionViewDropDelegate {
                 lastHighlightedIndexPath = nil
             }
         }
-
+        
         return UICollectionViewDropProposal(operation: .move)
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: UIDropSession) {
         if let lastPath = lastHighlightedIndexPath {
             highlightCell(at: lastPath, isHighlighted: false)
             lastHighlightedIndexPath = nil
         }
+        removeDragOverlay()
     }
-
+    
     private func highlightCell(at indexPath: IndexPath, isHighlighted: Bool) {
         guard let cell = collectionView.cellForItem(at: indexPath) as? MoneyCollectionViewCell else { return }
 
-        UIView.animate(withDuration: 0.05) {
-            cell.alpha = isHighlighted ? 0.5 : 1.0
+        UIView.animate(withDuration: 0.1) {
+            cell.alpha = isHighlighted ? 0.9 : 1.0
         }
     }
-
+    
     private func validateDrop(sourceType: String, sourceObject: Any, to destinationIndexPath: IndexPath) -> Bool {
         switch (sourceType, destinationIndexPath.section) {
         case ("income", 1):
@@ -528,12 +558,31 @@ extension MainViewController: UICollectionViewDropDelegate {
 // MARK: - Helper Methods
 private extension MainViewController {
     func showTransferBottomSheet(for transferType: TransferType) {
-        router
-            .presentTransferBottomSheet(
-                from: self,
-                type: transferType,
-                delegate: self
-            )
+        router.showTransferBottomSheet(for: transferType, delegate: self)
+    }
+    
+    func addDragOverlay(for cell: MoneyCollectionViewCell) {
+        removeDragOverlay()
+        guard let superview = collectionView.superview else { return }
+        let snapshot = cell.snapshotView(afterScreenUpdates: false) ?? UIView(frame: cell.bounds)
+        // Вырезаем область иконки из снимка, чтобы не было дубля иконки
+        let iconFrameInCell = cell.iconContainerView.frame
+        let maskLayer = CAShapeLayer()
+        let fullPath = UIBezierPath(rect: snapshot.bounds)
+        let holePath = UIBezierPath(roundedRect: iconFrameInCell, cornerRadius: cell.iconContainerView.layer.cornerRadius)
+        fullPath.append(holePath)
+        maskLayer.path = fullPath.cgPath
+        maskLayer.fillRule = .evenOdd
+        snapshot.layer.mask = maskLayer
+
+        snapshot.frame = cell.convert(cell.bounds, to: superview)
+        superview.addSubview(snapshot)
+        dragOverlayView = snapshot
+    }
+    
+    func removeDragOverlay() {
+        dragOverlayView?.removeFromSuperview()
+        dragOverlayView = nil
     }
 }
 
@@ -551,19 +600,19 @@ extension MainViewController {
             if indexPath.item == viewModel.incomes.count {
                 router.showAddNewItem(navigationController: self.navigationController ?? UINavigationController(), type: .income)
             } else if let income = viewModel.incomes[safe: indexPath.item] {
-                router.showTransactions(from: self, for: .income(income))
+                router.showTransactions(for: .income(income))
             }
         case 1: // Wallets
             if indexPath.item == viewModel.wallets.count {
                 router.showAddNewItem(navigationController: self.navigationController ?? UINavigationController(), type: .wallet)
             } else if let wallet = viewModel.wallets[safe: indexPath.item] {
-                router.showTransactions(from: self, for: .wallet(wallet))
+                router.showTransactions(for: .wallet(wallet))
             }
         case 2: // Categories
             if indexPath.item == viewModel.categories.count {
                 router.showAddNewItem(navigationController: self.navigationController ?? UINavigationController(), type: .category)
             } else if let category = viewModel.categories[safe: indexPath.item] {
-                router.showTransactions(from: self, for: .category(category))
+                router.showTransactions(for: .category(category))
             }
         default:
             break
@@ -574,7 +623,6 @@ extension MainViewController {
 // MARK: - TransferBottomSheetDelegate
 extension MainViewController: TransferBottomSheetDelegate {
     func transferBottomSheet(_ viewController: TransferBottomSheetViewController, didConfirmAmount amount: Double) {
-        viewController.dismiss(animated: true)
         switch viewController.transferType {
         case .income(let income, let wallet):
             viewModel.addIncomeTransaction(from: income, to: wallet, amount: amount)
@@ -593,8 +641,8 @@ extension MainViewController: TransferBottomSheetDelegate {
     
     func transferBottomSheetDidCancel(_ viewController: TransferBottomSheetViewController) {
         // Очищаем состояние, если нужно
-        viewController.dismiss(animated: true)
         pendingTransferWallet = nil
         lastHighlightedIndexPath = nil
+        removeDragOverlay()
     }
-}
+} 

@@ -54,13 +54,7 @@ final class MainViewModel {
     }
     
     func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double) {
-        
-        var updatedSourceWallet = sourceWallet
-        var updatedTargetWallet = targetWallet
-        
-        updatedSourceWallet.balance -= amount
-        updatedTargetWallet.balance += amount
-        
+
         let transaction = TransactionModel(
             amount: amount,
             type: .transfer,
@@ -73,12 +67,8 @@ final class MainViewModel {
             destinationIcon: targetWallet.icon,
             destinationColor: "#007AFF"
         )
-        
-        Publishers.Zip3(
-            financeUseCase.updateWallet(updatedSourceWallet),
-            financeUseCase.updateWallet(updatedTargetWallet),
-            financeUseCase.addTransaction(transaction)
-        )
+
+        financeUseCase.addTransaction(transaction)
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {
@@ -92,13 +82,7 @@ final class MainViewModel {
     }
     
     func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double) {
-        
-        var updatedWallet = wallet
-        var updatedCategory = category
-        
-        updatedWallet.balance -= amount
-        updatedCategory.amount += amount
-        
+
         let transaction = TransactionModel(
             amount: amount,
             type: .expense,
@@ -111,12 +95,8 @@ final class MainViewModel {
             destinationIcon: category.icon,
             destinationColor: category.color
         )
-        
-        Publishers.Zip3(
-            financeUseCase.updateWallet(updatedWallet),
-            financeUseCase.updateCategory(updatedCategory),
-            financeUseCase.addTransaction(transaction)
-        )
+
+        financeUseCase.addTransaction(transaction)
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {
@@ -131,12 +111,6 @@ final class MainViewModel {
     
     func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double) {
         
-        var updatedWallet = wallet
-        var updatedCategory = category
-        
-        updatedWallet.balance += amount
-        updatedCategory.amount += amount
-        
         let transaction = TransactionModel(
             amount: amount,
             type: .income,
@@ -149,12 +123,8 @@ final class MainViewModel {
             destinationIcon: wallet.icon,
             destinationColor: "#007AFF"
         )
-        
-        Publishers.Zip3(
-            financeUseCase.updateWallet(updatedWallet),
-            financeUseCase.updateCategory(updatedCategory),
-            financeUseCase.addTransaction(transaction)
-        )
+
+        financeUseCase.addTransaction(transaction)
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {
@@ -167,40 +137,7 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
     
-    func updateWallet(_ wallet: WalletModel) {
-        financeUseCase.updateWallet(wallet)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                if case .failure(let error) = completion {
-                    self?.error = error
-                }
-            } receiveValue: { [weak self] _ in
-                self?.loadData()
-            }
-            .store(in: &cancellables)
-    }
-    
-    func updateIncome(_ income: IncomeModel) {
-        financeUseCase.updateIncome(income)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                if case .failure(let error) = completion {
-                    self?.error = error
-                }
-            } receiveValue: { [weak self] _ in
-                self?.loadData()
-            }
-            .store(in: &cancellables)
-    }
-    
     func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double) {
-        
-        var updatedIncome = income
-        var updatedWallet = wallet
-        
-        updatedIncome.amount += amount
-        updatedWallet.balance += amount
-        
         let transaction = TransactionModel(
             amount: amount,
             type: .income,
@@ -213,12 +150,8 @@ final class MainViewModel {
             destinationIcon: wallet.icon,
             destinationColor: "#007AFF"
         )
-        
-        Publishers.Zip3(
-            financeUseCase.updateIncome(updatedIncome),
-            financeUseCase.updateWallet(updatedWallet),
-            financeUseCase.addTransaction(transaction)
-        )
+
+        financeUseCase.addTransaction(transaction)
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {

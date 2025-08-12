@@ -22,7 +22,8 @@ final class EditTransactionViewController: UIViewController {
     
     private lazy var datePicker: UIDatePicker = {
         let picker = UIDatePicker()
-        picker.datePickerMode = .dateAndTime
+        picker.datePickerMode = .date
+        picker.preferredDatePickerStyle = .inline
         picker.date = transaction.date
         return picker
     }()
@@ -50,11 +51,20 @@ final class EditTransactionViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
     }
-    
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.prefersLargeTitles = false
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.navigationBar.prefersLargeTitles = true
+    }
+
     private func setupUI() {
         view.backgroundColor = .systemBackground
         title = "Редактирование транзакции"
-        
         let stackView = UIStackView(arrangedSubviews: [amountTextField, datePicker, saveButton])
         stackView.axis = .vertical
         stackView.spacing = 16
@@ -95,7 +105,11 @@ final class EditTransactionViewController: UIViewController {
                 case .failure(let error): print("Error updating transaction: \(error)")
                 }
             } receiveValue: { [weak self] _ in
-                self?.delegate?.editTransactionViewController(self!, didUpdate: updatedTransaction)
+                self?.delegate?
+                    .editTransactionViewController(
+                        self!,
+                        didUpdate: updatedTransaction
+                    )
                 self?.navigationController?.popViewController(animated: true)
             }
             .store(in: &cancellables)

@@ -37,8 +37,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let viewModel = MainViewModel(financeUseCase: financeUseCase)
         
         // Initialize router without view controller
-        let router = MainRouterImpl(viewController: nil, financeUseCase: financeUseCase)
-        
+        let router = MainRouter(financeUseCase: financeUseCase)
+
         // Initialize view controller with router
         let viewController = MainViewController(viewModel: viewModel, router: router)
         

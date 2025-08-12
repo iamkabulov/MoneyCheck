@@ -12,6 +12,7 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
 
     let iconContainerView: UIView = {
         let view = UIView()
+        view.isOpaque = false
         view.layer.cornerRadius = 24
         return view
     }()

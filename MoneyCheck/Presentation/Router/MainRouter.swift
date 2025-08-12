@@ -1,11 +1,5 @@
 import UIKit
 
-protocol MainRouter {
-    func showTransferBottomSheet(for transferType: TransferType, delegate: TransferBottomSheetDelegate?)
-    func showTransactions(for item: TransactionItem)
-    func showAddNewItem(navigationController: UINavigationController, type: AddItemType)
-}
-
 enum TransactionItem {
     case income(IncomeModel)
     case wallet(WalletModel)
@@ -28,30 +22,65 @@ enum TransactionItem {
     }
 }
 
-final class MainRouterImpl: MainRouter {
+import UIKit
+
+// MARK: - Протоколы
+protocol TransferRouting: AnyObject {
+    func presentTransferBottomSheet(from viewController: UIViewController,
+                                    type: TransferType,
+                                    delegate: TransferBottomSheetDelegate)
+}
+
+protocol AddItemRouting: AnyObject {
+    func showAddNewItem(navigationController: UINavigationController, type: AddItemType)
+}
+
+protocol TransactionsRouting: AnyObject {
+    func showTransactions(from viewController: UIViewController, for entity: TransactionItem)
+}
+
+typealias MainRouting = TransferRouting & AddItemRouting & TransactionsRouting
+
+// MARK: - Реализация роутера
+final class MainRouter: MainRouting {
+
     weak var viewController: UIViewController?
     private let financeUseCase: FinanceUseCase
-    
-    init(viewController: UIViewController?, financeUseCase: FinanceUseCase) {
+
+    init(viewController: UIViewController? = nil, financeUseCase: FinanceUseCase) {
         self.viewController = viewController
         self.financeUseCase = financeUseCase
     }
-    
-    func showTransferBottomSheet(for transferType: TransferType, delegate: TransferBottomSheetDelegate?) {
-        let bottomSheet = TransferBottomSheetViewController(transferType: transferType)
-        bottomSheet.delegate = delegate
-        viewController?.present(bottomSheet, animated: true)
-    }
-    
-    func showTransactions(for item: TransactionItem) {
-        let transactionsVM = TransactionsViewModel(financeUseCase: financeUseCase, itemId: item.id)
-        let transactionsVC = TransactionsViewController(viewModel: transactionsVM)
-        transactionsVC.title = item.title
-        viewController?.navigationController?.pushViewController(transactionsVC, animated: true)
+    // MARK: TransferRouting
+    func presentTransferBottomSheet(from viewController: UIViewController,
+                                    type: TransferType,
+                                    delegate: TransferBottomSheetDelegate) {
+        let bottomSheetVC = TransferBottomSheetViewController(transferType: type)
+        bottomSheetVC.delegate = delegate
+        bottomSheetVC.modalPresentationStyle = .pageSheet
+
+        if let sheet = bottomSheetVC.sheetPresentationController {
+            sheet.detents = [.custom { _ in
+                return 160
+            }]
+            sheet.prefersGrabberVisible = true
+        }
+
+        viewController.present(bottomSheetVC, animated: true)
     }
 
+    // MARK: AddItemRouting
     func showAddNewItem(navigationController: UINavigationController, type: AddItemType) {
-        let vc = AddItemViewController(viewModel: AddItemViewModel(type: type,financeUseCase: financeUseCase))
-        navigationController.pushViewController(vc, animated: true)
+        let viewModel = AddItemViewModel(type: type, financeUseCase: financeUseCase)
+        let addVC = AddItemViewController(viewModel: viewModel)
+        navigationController.pushViewController(addVC, animated: true)
+    }
+
+    // MARK: TransactionsRouting
+    func showTransactions(from viewController: UIViewController, for entity: TransactionItem) {
+        let viewModel = TransactionsViewModel(financeUseCase: financeUseCase, itemId: entity.id)
+        let transactionsVC = TransactionsViewController(viewModel: viewModel)
+        viewController.navigationController?.pushViewController(transactionsVC, animated: true)
     }
 }
+

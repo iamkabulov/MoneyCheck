@@ -5,7 +5,7 @@ protocol FinanceUseCase {
     func getWallets() -> AnyPublisher<[WalletModel], Error>
     func getCategories() -> AnyPublisher<[CategoryModel], Error>
     func getIncomes() -> AnyPublisher<[IncomeModel], Error>
-    func getTransactions() -> AnyPublisher<[TransactionModel], Error>
+    func getTransactions(by id: UUID) -> AnyPublisher<[TransactionModel], Error>
     func updateWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error>
     func updateCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>
     func updateIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error>
@@ -45,9 +45,9 @@ final class FinanceUseCaseImpl: FinanceUseCase {
     func getIncomes() -> AnyPublisher<[IncomeModel], Error> {
         return incomeRepository.getIncomes()
     }
-    
-    func getTransactions() -> AnyPublisher<[TransactionModel], Error> {
-        return transactionRepository.getTransactions()
+
+    func getTransactions(by id: UUID) -> AnyPublisher<[TransactionModel], Error> {
+        return transactionRepository.getTransactions(by: id)
     }
     
     func updateWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error> {
@@ -76,7 +76,8 @@ final class FinanceUseCaseImpl: FinanceUseCase {
             name: name,
             amount: 0,
             icon: icon,
-            color: color
+            color: color,
+            transactions: []
         )
         return incomeRepository.addIncome(income)
     }
@@ -88,7 +89,8 @@ final class FinanceUseCaseImpl: FinanceUseCase {
             type: .card,
             balance: 0,
             icon: icon,
-            color: color
+            color: color,
+            transactions: []
         )
         return walletRepository.addWallet(wallet)
     }
@@ -100,7 +102,8 @@ final class FinanceUseCaseImpl: FinanceUseCase {
             type: .expense,
             amount: 0,
             icon: icon,
-            color: color
+            color: color,
+            transactions: []
         )
         return categoryRepository.addCategory(category)
     }

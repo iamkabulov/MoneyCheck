@@ -48,7 +48,7 @@ final class TransferBottomSheetViewController: UIViewController {
         return label
     }()
     
-    private let textField: UITextField = {
+    private lazy var textField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Сумма"
         textField.keyboardType = .decimalPad
@@ -73,8 +73,7 @@ final class TransferBottomSheetViewController: UIViewController {
         button.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             self.delegate?.transferBottomSheetDidCancel(self)
-            self.dismiss(animated: true)
-        }, for: .touchUpInside)
+        }, for: .touchDown)
         return button
     }()
     
@@ -90,16 +89,19 @@ final class TransferBottomSheetViewController: UIViewController {
                 return
             }
             self.delegate?.transferBottomSheet(self, didConfirmAmount: amount)
-            self.dismiss(animated: true)
-        }, for: .touchUpInside)
+        }, for: .touchDown)
         return button
     }()
-    
+
     // MARK: - Initialization
     init(transferType: TransferType) {
         self.transferType = transferType
         super.init(nibName: nil, bundle: nil)
-        modalPresentationStyle = .custom
+        modalPresentationStyle = .pageSheet
+        if let sheet = sheetPresentationController {
+            sheet.detents = [.custom { _ in 160 }]
+        }
+        isModalInPresentation = false
     }
     
     required init?(coder: NSCoder) {
@@ -110,16 +112,22 @@ final class TransferBottomSheetViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        setupKeyboardDismissGesture()
+
+
     }
-    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        textField.becomeFirstResponder()
+    }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        textField.becomeFirstResponder()
     }
     
     // MARK: - Private Methods
     private func setupUI() {
         titleLabel.text = transferType.title
+
         
         view.addSubview(containerView)
         containerView.addSubview(titleLabel)
@@ -130,7 +138,7 @@ final class TransferBottomSheetViewController: UIViewController {
         buttonsStack.addArrangedSubview(okButton)
         
         containerView.snp.makeConstraints { make in
-            make.leading.trailing.bottom.equalToSuperview()
+            make.top.leading.trailing.bottom.equalToSuperview()
         }
         
         titleLabel.snp.makeConstraints { make in
@@ -138,19 +146,18 @@ final class TransferBottomSheetViewController: UIViewController {
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().offset(-16)
         }
-        
+
+        textField.addDoneButtonOnKeyboard()
         textField.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(16)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().offset(-16)
         }
-        
+
         buttonsStack.snp.makeConstraints { make in
             make.top.equalTo(textField.snp.bottom).offset(16)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().offset(-16)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
-            make.height.equalTo(44)
         }
     }
-} 
+}

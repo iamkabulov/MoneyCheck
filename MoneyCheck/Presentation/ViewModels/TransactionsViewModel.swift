@@ -34,19 +34,11 @@ class TransactionsViewModel {
     init(financeUseCase: FinanceUseCase, itemId: UUID) {
         self.financeUseCase = financeUseCase
         self.itemId = itemId
-        loadTransactions()
+        loadTransactions(by: itemId)
     }
     
-    private func loadTransactions() {
-        financeUseCase.getTransactions()
-            .map { transactions -> [TransactionModel] in
-                let filtered = transactions.filter { transaction in
-                    let isSource = transaction.sourceId == self.itemId
-                    let isDestination = transaction.destinationId == self.itemId
-                    return isSource || isDestination
-                }
-                return filtered
-            }
+    private func loadTransactions(by id: UUID) {
+        financeUseCase.getTransactions(by: id)
             .map { [weak self] transactions -> [TransactionSection] in
                 guard let self = self else { return [] }
                 
@@ -68,7 +60,7 @@ class TransactionsViewModel {
             .sink { completion in
                 switch completion {
                 case .finished: break
-                case .failure(let error): break
+                case .failure(_): break
                 }
             } receiveValue: { [weak self] sections in
                 self?.sections = sections
@@ -80,12 +72,15 @@ class TransactionsViewModel {
         financeUseCase.updateTransaction(transaction)
             .sink { completion in
                 switch completion {
-                case .finished: break
-                case .failure(let error): print("Error updating transaction: \(error)")
+                    case .finished: break
+                    case .failure(let error): print("Error updating transaction: \(error)")
                 }
             } receiveValue: { [weak self] _ in
-                self?.loadTransactions()
+                guard let self else { return }
+                self.loadTransactions(by: self.itemId)
             }
             .store(in: &cancellables)
+
+
     }
-} 
+}

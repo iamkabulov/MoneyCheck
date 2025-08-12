@@ -28,8 +28,13 @@ final class TransactionsViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         bindViewModel()
+        title = "Transactions"
     }
-    
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+    }
+
     private func setupUI() {
         view.backgroundColor = .systemBackground
         view.addSubview(tableView)

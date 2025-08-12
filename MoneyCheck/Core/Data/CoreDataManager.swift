@@ -116,7 +116,20 @@ final class CoreDataManager {
             return []
         }
     }
-    
+
+    func fetchIncome(by id: UUID) -> [Income] {
+        let request: NSFetchRequest<Income> = Income.fetchRequest()
+
+        request.predicate = NSPredicate(format: "sourceId == %@",
+                                        id as CVarArg)
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("Error fetching incomes: \(error)")
+            return []
+        }
+    }
+
     func updateIncome(_ income: Income) {
         saveContext()
     }
@@ -167,7 +180,23 @@ final class CoreDataManager {
             return []
         }
     }
-    
+
+    func fetchTransactions(by id: UUID) -> [Transaction] {
+        let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+
+        request.predicate = NSPredicate(format: "sourceId == %@ OR destinationId == %@",
+                                        id as CVarArg,
+                                        id as CVarArg)
+        do {
+            let transactions = try context.fetch(request)
+            return transactions
+        } catch {
+            print("❌ CoreDataManager: Error fetching transactions: \(error)")
+            return []
+        }
+    }
+
     // MARK: - Mock Data Initialization
     func initializeMockDataIfNeeded() {
         let wallets = fetchWallets()
