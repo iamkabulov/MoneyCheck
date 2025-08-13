@@ -1,3 +1,4 @@
+import Foundation
 import Combine
 
 protocol WalletRepository {
@@ -5,4 +6,5 @@ protocol WalletRepository {
     func addWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error>
     func updateWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error>
     func deleteWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error>
+    func getWallet(by id: UUID) -> AnyPublisher<WalletModel, Error>
 }

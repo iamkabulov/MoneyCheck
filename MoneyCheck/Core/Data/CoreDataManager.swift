@@ -53,7 +53,19 @@ final class CoreDataManager {
             return []
         }
     }
-    
+
+    func fetchWallet(by id: UUID) -> Wallet? {
+        let request: NSFetchRequest<Wallet> = Wallet.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        request.fetchLimit = 1 // чтобы не грузить всё
+        do {
+            return try context.fetch(request).first
+        } catch {
+            print("Error fetching incomes: \(error)")
+            return nil
+        }
+    }
+
     func updateWallet(_ wallet: Wallet) {
         saveContext()
     }
@@ -85,7 +97,19 @@ final class CoreDataManager {
             return []
         }
     }
-    
+
+    func fetchCategory(by id: UUID) -> Category? {
+        let request: NSFetchRequest<Category> = Category.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        request.fetchLimit = 1 // чтобы не грузить всё
+        do {
+            return try context.fetch(request).first
+        } catch {
+            print("Error fetching incomes: \(error)")
+            return nil
+        }
+    }
+
     func updateCategory(_ category: Category) {
         saveContext()
     }
@@ -117,18 +141,18 @@ final class CoreDataManager {
         }
     }
 
-    func fetchIncome(by id: UUID) -> [Income] {
+    func fetchIncome(by id: UUID) -> Income? {
         let request: NSFetchRequest<Income> = Income.fetchRequest()
-
-        request.predicate = NSPredicate(format: "sourceId == %@",
-                                        id as CVarArg)
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        request.fetchLimit = 1 // чтобы не грузить всё
         do {
-            return try context.fetch(request)
+            return try context.fetch(request).first
         } catch {
             print("Error fetching incomes: \(error)")
-            return []
+            return nil
         }
     }
+
 
     func updateIncome(_ income: Income) {
         saveContext()
@@ -204,10 +228,10 @@ final class CoreDataManager {
         let incomes = fetchIncomes()
         
         if wallets.isEmpty {
-            _ = createWallet(name: "Наличные", type: "cash", balance: 50000, icon: "banknote", color: "#FFD93D")
-            _ = createWallet(name: "Карта", type: "card", balance: 150000, icon: "creditcard", color: "#FF8066")
-            _ = createWallet(name: "Дебетовая карта", type: "card", balance: 75000, icon: "creditcard", color: "#95E1D3")
-            _ = createWallet(name: "Депозит", type: "deposit", balance: 1000000, icon: "building.columns", color: "#A8E6CF")
+            _ = createWallet(name: "Наличные", type: "cash", balance: 0, icon: "banknote", color: "#FFD93D")
+            _ = createWallet(name: "Карта", type: "card", balance: 0, icon: "creditcard", color: "#FF8066")
+            _ = createWallet(name: "Дебетовая карта", type: "card", balance: 0, icon: "creditcard", color: "#95E1D3")
+            _ = createWallet(name: "Депозит", type: "deposit", balance: 0, icon: "building.columns", color: "#A8E6CF")
         }
         
         if categories.isEmpty {
@@ -224,8 +248,8 @@ final class CoreDataManager {
         }
         
         if incomes.isEmpty {
-            _ = createIncome(name: "Доходы", amount: 500000, icon: "dollarsign.circle", color: "#4CAF50")
-            _ = createIncome(name: "Прибыль", amount: 250000, icon: "chart.line.uptrend.xyaxis", color: "#2196F3")
+            _ = createIncome(name: "Доходы", amount: 0, icon: "dollarsign.circle", color: "#4CAF50")
+            _ = createIncome(name: "Прибыль", amount: 0, icon: "chart.line.uptrend.xyaxis", color: "#2196F3")
         }
     }
 } 

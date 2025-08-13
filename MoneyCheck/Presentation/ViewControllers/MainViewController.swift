@@ -241,7 +241,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             heightDimension: .absolute(90)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-        group.interItemSpacing = .fixed(0)
+        group.interItemSpacing = .fixed(5)
 
         // Настройка секции
         let section = NSCollectionLayoutSection(group: group)

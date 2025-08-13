@@ -3,8 +3,11 @@ import Combine
 
 protocol FinanceUseCase {
     func getWallets() -> AnyPublisher<[WalletModel], Error>
+    func getWallet(by id: UUID) -> AnyPublisher<WalletModel, Error>
     func getCategories() -> AnyPublisher<[CategoryModel], Error>
+    func getCategory(by id: UUID) -> AnyPublisher<CategoryModel, Error>
     func getIncomes() -> AnyPublisher<[IncomeModel], Error>
+    func getIncome(by id: UUID) -> AnyPublisher<IncomeModel, Error>
     func getTransactions(by id: UUID) -> AnyPublisher<[TransactionModel], Error>
     func updateWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error>
     func updateCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>
@@ -37,13 +40,25 @@ final class FinanceUseCaseImpl: FinanceUseCase {
     func getWallets() -> AnyPublisher<[WalletModel], Error> {
         return walletRepository.getWallets()
     }
-    
+
+    func getWallet(by id: UUID) -> AnyPublisher<WalletModel, Error> {
+        return walletRepository.getWallet(by: id)
+    }
+
     func getCategories() -> AnyPublisher<[CategoryModel], Error> {
         return categoryRepository.getCategories()
     }
-    
+
+    func getCategory(by id: UUID) -> AnyPublisher<CategoryModel, Error> {
+        return categoryRepository.getCategory(by: id)
+    }
+
     func getIncomes() -> AnyPublisher<[IncomeModel], Error> {
         return incomeRepository.getIncomes()
+    }
+
+    func getIncome(by id: UUID) -> AnyPublisher<IncomeModel, Error> {
+        return incomeRepository.getIncome(by: id)
     }
 
     func getTransactions(by id: UUID) -> AnyPublisher<[TransactionModel], Error> {
