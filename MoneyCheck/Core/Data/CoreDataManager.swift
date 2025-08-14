@@ -74,7 +74,22 @@ final class CoreDataManager {
         context.delete(wallet)
         saveContext()
     }
-    
+
+    func deleteWallet(by id: UUID) {
+        let request: NSFetchRequest<Wallet> = Wallet.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        request.fetchLimit = 1 // возьмём только один объект
+
+        do {
+            if let wallet = try context.fetch(request).first {
+                context.delete(wallet)
+                try context.save()
+            }
+        } catch {
+            print("Error deleting wallet: \(error)")
+        }
+    }
+
     // MARK: - Category Methods
     func createCategory(name: String, type: String, amount: Double, icon: String, color: String) -> Category {
         let category = Category(context: context)
@@ -118,7 +133,22 @@ final class CoreDataManager {
         context.delete(category)
         saveContext()
     }
-    
+
+    func deleteCategory(by id: UUID) {
+        let request: NSFetchRequest<Category> = Category.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        request.fetchLimit = 1 // возьмём только один объект
+
+        do {
+            if let category = try context.fetch(request).first {
+                context.delete(category)
+                try context.save()
+            }
+        } catch {
+            print("Error deleting wallet: \(error)")
+        }
+    }
+
     // MARK: - Income Methods
     func createIncome(name: String, amount: Double, icon: String, color: String) -> Income {
         let income = Income(context: context)
@@ -157,7 +187,22 @@ final class CoreDataManager {
     func updateIncome(_ income: Income) {
         saveContext()
     }
-    
+
+    func deleteIncome(by id: UUID) {
+        let request: NSFetchRequest<Income> = Income.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        request.fetchLimit = 1 // возьмём только один объект
+
+        do {
+            if let income = try context.fetch(request).first {
+                context.delete(income)
+                try context.save()
+            }
+        } catch {
+            print("Error deleting wallet: \(error)")
+        }
+    }
+
     // MARK: - Transaction Methods
     func createTransaction(
         id: UUID,

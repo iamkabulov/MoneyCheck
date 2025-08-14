@@ -29,7 +29,7 @@ final class CoreDataWalletRepository: WalletRepository {
         let result = WalletModel(
             id: wallet.id ?? UUID(),
             name: wallet.name ?? "",
-            type: WalletType(rawValue: wallet.type ?? "") ?? .cash,
+            type: ItemType(rawValue: wallet.type ?? "") ?? .wallet,
             balance: wallet.balance,
             icon: wallet.icon ?? "",
             color: wallet.color ?? "",
@@ -68,7 +68,7 @@ final class CoreDataWalletRepository: WalletRepository {
             return WalletModel(
                 id: wallet.id ?? UUID(),
                 name: wallet.name ?? "",
-                type: WalletType(rawValue: wallet.type ?? "") ?? .cash,
+                type: ItemType(rawValue: wallet.type ?? "") ?? .wallet,
                 balance: wallet.balance,
                 icon: wallet.icon ?? "",
                 color: wallet.color ?? "",
@@ -117,4 +117,12 @@ final class CoreDataWalletRepository: WalletRepository {
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
     }
-} 
+
+
+    func deleteWallet(by id: UUID) -> AnyPublisher<Void, any Error> {
+        coreDataManager.deleteWallet(by: id)
+        return Just(())
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher()
+    }
+}

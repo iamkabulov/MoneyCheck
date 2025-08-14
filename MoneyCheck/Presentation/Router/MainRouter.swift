@@ -13,11 +13,11 @@ enum TransactionItem {
         }
     }
     
-    var title: String {
+    var type: ItemType {
         switch self {
-        case .income(let model): return model.name
-        case .wallet(let model): return model.name
-        case .category(let model): return model.name
+            case .income(let model): return model.type
+            case .wallet(let model): return model.type
+            case .category(let model): return model.type
         }
     }
 }
@@ -32,7 +32,7 @@ protocol TransferRouting: AnyObject {
 }
 
 protocol AddItemRouting: AnyObject {
-    func showAddNewItem(navigationController: UINavigationController, type: AddItemType)
+    func showAddNewItem(navigationController: UINavigationController, type: ItemType)
 }
 
 protocol TransactionsRouting: AnyObject {
@@ -70,7 +70,7 @@ final class MainRouter: MainRouting {
     }
 
     // MARK: AddItemRouting
-    func showAddNewItem(navigationController: UINavigationController, type: AddItemType) {
+    func showAddNewItem(navigationController: UINavigationController, type: ItemType) {
         let viewModel = AddItemViewModel(type: type, financeUseCase: financeUseCase)
         let addVC = AddItemViewController(viewModel: viewModel)
         navigationController.pushViewController(addVC, animated: true)
@@ -78,7 +78,11 @@ final class MainRouter: MainRouting {
 
     // MARK: TransactionsRouting
     func showTransactions(from viewController: UIViewController, for entity: TransactionItem) {
-        let viewModel = TransactionsViewModel(financeUseCase: financeUseCase, itemId: entity.id)
+        let viewModel = TransactionsViewModel(
+            financeUseCase: financeUseCase,
+            itemId: entity.id,
+            itemType: entity.type
+        )
         let transactionsVC = TransactionsViewController(viewModel: viewModel)
         viewController.navigationController?.pushViewController(transactionsVC, animated: true)
     }

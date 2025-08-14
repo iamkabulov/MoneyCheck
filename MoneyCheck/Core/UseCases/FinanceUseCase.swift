@@ -17,9 +17,13 @@ protocol FinanceUseCase {
     func createIncome(name: String, icon: String, color: String) -> AnyPublisher<Void, Error>
     func createWallet(name: String, icon: String, color: String) -> AnyPublisher<Void, Error>
     func createCategory(name: String, icon: String, color: String) -> AnyPublisher<Void, Error>
+    func deleteWallet(by id: UUID) -> AnyPublisher<Void, Error>
+    func deleteIncome(by id: UUID) -> AnyPublisher<Void, Error>
+    func deleteCategory(by id: UUID) -> AnyPublisher<Void, Error>
 }
 
 final class FinanceUseCaseImpl: FinanceUseCase {
+
     private let walletRepository: WalletRepository
     private let categoryRepository: CategoryRepository
     private let incomeRepository: IncomeRepository
@@ -89,6 +93,7 @@ final class FinanceUseCaseImpl: FinanceUseCase {
         let income = IncomeModel(
             id: UUID(),
             name: name,
+            type: .income,
             amount: 0,
             icon: icon,
             color: color,
@@ -101,7 +106,7 @@ final class FinanceUseCaseImpl: FinanceUseCase {
         let wallet = WalletModel(
             id: UUID(),
             name: name,
-            type: .card,
+            type: .wallet,
             balance: 0,
             icon: icon,
             color: color,
@@ -114,7 +119,7 @@ final class FinanceUseCaseImpl: FinanceUseCase {
         let category = CategoryModel(
             id: UUID(),
             name: name,
-            type: .expense,
+            type: .category,
             amount: 0,
             icon: icon,
             color: color,
@@ -122,4 +127,16 @@ final class FinanceUseCaseImpl: FinanceUseCase {
         )
         return categoryRepository.addCategory(category)
     }
-} 
+
+    func deleteWallet(by id: UUID) -> AnyPublisher<Void, Error> {
+        return walletRepository.deleteWallet(by: id)
+    }
+
+    func deleteIncome(by id: UUID) -> AnyPublisher<Void, any Error> {
+        return incomeRepository.deleteIncome(by: id)
+    }
+
+    func deleteCategory(by id: UUID) -> AnyPublisher<Void, any Error> {
+        return categoryRepository.deleteCategory(by: id)
+    }
+}

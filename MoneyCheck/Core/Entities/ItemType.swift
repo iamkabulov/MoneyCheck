@@ -5,16 +5,16 @@
 //  Created by Нурсултан Кабулов on 25.04.2025.
 //
 
-enum AddItemType {
+enum ItemType:String, Codable, CaseIterable {
     case income
     case wallet
     case category
 
     var title: String {
         switch self {
-        case .income: return "Новый доход"
-        case .wallet: return "Новый кошелек"
-        case .category: return "Новая категория"
+        case .income: return "Доход"
+        case .wallet: return "Кошелек"
+        case .category: return "Категория"
         }
     }
 

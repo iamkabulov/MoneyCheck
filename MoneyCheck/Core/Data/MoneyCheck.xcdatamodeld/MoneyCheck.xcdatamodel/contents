@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24B91" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24G84" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
     <entity name="Category" representedClassName="Category" syncable="YES" codeGenerationType="class">
         <attribute name="amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="color" attributeType="String"/>
@@ -14,6 +14,7 @@
         <attribute name="icon" attributeType="String"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="name" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
     </entity>
     <entity name="Transaction" representedClassName="Transaction" syncable="YES" codeGenerationType="class">
         <attribute name="amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>

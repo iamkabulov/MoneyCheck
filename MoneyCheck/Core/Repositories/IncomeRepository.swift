@@ -6,4 +6,5 @@ protocol IncomeRepository {
     func updateIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error>
     func addIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error>
     func getIncome(by id: UUID) -> AnyPublisher<IncomeModel, Error>
+    func deleteIncome(by id: UUID) -> AnyPublisher<Void, Error>
 }

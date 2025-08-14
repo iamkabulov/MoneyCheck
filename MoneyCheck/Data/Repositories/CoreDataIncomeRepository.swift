@@ -34,6 +34,7 @@ final class CoreDataIncomeRepository: IncomeRepository {
             return IncomeModel(
                 id: income.id ?? UUID(),
                 name: income.name ?? "",
+                type: ItemType(rawValue: income.type ?? "Доход") ?? .income,
                 amount: income.amount,
                 icon: income.icon ?? "",
                 color: income.color ?? "",
@@ -68,6 +69,7 @@ final class CoreDataIncomeRepository: IncomeRepository {
         let result = IncomeModel(
             id: income.id ?? UUID(),
             name: income.name ?? "",
+            type: ItemType(rawValue: income.type ?? "Доход") ?? .income,
             amount: income.amount,
             icon: income.icon ?? "",
             color: income.color ?? "",
@@ -104,4 +106,11 @@ final class CoreDataIncomeRepository: IncomeRepository {
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
     }
-} 
+
+    func deleteIncome(by id: UUID) -> AnyPublisher<Void, any Error> {
+        coreDataManager.deleteIncome(by: id)
+        return Just(())
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher()
+    }
+}

@@ -14,7 +14,13 @@ final class TransactionsViewController: UIViewController {
         tableView.delegate = self
         return tableView
     }()
-    
+
+    private lazy var editButton = UIBarButtonItem(
+        barButtonSystemItem: .edit,
+        target: self,
+        action: #selector(openEditItemViewController)
+    )
+
     init(viewModel: TransactionsViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -41,6 +47,10 @@ final class TransactionsViewController: UIViewController {
         tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+
+        editButton.title = "Править"
+        self.navigationItem.rightBarButtonItem = editButton
+        self.navigationItem.rightBarButtonItem?.tintColor = .green
     }
     
     private func bindViewModel() {
@@ -71,6 +81,16 @@ final class TransactionsViewController: UIViewController {
             return "\(sign)\(formattedAmount) ₸"
         }
         return "0 ₸"
+    }
+
+    @objc func openEditItemViewController() {
+        let viewModel = EditItemViewModel(
+            id: viewModel.itemId,
+            type: viewModel.itemType,
+            financeUseCase: viewModel.financeUseCase
+        )
+        let addVC = AddItemViewController(viewModel: viewModel)
+        navigationController?.pushViewController(addVC, animated: true)
     }
 }
 

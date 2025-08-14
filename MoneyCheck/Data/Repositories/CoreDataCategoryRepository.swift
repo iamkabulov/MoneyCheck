@@ -29,7 +29,7 @@ final class CoreDataCategoryRepository: CategoryRepository {
         let result = CategoryModel(
             id: category.id ?? UUID(),
             name: category.name ?? "",
-            type: .expense,
+            type: .category,
             amount: category.amount,
             icon: category.icon ?? "",
             color: category.color ?? "",
@@ -67,7 +67,7 @@ final class CoreDataCategoryRepository: CategoryRepository {
             return CategoryModel(
                 id: category.id ?? UUID(),
                 name: category.name ?? "",
-                type: CategoryType(rawValue: category.type ?? "") ?? .expense,
+                type: ItemType(rawValue: category.type ?? "") ?? .category,
                 amount: abs(category.amount),
                 icon: category.icon ?? "",
                 color: category.color ?? "",
@@ -116,4 +116,11 @@ final class CoreDataCategoryRepository: CategoryRepository {
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
     }
-} 
+
+    func deleteCategory(by id: UUID) -> AnyPublisher<Void, any Error> {
+        coreDataManager.deleteCategory(by: id)
+        return Just(())
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher()
+    }
+}

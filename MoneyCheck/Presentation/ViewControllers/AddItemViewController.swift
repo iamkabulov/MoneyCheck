@@ -4,7 +4,7 @@ import Combine
 
 class AddItemViewController: UIViewController {
     // MARK: - Properties
-    private let viewModel: AddItemViewModel
+    private let viewModel: any ItemViewModelProtocol
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -74,9 +74,11 @@ class AddItemViewController: UIViewController {
         button.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         return button
     }()
-    
+
+    private lazy var deleteButton = UIBarButtonItem()
+
     // MARK: - Initialization
-    init(viewModel: AddItemViewModel) {
+    init(viewModel: ItemViewModelProtocol) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -92,33 +94,60 @@ class AddItemViewController: UIViewController {
         setupConstraints()
         setupKeyboardHandling()
         setupBindings()
-        
-        title = viewModel.title
+
+        if viewModel is EditItemViewModel {
+            deleteButton.title = "Удалить"
+            deleteButton.target = self
+            deleteButton.action = #selector(deleteItem)
+            self.navigationItem.rightBarButtonItem = deleteButton
+            self.navigationItem.rightBarButtonItem?.tintColor = .systemRed
+        }
+
     }
-    
+
+    @objc func deleteItem() {
+        guard let vm = viewModel as? EditItemViewModel else { return }
+        vm.deleteItem()
+            .sink { completion in
+                switch completion {
+                case .finished: break
+                case .failure(let error): print("Error deleting operation: \(error)")
+                }
+            } receiveValue: { _ in
+                self.navigationController?.popToRootViewController(animated: true)
+            }
+            .store(in: &cancellables)
+    }
+
     // MARK: - Private Methods
     private func setupBindings() {
         nameField.textPublisher
             .assign(to: \.name, on: viewModel)
             .store(in: &cancellables)
-        
-        viewModel.$selectedIcon
-            .sink { [weak self] _ in
-                self?.iconsCollectionView.reloadData()
+
+        viewModel.namePublisher
+            .sink { value in
+                self.nameField.text = value
+            }
+            .store(in: &cancellables)
+
+        viewModel.selectedIconPublisher
+            .sink { _ in
+                self.iconsCollectionView.reloadData()
             }
             .store(in: &cancellables)
         
-        viewModel.$selectedColor
-            .sink { [weak self] _ in
-                self?.colorsCollectionView.reloadData()
-                self?.iconsCollectionView.reloadData()
+        viewModel.selectedColorPublisher
+            .sink { _ in
+                self.colorsCollectionView.reloadData()
+                self.iconsCollectionView.reloadData()
             }
             .store(in: &cancellables)
     }
     
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        
+        title = viewModel.type.title
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         contentView.addSubview(stackView)

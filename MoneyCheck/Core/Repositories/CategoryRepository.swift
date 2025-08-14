@@ -13,4 +13,5 @@ protocol CategoryRepository {
     func addCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>
     func updateCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>
     func deleteCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>
+    func deleteCategory(by id: UUID) -> AnyPublisher<Void, Error>
 }

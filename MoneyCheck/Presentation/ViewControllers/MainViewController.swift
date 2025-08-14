@@ -44,6 +44,9 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         return collectionView
     }()
 
+    private let periodButton = UIBarButtonItem()
+
+
     // MARK: - Initialization
     init(viewModel: MainViewModel, router: MainRouter) {
         self.viewModel = viewModel
@@ -74,12 +77,17 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.largeTitleDisplayMode = .automatic
 //        collectionView.isScrollEnabled = false
+        collectionView.showsVerticalScrollIndicator = false
         view.addSubview(collectionView)
 
         collectionView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.bottom.equalToSuperview()
         }
+
+        periodButton.title = "Месяц"
+        self.navigationItem.rightBarButtonItem = periodButton
+        self.navigationItem.rightBarButtonItem?.tintColor = .green
     }
 
     private func setupBindings() {
@@ -583,7 +591,7 @@ extension MainViewController: TransferBottomSheetDelegate {
             viewModel.transferMoney(from: source, to: target, amount: amount)
             
         case .category(let wallet, let category):
-            if category.type == .expense {
+                if category.type == .category {
                 viewModel.addExpense(from: wallet, to: category, amount: amount)
             } else {
                 viewModel.addIncome(to: wallet, from: category, amount: amount)

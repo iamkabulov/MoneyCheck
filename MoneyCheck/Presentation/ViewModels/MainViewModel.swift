@@ -18,7 +18,7 @@ final class MainViewModel {
     }
 
     var totalExpenses: Double {
-        categories.filter { $0.type == .expense }.reduce(0) { $0 + $1.amount }
+        categories.filter { $0.type == .category }.reduce(0) { $0 + $1.amount }
     }
 
     var totalIncome: Double {

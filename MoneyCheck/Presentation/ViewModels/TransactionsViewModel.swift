@@ -28,12 +28,14 @@ struct TransactionSection {
 class TransactionsViewModel {
     let financeUseCase: FinanceUseCase
     let itemId: UUID
+    let itemType: ItemType
     @Published private(set) var sections: [TransactionSection] = []
     private var cancellables = Set<AnyCancellable>()
     
-    init(financeUseCase: FinanceUseCase, itemId: UUID) {
+    init(financeUseCase: FinanceUseCase, itemId: UUID, itemType: ItemType) {
         self.financeUseCase = financeUseCase
         self.itemId = itemId
+        self.itemType = itemType
         loadTransactions(by: itemId)
     }
     
