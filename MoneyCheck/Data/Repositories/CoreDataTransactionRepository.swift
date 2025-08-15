@@ -5,9 +5,6 @@ import Combine
 final class CoreDataTransactionRepository: TransactionRepository {
     private let coreDataManager = CoreDataManager.shared
     
-    init() {
-    }
-    
     func getTransactions() -> AnyPublisher<[TransactionModel], Error> {
         return Future { [weak self] promise in
             guard let self = self else { return }

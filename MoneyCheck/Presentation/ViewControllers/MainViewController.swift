@@ -86,8 +86,16 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         }
 
         periodButton.title = "Месяц"
+        periodButton.target = self
+        periodButton.action = #selector(handlePeriodButtonTapped)
         self.navigationItem.rightBarButtonItem = periodButton
         self.navigationItem.rightBarButtonItem?.tintColor = .green
+    }
+
+    @objc private func handlePeriodButtonTapped() {
+//        router.showAddNewItem(navigationController: navigationController)
+        let vc = SelectPeriodViewController()
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 
     private func setupBindings() {
