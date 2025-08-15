@@ -15,11 +15,7 @@ final class TransactionsViewController: UIViewController {
         return tableView
     }()
 
-    private lazy var editButton = UIBarButtonItem(
-        barButtonSystemItem: .edit,
-        target: self,
-        action: #selector(openEditItemViewController)
-    )
+    private let editButton = UIBarButtonItem()
 
     init(viewModel: TransactionsViewModel) {
         self.viewModel = viewModel
@@ -49,8 +45,10 @@ final class TransactionsViewController: UIViewController {
         }
 
         editButton.title = "Править"
+        self.editButton.target = self
+        self.editButton.action = #selector(openEditItemViewController)
         self.navigationItem.rightBarButtonItem = editButton
-        self.navigationItem.rightBarButtonItem?.tintColor = .green
+        self.navigationItem.rightBarButtonItem?.tintColor = .label
     }
     
     private func bindViewModel() {

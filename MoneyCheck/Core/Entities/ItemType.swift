@@ -28,14 +28,14 @@ enum ItemType:String, Codable, CaseIterable {
         case .wallet:
             return [
                 "creditcard", "wallet.pass", "banknote", "dollarsign.circle",
-                "building.columns", "building.2", "safe", "lock"
+                "building.columns", "building", "lock"
             ]
         case .category:
             return [
                 "cart", "bag", "basket", "gift",
                 "house", "car", "bus", "airplane",
                 "fork.knife", "cup.and.saucer", "wineglass",
-                "heart", "star", "person", "gamecontroller",
+                "cross.case", "star", "person", "gamecontroller",
                 "plus.circle.fill"
             ]
         }

@@ -89,7 +89,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         periodButton.target = self
         periodButton.action = #selector(handlePeriodButtonTapped)
         self.navigationItem.rightBarButtonItem = periodButton
-        self.navigationItem.rightBarButtonItem?.tintColor = .green
+        self.navigationItem.rightBarButtonItem?.tintColor = .label
     }
 
     @objc private func handlePeriodButtonTapped() {
@@ -254,7 +254,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Размер группы
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .absolute(90)
+            heightDimension: .absolute(95)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         group.interItemSpacing = .fixed(5)

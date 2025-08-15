@@ -53,7 +53,7 @@ final class SelectPeriodViewController: UIViewController {
         }
 
         for period in Period.allCases {
-            let button = CheckboxWithTitle(period: period) { [weak self] selectedPeriod in
+            let button = RadioButton(period: period) { [weak self] selectedPeriod in
                 self?.didTapCheckbox(period: selectedPeriod)
             }
             if period == selectedPeriod {
@@ -64,7 +64,7 @@ final class SelectPeriodViewController: UIViewController {
     }
 
     private func didTapCheckbox(period: Period) {
-        for case let button as CheckboxWithTitle in stackView.arrangedSubviews {
+        for case let button as RadioButton in stackView.arrangedSubviews {
             button.isChecked = (button.period == period)
         }
         print("Selected period: \(period)")

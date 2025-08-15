@@ -280,16 +280,18 @@ final class CoreDataManager {
         }
         
         if categories.isEmpty {
-            _ = createCategory(name: "Продукты", type: "Расход", amount: 0, icon: "cart", color: "#FF6B6B")
-            _ = createCategory(name: "Транспорт", type: "Расход", amount: 0, icon: "bus", color: "#4ECDC4")
-            _ = createCategory(name: "Фаст фуд", type: "Расход", amount: 0, icon: "fork.knife", color: "#FFD93D")
-            _ = createCategory(name: "Подписки", type: "Расход", amount: 0, icon: "repeat", color: "#FF8066")
-            _ = createCategory(name: "Развлечения", type: "Расход", amount: 0, icon: "gamecontroller", color: "#95E1D3")
-            _ = createCategory(name: "Ремонт", type: "Расход", amount: 0, icon: "hammer", color: "#A8E6CF")
-            _ = createCategory(name: "Здоровье", type: "Расход", amount: 0, icon: "heart", color: "#FF9A9E")
-            _ = createCategory(name: "Путешествия", type: "Расход", amount: 0, icon: "airplane", color: "#81C784")
-            _ = createCategory(name: "Кредиты", type: "Расход", amount: 0, icon: "creditcard", color: "#FFB74D")
-            _ = createCategory(name: "Подарки", type: "Расход", amount: 0, icon: "gift", color: "#F48FB1")
+            _ = createCategory(name: "Продукты", type: "Расход", amount: 0, icon: "cart", color: "#CD4E50")
+            _ = createCategory(name: "Транспорт", type: "Расход", amount: 0, icon: "bus", color: "#CD4E81")
+            _ = createCategory(name: "Подписки", type: "Расход", amount: 0, icon: "repeat", color: "#A54ECD")
+            _ = createCategory(name: "Развлечения", type: "Расход", amount: 0, icon: "gamecontroller", color: "#674ECD")
+            _ = createCategory(name: "Ремонт", type: "Расход", amount: 0, icon: "hammer", color: "#4E74CD")
+            _ = createCategory(name: "Здоровье", type: "Расход", amount: 0, icon: "cross.case", color: "#4EBBCD")
+            _ = createCategory(name: "Фаст фуд", type: "Расход", amount: 0, icon: "fork.knife", color: "#4ECDC4")
+            _ = createCategory(name: "Путешествия", type: "Расход", amount: 0, icon: "airplane", color: "#4ECD81")
+            _ = createCategory(name: "Кредиты", type: "Расход", amount: 0, icon: "creditcard", color: "#8ACD4E")
+            _ = createCategory(name: "Подарки", type: "Расход", amount: 0, icon: "gift", color: "#CDCD4E")
+            _ = createCategory(name: "Коммунальные услуги", type: "Расход", amount: 0, icon: "spigot", color: "#CD8A4E")
+            _ = createCategory(name: "Фитнес", type: "Расход", amount: 0, icon: "figure.cooldown", color: "#CD674E")
         }
         
         if incomes.isEmpty {
