@@ -86,7 +86,11 @@ class AddItemViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
+    deinit {
+        print("Deinit AddItemViewController")
+    }
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -126,21 +130,21 @@ class AddItemViewController: UIViewController {
             .store(in: &cancellables)
 
         viewModel.namePublisher
-            .sink { value in
-                self.nameField.text = value
+            .sink { [weak self] value in
+                self?.nameField.text = value
             }
             .store(in: &cancellables)
 
         viewModel.selectedIconPublisher
-            .sink { _ in
-                self.iconsCollectionView.reloadData()
+            .sink {[weak self] _ in
+                self?.iconsCollectionView.reloadData()
             }
             .store(in: &cancellables)
         
         viewModel.selectedColorPublisher
-            .sink { _ in
-                self.colorsCollectionView.reloadData()
-                self.iconsCollectionView.reloadData()
+            .sink { [weak self] _ in
+                self?.colorsCollectionView.reloadData()
+                self?.iconsCollectionView.reloadData()
             }
             .store(in: &cancellables)
     }
