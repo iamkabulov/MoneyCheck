@@ -60,7 +60,12 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 
     // MARK: - Lifecycle
     override func viewWillAppear(_ animated: Bool) {
+        viewModel.loadPeriod()
         viewModel.loadData()
+        periodButton.title = switch viewModel.selectedPeriod {
+            case .month: Date().monthName
+            case .week: "Неделя"
+        }
     }
 
     override func viewDidLoad() {
@@ -85,7 +90,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             make.leading.trailing.bottom.equalToSuperview()
         }
 
-        periodButton.title = "Месяц"
+        periodButton.title = viewModel.selectedPeriod.rawValue
         periodButton.target = self
         periodButton.action = #selector(handlePeriodButtonTapped)
         self.navigationItem.rightBarButtonItem = periodButton
@@ -93,12 +98,16 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     }
 
     @objc private func handlePeriodButtonTapped() {
-//        router.showAddNewItem(navigationController: navigationController)
-        let vc = SelectPeriodViewController()
-        self.navigationController?.pushViewController(vc, animated: true)
+        router.showSelectPeriod(from: self)
     }
 
     private func setupBindings() {
+        viewModel.$selectedPeriod
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.collectionView.reloadData()
+            }
+            .store(in: &cancellables)
         viewModel.$wallets
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -112,7 +121,6 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
                 self?.collectionView.reloadData()
             }
             .store(in: &cancellables)
-
         viewModel.$error
             .receive(on: DispatchQueue.main)
             .compactMap { $0 }

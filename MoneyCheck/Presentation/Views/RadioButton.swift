@@ -7,13 +7,13 @@
 import UIKit
 
 class RadioButton: UIView {
-    let period: Period
+    let period: PeriodType
     var isChecked: Bool = false {
         didSet { updateUI() }
     }
     let radioButton = UIImageView()
     let label = UILabel()
-    private let tapHandler: (Period) -> Void
+    private let tapHandler: (PeriodType) -> Void
 
     override init(frame: CGRect) {
         self.period = .week
@@ -21,7 +21,7 @@ class RadioButton: UIView {
         super.init(frame: frame)
     }
 
-    init(period: Period, onTap: @escaping (Period) -> Void) {
+    init(period: PeriodType, onTap: @escaping (PeriodType) -> Void) {
         self.tapHandler = onTap
         self.period = period
         super.init(frame: .zero)

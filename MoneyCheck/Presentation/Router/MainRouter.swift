@@ -86,5 +86,13 @@ final class MainRouter: MainRouting {
         let transactionsVC = TransactionsViewController(viewModel: viewModel)
         viewController.navigationController?.pushViewController(transactionsVC, animated: true)
     }
+
+    // MARK: - SelectPeriodRouting
+
+    func showSelectPeriod(from viewController: UIViewController) {
+        let viewModel = SelectPeriodViewModel(financeUseCase: financeUseCase)
+        let selectPeriodVC = SelectPeriodViewController(viewModel: viewModel)
+        viewController.navigationController?.pushViewController(selectPeriodVC, animated: true)
+    }
 }
 

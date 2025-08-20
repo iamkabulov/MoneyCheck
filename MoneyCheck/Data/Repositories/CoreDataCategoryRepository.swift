@@ -41,7 +41,7 @@ final class CoreDataCategoryRepository: CategoryRepository {
             .eraseToAnyPublisher()
     }
 
-    func getCategories() -> AnyPublisher<[CategoryModel], Error> {
+    func getCategories(period: PeriodType) -> AnyPublisher<[CategoryModel], Error> {
         let categories = coreDataManager.fetchCategories()
         let categoryModels = categories.map { category in
             
@@ -71,7 +71,9 @@ final class CoreDataCategoryRepository: CategoryRepository {
                 amount: abs(category.amount),
                 icon: category.icon ?? "",
                 color: category.color ?? "",
-                transactions: transactions
+                transactions: transactions.filter { transaction in
+                    filterTransactionBy(transaction, period: period)
+                }
             )
         }
         return Just(categoryModels)
@@ -122,5 +124,20 @@ final class CoreDataCategoryRepository: CategoryRepository {
         return Just(())
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
+    }
+
+    func filterTransactionBy(_ transaction: TransactionModel, period: PeriodType) -> Bool {
+        switch period {
+            case .month:
+                if transaction.date >= Calendar(identifier: .iso8601).currentMonthInterval().start && transaction.date <= Calendar(identifier: .iso8601).currentMonthInterval().end {
+                    return true
+                }
+                return false
+            case .week:
+                if transaction.date >= Calendar(identifier: .iso8601).currentWeekInterval().start && transaction.date <= Calendar(identifier: .iso8601).currentWeekInterval().end {
+                    return true
+                }
+                return false
+        }
     }
 }

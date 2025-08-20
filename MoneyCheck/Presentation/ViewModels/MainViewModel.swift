@@ -11,6 +11,7 @@ final class MainViewModel {
     @Published private(set) var incomes: [IncomeModel] = []
     @Published private(set) var error: Error?
     @Published private(set) var isLoading = false
+    @Published private(set) var selectedPeriod: PeriodType = .month
 
     // MARK: - Calculated properties
     var totalBalance: Double {
@@ -30,13 +31,27 @@ final class MainViewModel {
     }
 
     // MARK: - Public methods
+    func loadPeriod() {
+        financeUseCase.getPeriod()
+            .sink { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.error = error
+                    print("Error loading data: \(error)")
+                }
+            } receiveValue: { period in
+                self.selectedPeriod = period
+                print("MainViewModel: Loaded period: \(period)")
+            }
+            .store(in: &cancellables)
+
+    }
+
     func loadData() {
         isLoading = true
-
         Publishers.CombineLatest3(
-            financeUseCase.getWallets(),
-            financeUseCase.getCategories(),
-            financeUseCase.getIncomes()
+            financeUseCase.getWallets(period: selectedPeriod),
+            financeUseCase.getCategories(period: selectedPeriod),
+            financeUseCase.getIncomes(period: selectedPeriod)
         )
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
@@ -46,9 +61,51 @@ final class MainViewModel {
                 print("Error loading data: \(error)")
             }
         } receiveValue: { [weak self] wallets, categories, incomes in
-            self?.wallets = wallets
-            self?.categories = categories
-            self?.incomes = incomes
+            self?.wallets = wallets.map { wallet in
+                let calculatedBalance = self?.calculateBalance(
+                    for: wallet.id,
+                    transactions: wallet.transactions
+                )
+                return WalletModel(
+                    id: wallet.id,
+                    name: wallet.name,
+                    type: wallet.type,
+                    balance: calculatedBalance ?? 0,
+                    icon: wallet.icon,
+                    color: wallet.color,
+                    transactions: wallet.transactions
+                )
+            }
+            self?.categories = categories.map { category in
+                let calculatedBalance = self?.calculateBalance(
+                    for: category.id,
+                    transactions: category.transactions
+                )
+                return CategoryModel(
+                    id: category.id,
+                    name: category.name,
+                    type: category.type,
+                    amount: abs(calculatedBalance ?? 0),
+                    icon: category.icon,
+                    color: category.color,
+                    transactions: category.transactions
+                )
+            }
+            self?.incomes = incomes.map { income in
+                let calculatedBalance = self?.calculateBalance(
+                    for: income.id,
+                    transactions: income.transactions
+                )
+                return IncomeModel(
+                    id: income.id,
+                    name: income.name,
+                    type: income.type,
+                    amount: calculatedBalance ?? 0,
+                    icon: income.icon,
+                    color: income.color,
+                    transactions: income.transactions
+                )
+            }
         }
         .store(in: &cancellables)
     }
@@ -68,11 +125,11 @@ final class MainViewModel {
             sourceId: sourceWallet.id,
             sourceName: sourceWallet.name,
             sourceIcon: sourceWallet.icon,
-            sourceColor: "#007AFF",
+            sourceColor: sourceWallet.color,
             destinationId: targetWallet.id,
             destinationName: targetWallet.name,
             destinationIcon: targetWallet.icon,
-            destinationColor: "#007AFF"
+            destinationColor: targetWallet.color
         )
 
         Publishers.Zip3(
@@ -107,7 +164,7 @@ final class MainViewModel {
             sourceId: wallet.id,
             sourceName: wallet.name,
             sourceIcon: wallet.icon,
-            sourceColor: "#007AFF",
+            sourceColor: wallet.color,
             destinationId: category.id,
             destinationName: category.name,
             destinationIcon: category.icon,
@@ -149,7 +206,7 @@ final class MainViewModel {
             destinationId: wallet.id,
             destinationName: wallet.name,
             destinationIcon: wallet.icon,
-            destinationColor: "#007AFF"
+            destinationColor: wallet.color
         )
 
         Publishers.Zip3(
@@ -187,7 +244,7 @@ final class MainViewModel {
             destinationId: wallet.id,
             destinationName: wallet.name,
             destinationIcon: wallet.icon,
-            destinationColor: "#007AFF"
+            destinationColor: wallet.color
         )
 
         Publishers.Zip3(
@@ -216,5 +273,23 @@ final class MainViewModel {
     func category(at indexPath: IndexPath) -> CategoryModel? {
         guard indexPath.item < categories.count else { return nil }
         return categories[indexPath.item]
+    }
+
+    private func calculateBalance(for walletId: UUID, transactions: [TransactionModel]) -> Double {
+        transactions.reduce(0) { partial, transaction in
+            switch transaction.type {
+            case .income:
+                return partial + transaction.amount
+            case .expense:
+                return partial - transaction.amount
+            case .transfer:
+                if transaction.sourceId == walletId {
+                    return partial - transaction.amount
+                } else if transaction.destinationId == walletId {
+                    return partial + transaction.amount
+                }
+                return partial
+            }
+        }
     }
 }

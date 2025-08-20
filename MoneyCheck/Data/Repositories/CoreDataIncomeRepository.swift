@@ -6,7 +6,7 @@ final class CoreDataIncomeRepository: IncomeRepository {
 
     private let coreDataManager = CoreDataManager.shared
     
-    func getIncomes() -> AnyPublisher<[IncomeModel], Error> {
+    func getIncomes(period: PeriodType) -> AnyPublisher<[IncomeModel], Error> {
         let incomes = coreDataManager.fetchIncomes()
         let incomeModels = incomes.map { income in
             let transactions = coreDataManager
@@ -38,7 +38,9 @@ final class CoreDataIncomeRepository: IncomeRepository {
                 amount: income.amount,
                 icon: income.icon ?? "",
                 color: income.color ?? "",
-                transactions: transactions
+                transactions: transactions.filter { transaction in
+                    filterTransactionBy(transaction, period: period)
+                }
             )
         }
         return Just(incomeModels)
@@ -112,5 +114,20 @@ final class CoreDataIncomeRepository: IncomeRepository {
         return Just(())
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
+    }
+
+    func filterTransactionBy(_ transaction: TransactionModel, period: PeriodType) -> Bool {
+        switch period {
+            case .month:
+                if transaction.date >= Calendar(identifier: .iso8601).currentMonthInterval().start && transaction.date <= Calendar(identifier: .iso8601).currentMonthInterval().end {
+                    return true
+                }
+                return false
+            case .week:
+                if transaction.date >= Calendar(identifier: .iso8601).currentWeekInterval().start && transaction.date <= Calendar(identifier: .iso8601).currentWeekInterval().end {
+                    return true
+                }
+                return false
+        }
     }
 }

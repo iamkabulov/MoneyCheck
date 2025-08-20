@@ -24,13 +24,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let categoryRepository = CoreDataCategoryRepository()
         let incomeRepository = CoreDataIncomeRepository()
         let transactionRepository = CoreDataTransactionRepository()
-        
+        let periodRepository = CoreDataPeriodRepository()
+
         // Initialize use case
         let financeUseCase = FinanceUseCaseImpl(
             walletRepository: walletRepository,
             categoryRepository: categoryRepository,
             incomeRepository: incomeRepository,
-            transactionRepository: transactionRepository
+            transactionRepository: transactionRepository,
+            periodRepository: periodRepository
         )
         
         // Initialize view model

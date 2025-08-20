@@ -2,11 +2,11 @@ import Foundation
 import Combine
 
 protocol FinanceUseCase {
-    func getWallets() -> AnyPublisher<[WalletModel], Error>
+    func getWallets(period: PeriodType) -> AnyPublisher<[WalletModel], Error>
     func getWallet(by id: UUID) -> AnyPublisher<WalletModel, Error>
-    func getCategories() -> AnyPublisher<[CategoryModel], Error>
+    func getCategories(period: PeriodType) -> AnyPublisher<[CategoryModel], Error>
     func getCategory(by id: UUID) -> AnyPublisher<CategoryModel, Error>
-    func getIncomes() -> AnyPublisher<[IncomeModel], Error>
+    func getIncomes(period: PeriodType) -> AnyPublisher<[IncomeModel], Error>
     func getIncome(by id: UUID) -> AnyPublisher<IncomeModel, Error>
     func getTransactions(by id: UUID) -> AnyPublisher<[TransactionModel], Error>
     func updateWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error>
@@ -20,6 +20,8 @@ protocol FinanceUseCase {
     func deleteWallet(by id: UUID) -> AnyPublisher<Void, Error>
     func deleteIncome(by id: UUID) -> AnyPublisher<Void, Error>
     func deleteCategory(by id: UUID) -> AnyPublisher<Void, Error>
+    func getPeriod() -> AnyPublisher<PeriodType, Error>
+    func savePeriod(period: PeriodType) -> AnyPublisher<Void, Error>
 }
 
 final class FinanceUseCaseImpl: FinanceUseCase {
@@ -28,37 +30,40 @@ final class FinanceUseCaseImpl: FinanceUseCase {
     private let categoryRepository: CategoryRepository
     private let incomeRepository: IncomeRepository
     private let transactionRepository: TransactionRepository
-    
+    private let periodRepository: PeriodRepository
+
     init(
         walletRepository: WalletRepository,
         categoryRepository: CategoryRepository,
         incomeRepository: IncomeRepository,
-        transactionRepository: TransactionRepository
+        transactionRepository: TransactionRepository,
+        periodRepository: PeriodRepository
     ) {
         self.walletRepository = walletRepository
         self.categoryRepository = categoryRepository
         self.incomeRepository = incomeRepository
         self.transactionRepository = transactionRepository
+        self.periodRepository = periodRepository
     }
     
-    func getWallets() -> AnyPublisher<[WalletModel], Error> {
-        return walletRepository.getWallets()
+    func getWallets(period: PeriodType) -> AnyPublisher<[WalletModel], Error> {
+        return walletRepository.getWallets(period: period)
     }
 
     func getWallet(by id: UUID) -> AnyPublisher<WalletModel, Error> {
         return walletRepository.getWallet(by: id)
     }
 
-    func getCategories() -> AnyPublisher<[CategoryModel], Error> {
-        return categoryRepository.getCategories()
+    func getCategories(period: PeriodType) -> AnyPublisher<[CategoryModel], Error> {
+        return categoryRepository.getCategories(period: period)
     }
 
     func getCategory(by id: UUID) -> AnyPublisher<CategoryModel, Error> {
         return categoryRepository.getCategory(by: id)
     }
 
-    func getIncomes() -> AnyPublisher<[IncomeModel], Error> {
-        return incomeRepository.getIncomes()
+    func getIncomes(period: PeriodType) -> AnyPublisher<[IncomeModel], Error> {
+        return incomeRepository.getIncomes(period: period)
     }
 
     func getIncome(by id: UUID) -> AnyPublisher<IncomeModel, Error> {
@@ -138,5 +143,13 @@ final class FinanceUseCaseImpl: FinanceUseCase {
 
     func deleteCategory(by id: UUID) -> AnyPublisher<Void, any Error> {
         return categoryRepository.deleteCategory(by: id)
+    }
+
+    func getPeriod() -> AnyPublisher<PeriodType, any Error> {
+        return periodRepository.getPeriod()
+    }
+
+    func savePeriod(period: PeriodType) -> AnyPublisher<Void, any Error> {
+        return periodRepository.savePeriod(period)
     }
 }

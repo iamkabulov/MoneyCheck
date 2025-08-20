@@ -8,7 +8,7 @@ import Foundation
 import Combine
 
 protocol CategoryRepository {
-    func getCategories() -> AnyPublisher<[CategoryModel], Error>
+    func getCategories(period: PeriodType) -> AnyPublisher<[CategoryModel], Error>
     func getCategory(by id: UUID) -> AnyPublisher<CategoryModel, Error>
     func addCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>
     func updateCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>

@@ -9,17 +9,25 @@ import UIKit
 import Combine
 import SnapKit
 
-enum Period: String, CaseIterable {
+enum PeriodType: String, CaseIterable {
     case week = "Неделя"
     case month = "Месяц"
+
+    var displayTitle: String {
+        switch self {
+        case .week:
+            return "Неделя"
+        case .month:
+            return Date().monthName // ← текущий месяц
+        }
+    }
 }
 
-protocol SelectPeriodViewControllerProtocol: AnyObject {
-}
+protocol SelectPeriodViewControllerProtocol: AnyObject {}
 
 final class SelectPeriodViewController: UIViewController {
-
-    var selectedPeriod: Period = .month
+    private let viewModel: SelectPeriodViewModel
+    private var cancellables = Set<AnyCancellable>()
 
     private lazy var stackView: UIStackView = {
         let stackView = UIStackView()
@@ -29,44 +37,76 @@ final class SelectPeriodViewController: UIViewController {
         return stackView
     }()
 
-    init() {
+    private lazy var applyButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Применить", for: .normal)
+        button.addTarget(self, action: #selector(apply), for: .touchUpInside)
+        return button
+    }()
+
+    init(viewModel: SelectPeriodViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        bindViewModel()
+    }
+
+    private func bindViewModel() {
+        viewModel.$selectedPeriod
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] period in
+                self?.updateSelection(period)
+            }
+            .store(in: &cancellables)
+    }
+
+    @objc private func apply() {
+        viewModel.savePeriod(viewModel.selectedPeriod)
+        navigationController?.popViewController(animated: true)
     }
 
     private func setupUI() {
+        title = viewModel.screenTitle
         view.backgroundColor = .systemBackground
         view.addSubview(stackView)
+        view.addSubview(applyButton)
 
         stackView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview().inset(16)
-            make.height.equalTo(100)
+            make.height.equalTo(PeriodType.allCases.count * 70)
         }
 
-        for period in Period.allCases {
-            let button = RadioButton(period: period) { [weak self] selectedPeriod in
-                self?.didTapCheckbox(period: selectedPeriod)
-            }
-            if period == selectedPeriod {
-                button.isChecked = true
+        applyButton.snp.makeConstraints { make in
+            make.leading.trailing.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
+        }
+
+        PeriodType.allCases.forEach { period in
+            let button = RadioButton(period: period) { [weak self] selected in
+                self?.viewModel.selectedPeriod = selected
             }
             stackView.addArrangedSubview(button)
         }
     }
 
-    private func didTapCheckbox(period: Period) {
+    private func updateSelection(_ selected: PeriodType) {
         for case let button as RadioButton in stackView.arrangedSubviews {
-            button.isChecked = (button.period == period)
+            button.isChecked = (button.period == selected)
         }
-        print("Selected period: \(period)")
+    }
+}
+
+extension Date {
+    var monthName: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ru_RU") // ← для русского языка
+        formatter.dateFormat = "LLLL yyyy"             // название месяца + год
+        return formatter.string(from: self).capitalized
     }
 }

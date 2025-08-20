@@ -40,7 +40,7 @@ final class CoreDataWalletRepository: WalletRepository {
             .eraseToAnyPublisher()
     }
 
-    func getWallets() -> AnyPublisher<[WalletModel], Error> {
+    func getWallets(period: PeriodType) -> AnyPublisher<[WalletModel], Error> {
         let wallets = coreDataManager.fetchWallets()
 
         let walletModels = wallets.map { wallet in
@@ -72,7 +72,9 @@ final class CoreDataWalletRepository: WalletRepository {
                 balance: wallet.balance,
                 icon: wallet.icon ?? "",
                 color: wallet.color ?? "",
-                transactions: transactions
+                transactions: transactions.filter { transaction in
+                    filterTransactionBy(transaction, period: period)
+                }
             )
         }
 
@@ -124,5 +126,20 @@ final class CoreDataWalletRepository: WalletRepository {
         return Just(())
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
+    }
+
+    func filterTransactionBy(_ transaction: TransactionModel, period: PeriodType) -> Bool {
+        switch period {
+            case .month:
+                if transaction.date >= Calendar(identifier: .iso8601).currentMonthInterval().start && transaction.date <= Calendar(identifier: .iso8601).currentMonthInterval().end {
+                    return true
+                }
+                return false
+            case .week:
+                if transaction.date >= Calendar(identifier: .iso8601).currentWeekInterval().start && transaction.date <= Calendar(identifier: .iso8601).currentWeekInterval().end {
+                    return true
+                }
+                return false
+        }
     }
 }

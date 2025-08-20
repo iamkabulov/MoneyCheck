@@ -299,4 +299,48 @@ final class CoreDataManager {
             _ = createIncome(name: "Прибыль", amount: 0, icon: "chart.line.uptrend.xyaxis", color: "#2196F3")
         }
     }
-} 
+
+    func getPeriod() -> PeriodType {
+        let request: NSFetchRequest<Period> = Period.fetchRequest()
+        do {
+            let period = try context.fetch(request)
+            guard let period = period.first, let name = period.name else { return .month }
+            guard let result = PeriodType(rawValue: name) else { return .month }
+            return result
+        } catch {
+            print("Error fetching wallets: \(error)")
+            return .month
+        }
+    }
+
+    func savePeriod(_ value: PeriodType) {
+        deleteAllPeriods()
+
+        do {
+            switch value {
+                case .month:
+                    let period = Period(context: context)
+                    period.name = value.rawValue
+                    try context.save()
+                case .week:
+                    let period = Period(context: context)
+                    period.name = value.rawValue
+                    try context.save()
+            }
+        } catch {
+            print("Error saving period: \(error)")
+        }
+    }
+
+    private func deleteAllPeriods() {
+        let request: NSFetchRequest<Period> = Period.fetchRequest()
+        do {
+            if let entity = try context.fetch(request).first {
+                context.delete(entity)
+                try context.save()
+            }
+        } catch {
+            print("Error deleting period: \(error)")
+        }
+    }
+}
