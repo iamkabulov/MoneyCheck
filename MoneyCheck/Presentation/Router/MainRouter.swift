@@ -24,75 +24,95 @@ enum TransactionItem {
 
 import UIKit
 
-// MARK: - Протоколы
+// MARK: - Protocols
 protocol TransferRouting: AnyObject {
-    func presentTransferBottomSheet(from viewController: UIViewController,
-                                    type: TransferType,
+    func presentTransferBottomSheet(type: TransferType,
                                     delegate: TransferBottomSheetDelegate)
+    func closeTransferBottomSheet()
 }
 
 protocol AddItemRouting: AnyObject {
-    func showAddNewItem(navigationController: UINavigationController, type: ItemType)
+    func showAddNewItem(type: ItemType)
 }
 
 protocol TransactionsRouting: AnyObject {
-    func showTransactions(from viewController: UIViewController, for entity: TransactionItem)
+    func showTransactions(for entity: TransactionItem)
 }
 
-typealias MainRouting = TransferRouting & AddItemRouting & TransactionsRouting
+protocol SelectPeriodRouting: AnyObject {
+    func showSelectPeriod()
+    func closeSelectPeriod()
+}
 
 // MARK: - Реализация роутера
-final class MainRouter: MainRouting {
+final class MainRouter {
 
     weak var viewController: UIViewController?
     private let financeUseCase: FinanceUseCase
 
-    init(viewController: UIViewController? = nil, financeUseCase: FinanceUseCase) {
-        self.viewController = viewController
+    init(financeUseCase: FinanceUseCase) {
         self.financeUseCase = financeUseCase
     }
-    // MARK: TransferRouting
-    func presentTransferBottomSheet(from viewController: UIViewController,
-                                    type: TransferType,
+}
+
+// MARK: - TransferRouting
+extension MainRouter: TransferRouting {
+    func presentTransferBottomSheet(type: TransferType,
                                     delegate: TransferBottomSheetDelegate) {
         let bottomSheetVC = TransferBottomSheetViewController(transferType: type)
         bottomSheetVC.delegate = delegate
         bottomSheetVC.modalPresentationStyle = .pageSheet
 
         if let sheet = bottomSheetVC.sheetPresentationController {
-            sheet.detents = [.custom { _ in
+            sheet.detents = [ .custom { _ in
                 return 160
             }]
             sheet.prefersGrabberVisible = true
         }
 
-        viewController.present(bottomSheetVC, animated: true)
+        self.viewController?.present(bottomSheetVC, animated: true)
     }
 
-    // MARK: AddItemRouting
-    func showAddNewItem(navigationController: UINavigationController, type: ItemType) {
+    func closeTransferBottomSheet() {
+        self.viewController?.dismiss(animated: true)
+    }
+}
+
+// MARK: - AddItemRouting
+extension MainRouter: AddItemRouting {
+
+    func showAddNewItem(type: ItemType) {
         let viewModel = AddItemViewModel(type: type, financeUseCase: financeUseCase)
         let addVC = AddItemViewController(viewModel: viewModel)
-        navigationController.pushViewController(addVC, animated: true)
+        self.viewController?.navigationController?.pushViewController(addVC, animated: true)
     }
+}
 
-    // MARK: TransactionsRouting
-    func showTransactions(from viewController: UIViewController, for entity: TransactionItem) {
+// MARK: - TransactionsRouting
+extension MainRouter: TransactionsRouting {
+    func showTransactions(for entity: TransactionItem) {
         let viewModel = TransactionsViewModel(
             financeUseCase: financeUseCase,
             itemId: entity.id,
             itemType: entity.type
         )
         let transactionsVC = TransactionsViewController(viewModel: viewModel)
-        viewController.navigationController?.pushViewController(transactionsVC, animated: true)
-    }
-
-    // MARK: - SelectPeriodRouting
-
-    func showSelectPeriod(from viewController: UIViewController) {
-        let viewModel = SelectPeriodViewModel(financeUseCase: financeUseCase)
-        let selectPeriodVC = SelectPeriodViewController(viewModel: viewModel)
-        viewController.navigationController?.pushViewController(selectPeriodVC, animated: true)
+        self.viewController?.navigationController?.pushViewController(transactionsVC, animated: true)
     }
 }
 
+// MARK: - SelectPeriodRouting
+extension MainRouter: SelectPeriodRouting {
+    func showSelectPeriod() {
+        let viewModel = SelectPeriodViewModel(financeUseCase: financeUseCase)
+        let selectPeriodVC = SelectPeriodViewController(
+            viewModel: viewModel,
+            router: self
+        )
+        self.viewController?.navigationController?.pushViewController(selectPeriodVC, animated: true)
+    }
+
+    func closeSelectPeriod() {
+        self.viewController?.navigationController?.popViewController(animated: true)
+    }
+}

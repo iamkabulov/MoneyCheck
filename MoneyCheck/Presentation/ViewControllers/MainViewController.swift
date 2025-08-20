@@ -14,7 +14,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     }
     // MARK: - Properties
     private let viewModel: MainViewModel
-    let router: MainRouter
+    private let router: MainRouter
     private var cancellables = Set<AnyCancellable>()
     private var lastHighlightedIndexPath: IndexPath?
     private var pendingTransferWallet: WalletModel?
@@ -98,7 +98,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     }
 
     @objc private func handlePeriodButtonTapped() {
-        router.showSelectPeriod(from: self)
+        router.showSelectPeriod()
     }
 
     private func setupBindings() {
@@ -552,12 +552,7 @@ extension MainViewController: UICollectionViewDropDelegate {
 // MARK: - Helper Methods
 private extension MainViewController {
     func showTransferBottomSheet(for transferType: TransferType) {
-        router
-            .presentTransferBottomSheet(
-                from: self,
-                type: transferType,
-                delegate: self
-            )
+        router.presentTransferBottomSheet(type: transferType, delegate: self)
     }
 }
 
@@ -573,21 +568,21 @@ extension MainViewController {
         switch indexPath.section {
         case 0: // Income
             if indexPath.item == viewModel.incomes.count {
-                router.showAddNewItem(navigationController: self.navigationController ?? UINavigationController(), type: .income)
+                router.showAddNewItem( type: .income)
             } else if let income = viewModel.incomes[safe: indexPath.item] {
-                router.showTransactions(from: self, for: .income(income))
+                router.showTransactions(for: .income(income))
             }
         case 1: // Wallets
             if indexPath.item == viewModel.wallets.count {
-                router.showAddNewItem(navigationController: self.navigationController ?? UINavigationController(), type: .wallet)
+                router.showAddNewItem(type: .wallet)
             } else if let wallet = viewModel.wallets[safe: indexPath.item] {
-                router.showTransactions(from: self, for: .wallet(wallet))
+                router.showTransactions(for: .wallet(wallet))
             }
         case 2: // Categories
             if indexPath.item == viewModel.categories.count {
-                router.showAddNewItem(navigationController: self.navigationController ?? UINavigationController(), type: .category)
+                router.showAddNewItem(type: .category)
             } else if let category = viewModel.categories[safe: indexPath.item] {
-                router.showTransactions(from: self, for: .category(category))
+                router.showTransactions(for: .category(category))
             }
         default:
             break
@@ -597,27 +592,17 @@ extension MainViewController {
 
 // MARK: - TransferBottomSheetDelegate
 extension MainViewController: TransferBottomSheetDelegate {
-    func transferBottomSheet(_ viewController: TransferBottomSheetViewController, didConfirmAmount amount: Double) {
-        viewController.dismiss(animated: true)
-        switch viewController.transferType {
-        case .income(let income, let wallet):
-            viewModel.addIncomeTransaction(from: income, to: wallet, amount: amount)
-            
-        case .wallet(let source, let target):
-            viewModel.transferMoney(from: source, to: target, amount: amount)
-            
-        case .category(let wallet, let category):
-                if category.type == .category {
-                viewModel.addExpense(from: wallet, to: category, amount: amount)
-            } else {
-                viewModel.addIncome(to: wallet, from: category, amount: amount)
-            }
-        }
+    func transferBottomSheet(transferType: TransferType, didConfirmAmount amount: Double) {
+        viewModel.handleTransfer(type: transferType, amount: amount)
+        router.closeTransferBottomSheet()
     }
-    
-    func transferBottomSheetDidCancel(_ viewController: TransferBottomSheetViewController) {
-        // Очищаем состояние, если нужно
-        viewController.dismiss(animated: true)
+
+    func transferBottomSheetDidCancel() {
+        router.closeTransferBottomSheet()
+        resetTransferState()
+    }
+
+    func resetTransferState() {
         pendingTransferWallet = nil
         lastHighlightedIndexPath = nil
     }

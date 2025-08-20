@@ -20,8 +20,8 @@ enum TransferType {
 }
 
 protocol TransferBottomSheetDelegate: AnyObject {
-    func transferBottomSheet(_ viewController: TransferBottomSheetViewController, didConfirmAmount amount: Double)
-    func transferBottomSheetDidCancel(_ viewController: TransferBottomSheetViewController)
+    func transferBottomSheet(transferType: TransferType, didConfirmAmount amount: Double)
+    func transferBottomSheetDidCancel()
 }
 
 final class TransferBottomSheetViewController: UIViewController {
@@ -72,7 +72,7 @@ final class TransferBottomSheetViewController: UIViewController {
         button.setTitleColor(UIColor(hex: "#FF3B30"), for: .normal)
         button.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
-            self.delegate?.transferBottomSheetDidCancel(self)
+            self.delegate?.transferBottomSheetDidCancel()
         }, for: .touchDown)
         return button
     }()
@@ -88,7 +88,7 @@ final class TransferBottomSheetViewController: UIViewController {
                   amount > 0 else {
                 return
             }
-            self.delegate?.transferBottomSheet(self, didConfirmAmount: amount)
+            self.delegate?.transferBottomSheet(transferType: transferType,didConfirmAmount: amount)
         }, for: .touchDown)
         return button
     }()
@@ -107,7 +107,11 @@ final class TransferBottomSheetViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
+    deinit {
+        print("TransferBottomSheet deinit")
+    }
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()

@@ -110,7 +110,7 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double) {
+    private func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double) {
 
         var updatedSourceWallet = sourceWallet
         var updatedTargetWallet = targetWallet
@@ -149,7 +149,7 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double) {
+    private func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double) {
 
         var updatedWallet = wallet
         var updatedCategory = category
@@ -188,7 +188,7 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double) {
+    private func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double) {
 
         var updatedWallet = wallet
         var updatedCategory = category
@@ -226,7 +226,7 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double) {
+    private func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double) {
 
         var updatedIncome = income
         var updatedWallet = wallet
@@ -289,6 +289,21 @@ final class MainViewModel {
                     return partial + transaction.amount
                 }
                 return partial
+            }
+        }
+    }
+
+    func handleTransfer(type: TransferType, amount: Double) {
+        switch type {
+        case .income(let income, let wallet):
+            addIncomeTransaction(from: income, to: wallet, amount: amount)
+        case .wallet(let source, let target):
+            transferMoney(from: source, to: target, amount: amount)
+        case .category(let wallet, let category):
+            if category.type == .category {
+                addExpense(from: wallet, to: category, amount: amount)
+            } else {
+                addIncome(to: wallet, from: category, amount: amount)
             }
         }
     }
