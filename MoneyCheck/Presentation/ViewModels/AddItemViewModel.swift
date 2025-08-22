@@ -5,13 +5,15 @@ protocol ItemViewModelProtocol: AnyObject {
     var name: String { get set }
     var selectedIcon: String { get set }
     var selectedColor: String { get set }
+
     var namePublisher: Published<String>.Publisher { get }
     var selectedIconPublisher: Published<String>.Publisher { get }
     var selectedColorPublisher: Published<String>.Publisher { get }
+
     var icons: [String] { get set }
     var colors: [String] { get set }
     var type: ItemType { get }
-    func saveItem() -> AnyPublisher<Void, Error>
+    func saveItem()
 }
 
 final class AddItemViewModel: ItemViewModelProtocol {
@@ -23,31 +25,30 @@ final class AddItemViewModel: ItemViewModelProtocol {
     // MARK: - Published properties
     @Published var selectedIcon: String = ""
     @Published var selectedColor: String = ""
+    @Published var name: String = ""
+    
     var selectedIconPublisher: Published<String>.Publisher { $selectedIcon }
     var selectedColorPublisher: Published<String>.Publisher { $selectedColor }
     var namePublisher: Published<String>.Publisher { $name }
-    @Published var name: String = ""
-    
+    private let router: ItemRouting
+
     // MARK: - Public properties
     var icons: [String]
     var colors: [String]
     
     // MARK: - Initialization
-    init(type: ItemType, financeUseCase: FinanceUseCase) {
+    init(type: ItemType, financeUseCase: FinanceUseCase, router: ItemRouting) {
         self.type = type
         self.financeUseCase = financeUseCase
+        self.router = router
         self.icons = type.icons
         self.colors = type.colors
-        // Установка начальных значений
-        self.selectedColor = type.colors.first ?? ""
-        self.selectedIcon = type.icons.first ?? ""
     }
     
     // MARK: - Public methods
-    func saveItem() -> AnyPublisher<Void, Error> {
+    func saveItem() {
         guard !name.isEmpty else {
-            return Fail(error: NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Заполните все поля"]))
-                .eraseToAnyPublisher()
+            return router.showError(nil, message: "Заполните поле")
         }
         
         switch type {
@@ -58,6 +59,15 @@ final class AddItemViewModel: ItemViewModelProtocol {
                         icon: selectedIcon,
                         color: selectedColor
                     )
+                    .sink { [weak self] completion in
+                        switch completion {
+                            case .finished: break
+                            self?.router.closeItemView()
+                        case .failure(let error):
+                            self?.router.showError(nil, message: error.localizedDescription)
+                        }
+                    } receiveValue: { _ in }
+                    .store(in: &cancellables)
         case .wallet:
                 return financeUseCase
                     .createWallet(
@@ -65,6 +75,15 @@ final class AddItemViewModel: ItemViewModelProtocol {
                         icon: selectedIcon,
                         color: selectedColor
                     )
+                    .sink { [weak self] completion in
+                        switch completion {
+                        case .finished: break
+                            self?.router.closeItemView()
+                        case .failure(let error):
+                            self?.router.showError(nil, message: error.localizedDescription)
+                        }
+                    } receiveValue: { _ in }
+                    .store(in: &cancellables)
         case .category:
                 return financeUseCase
                     .createCategory(
@@ -72,6 +91,15 @@ final class AddItemViewModel: ItemViewModelProtocol {
                         icon: selectedIcon,
                         color: selectedColor
                     )
+                    .sink { [weak self] completion in
+                        switch completion {
+                        case .finished: break
+                            self?.router.closeItemView() // роутинг прямо здесь
+                        case .failure(let error):
+                            self?.router.showError(nil, message: error.localizedDescription)
+                        }
+                    } receiveValue: { _ in }
+                    .store(in: &cancellables)
         }
     }
 } 

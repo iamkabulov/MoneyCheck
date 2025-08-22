@@ -13,16 +13,22 @@ final class SelectPeriodViewModel {
 
     @Published var selectedPeriod: PeriodType
     private let financeUseCase: FinanceUseCase
+    private let router: SelectPeriodRouting
     let screenTitle = "Выберите период"
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Published properties
 
     // MARK: - Initialization
-    init(financeUseCase: FinanceUseCase) {
+    init(financeUseCase: FinanceUseCase, router: SelectPeriodRouting) {
         self.financeUseCase = financeUseCase
+        self.router = router
         self.selectedPeriod = .month
         self.getPeriod()
+    }
+
+    deinit {
+        print("Select Period ViewModel deinit")
     }
 
     private func getPeriod() {
@@ -49,7 +55,7 @@ final class SelectPeriodViewModel {
                 }
             } receiveValue: { _ in
             }.store(in: &cancellables)
-
+        router.closeSelectPeriod()
     }
 }
 

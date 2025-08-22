@@ -6,6 +6,7 @@ protocol EditTransactionDelegate: AnyObject {
     func editTransactionViewController(_ controller: EditTransactionViewController, didUpdate transaction: TransactionModel)
 }
 
+//TODO: - Создать отдельно ViewModel
 final class EditTransactionViewController: UIViewController {
     private let transaction: TransactionModel
     private let financeUseCase: FinanceUseCase

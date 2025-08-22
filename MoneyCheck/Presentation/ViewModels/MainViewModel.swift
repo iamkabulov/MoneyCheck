@@ -3,6 +3,7 @@ import Combine
 
 final class MainViewModel {
     let financeUseCase: FinanceUseCase
+    let router: MainRouter
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Published properties
@@ -26,8 +27,9 @@ final class MainViewModel {
         incomes.reduce(0) { $0 + $1.amount }
     }
 
-    init(financeUseCase: FinanceUseCase) {
+    init(financeUseCase: FinanceUseCase, router: MainRouter) {
         self.financeUseCase = financeUseCase
+        self.router = router
     }
 
     // MARK: - Public methods
@@ -110,8 +112,56 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    private func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double) {
+    func handleTransfer(type: TransferType, amount: Double) {
+        switch type {
+        case .income(let income, let wallet):
+            addIncomeTransaction(from: income, to: wallet, amount: amount)
+        case .wallet(let source, let target):
+            transferMoney(from: source, to: target, amount: amount)
+        case .category(let wallet, let category):
+            if category.type == .category {
+                addExpense(from: wallet, to: category, amount: amount)
+            } else {
+                addIncome(to: wallet, from: category, amount: amount)
+            }
+        }
+        router.closeTransferBottomSheet()
+    }
 
+    func presentTransfer(type: TransferType, delegate: TransferBottomSheetDelegate) {
+        router.presentTransferBottomSheet(type: type, delegate: delegate)
+    }
+
+    func showSelectPeriod() {
+        router.showSelectPeriod()
+    }
+
+    func showAddNewItem(type: ItemType) {
+        router.showAddNewItem(type: type)
+    }
+
+    func showTransactions(for item: TransactionItem) {
+        router.showTransactions(for: item)
+    }
+
+    func сloseTransfer() {
+        router.closeTransferBottomSheet()
+    }
+
+    // MARK: - Helper Methods
+    func wallet(at indexPath: IndexPath) -> WalletModel? {
+        guard indexPath.item < wallets.count else { return nil }
+        return wallets[indexPath.item]
+    }
+
+    func category(at indexPath: IndexPath) -> CategoryModel? {
+        guard indexPath.item < categories.count else { return nil }
+        return categories[indexPath.item]
+    }
+}
+
+private extension MainViewModel {
+    func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double) {
         var updatedSourceWallet = sourceWallet
         var updatedTargetWallet = targetWallet
 
@@ -149,8 +199,7 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    private func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double) {
-
+    func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double) {
         var updatedWallet = wallet
         var updatedCategory = category
 
@@ -188,8 +237,7 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    private func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double) {
-
+    func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double) {
         var updatedWallet = wallet
         var updatedCategory = category
 
@@ -226,8 +274,7 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    private func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double) {
-
+    func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double) {
         var updatedIncome = income
         var updatedWallet = wallet
 
@@ -264,18 +311,7 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    // MARK: - Helper Methods
-    func wallet(at indexPath: IndexPath) -> WalletModel? {
-        guard indexPath.item < wallets.count else { return nil }
-        return wallets[indexPath.item]
-    }
-
-    func category(at indexPath: IndexPath) -> CategoryModel? {
-        guard indexPath.item < categories.count else { return nil }
-        return categories[indexPath.item]
-    }
-
-    private func calculateBalance(for walletId: UUID, transactions: [TransactionModel]) -> Double {
+    func calculateBalance(for walletId: UUID, transactions: [TransactionModel]) -> Double {
         transactions.reduce(0) { partial, transaction in
             switch transaction.type {
             case .income:
@@ -289,21 +325,6 @@ final class MainViewModel {
                     return partial + transaction.amount
                 }
                 return partial
-            }
-        }
-    }
-
-    func handleTransfer(type: TransferType, amount: Double) {
-        switch type {
-        case .income(let income, let wallet):
-            addIncomeTransaction(from: income, to: wallet, amount: amount)
-        case .wallet(let source, let target):
-            transferMoney(from: source, to: target, amount: amount)
-        case .category(let wallet, let category):
-            if category.type == .category {
-                addExpense(from: wallet, to: category, amount: amount)
-            } else {
-                addIncome(to: wallet, from: category, amount: amount)
             }
         }
     }

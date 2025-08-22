@@ -112,15 +112,6 @@ class AddItemViewController: UIViewController {
     @objc func deleteItem() {
         guard let vm = viewModel as? EditItemViewModel else { return }
         vm.deleteItem()
-            .sink { completion in
-                switch completion {
-                case .finished: break
-                case .failure(let error): print("Error deleting operation: \(error)")
-                }
-            } receiveValue: { _ in
-                self.navigationController?.popToRootViewController(animated: true)
-            }
-            .store(in: &cancellables)
     }
 
     // MARK: - Private Methods
@@ -259,17 +250,6 @@ class AddItemViewController: UIViewController {
     // MARK: - Actions
     @objc private func saveButtonTapped() {
         viewModel.saveItem()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                switch completion {
-                case .finished:
-                    self?.navigationController?.popToRootViewController(animated: true)
-                case .failure(let error):
-                    print("Error saving item: \(error)")
-                    // TODO: Show error
-                }
-            } receiveValue: { _ in }
-            .store(in: &cancellables)
     }
     
     @objc private func keyboardWillShow(notification: NSNotification) {
@@ -304,14 +284,19 @@ extension AddItemViewController: UICollectionViewDataSource {
                 return UICollectionViewCell()
             }
             let icon = viewModel.icons[indexPath.item]
-            cell.configure(with: icon, color: viewModel.selectedColor ?? "", selectedIcon: viewModel.selectedIcon ?? "")
+            cell
+                .configure(
+                    with: icon,
+                    color: viewModel.selectedColor,
+                    selectedIcon: viewModel.selectedIcon
+                )
             return cell
         } else {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ColorCell.reuseIdentifier, for: indexPath) as? ColorCell else {
                 return UICollectionViewCell()
             }
             let color = viewModel.colors[indexPath.item]
-            cell.configure(with: color, selectedColor: viewModel.selectedColor ?? "")
+            cell.configure(with: color, selectedColor: viewModel.selectedColor)
             return cell
         }
     }

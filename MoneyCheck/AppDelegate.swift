@@ -34,15 +34,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             transactionRepository: transactionRepository,
             periodRepository: periodRepository
         )
-        
-        // Initialize view model
-        let viewModel = MainViewModel(financeUseCase: financeUseCase)
-        
+
         // Initialize router without view controller
         let router = MainRouter(financeUseCase: financeUseCase)
 
+        // Initialize view model
+        let viewModel = MainViewModel(financeUseCase: financeUseCase, router: router)
+
         // Initialize view controller with router
-        let viewController = MainViewController(viewModel: viewModel, router: router)
+        let viewController = MainViewController(viewModel: viewModel)
         
         // Set view controller to router
         router.viewController = viewController

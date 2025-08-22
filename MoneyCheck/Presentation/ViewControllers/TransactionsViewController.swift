@@ -86,13 +86,7 @@ final class TransactionsViewController: UIViewController {
     }
 
     @objc func openEditItemViewController() {
-        let viewModel = EditItemViewModel(
-            id: viewModel.itemId,
-            type: viewModel.itemType,
-            financeUseCase: viewModel.financeUseCase
-        )
-        let addVC = AddItemViewController(viewModel: viewModel)
-        navigationController?.pushViewController(addVC, animated: true)
+        self.viewModel.showEditItemView(id: viewModel.itemId, itemType: viewModel.itemType)
     }
 }
 

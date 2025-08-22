@@ -30,12 +30,14 @@ class TransactionsViewModel {
     let itemId: UUID
     let itemType: ItemType
     @Published private(set) var sections: [TransactionSection] = []
+    private let router: TransactionsRouting
     private var cancellables = Set<AnyCancellable>()
     
-    init(financeUseCase: FinanceUseCase, itemId: UUID, itemType: ItemType) {
+    init(financeUseCase: FinanceUseCase, itemId: UUID, itemType: ItemType, router: TransactionsRouting) {
         self.financeUseCase = financeUseCase
         self.itemId = itemId
         self.itemType = itemType
+        self.router = router
         loadTransactions(by: itemId)
     }
     
@@ -69,7 +71,11 @@ class TransactionsViewModel {
             }
             .store(in: &cancellables)
     }
-    
+
+    func showEditItemView(id: UUID, itemType: ItemType) {
+        router.showEditItemView(id: id, type: itemType)
+    }
+
     func updateTransaction(_ transaction: TransactionModel) {
         financeUseCase.updateTransaction(transaction)
             .sink { completion in

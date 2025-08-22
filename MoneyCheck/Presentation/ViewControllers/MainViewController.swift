@@ -14,7 +14,6 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     }
     // MARK: - Properties
     private let viewModel: MainViewModel
-    private let router: MainRouter
     private var cancellables = Set<AnyCancellable>()
     private var lastHighlightedIndexPath: IndexPath?
     private var pendingTransferWallet: WalletModel?
@@ -48,9 +47,8 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 
 
     // MARK: - Initialization
-    init(viewModel: MainViewModel, router: MainRouter) {
+    init(viewModel: MainViewModel) {
         self.viewModel = viewModel
-        self.router = router
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -98,7 +96,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     }
 
     @objc private func handlePeriodButtonTapped() {
-        router.showSelectPeriod()
+        viewModel.showSelectPeriod()
     }
 
     private func setupBindings() {
@@ -388,7 +386,7 @@ extension MainViewController: UICollectionViewDataSource {
             case 1:
                 header.configure(title: "Кошельки", amount: viewModel.totalBalance)
             case 2:
-                header.configure(title: "Категории", amount: viewModel.totalExpenses)
+                header.configure(title: "Расходы", amount: viewModel.totalExpenses)
             default:
                 break
             }
@@ -552,7 +550,7 @@ extension MainViewController: UICollectionViewDropDelegate {
 // MARK: - Helper Methods
 private extension MainViewController {
     func showTransferBottomSheet(for transferType: TransferType) {
-        router.presentTransferBottomSheet(type: transferType, delegate: self)
+        viewModel.presentTransfer(type: transferType, delegate: self)
     }
 }
 
@@ -568,25 +566,30 @@ extension MainViewController {
         switch indexPath.section {
         case 0: // Income
             if indexPath.item == viewModel.incomes.count {
-                router.showAddNewItem( type: .income)
+                viewModel.showAddNewItem(type: .income)
             } else if let income = viewModel.incomes[safe: indexPath.item] {
-                router.showTransactions(for: .income(income))
+                viewModel.showTransactions(for: .income(income))
             }
         case 1: // Wallets
             if indexPath.item == viewModel.wallets.count {
-                router.showAddNewItem(type: .wallet)
+                viewModel.showAddNewItem(type: .wallet)
             } else if let wallet = viewModel.wallets[safe: indexPath.item] {
-                router.showTransactions(for: .wallet(wallet))
+                viewModel.showTransactions(for: .wallet(wallet))
             }
         case 2: // Categories
             if indexPath.item == viewModel.categories.count {
-                router.showAddNewItem(type: .category)
+                viewModel.showAddNewItem(type: .category)
             } else if let category = viewModel.categories[safe: indexPath.item] {
-                router.showTransactions(for: .category(category))
+                viewModel.showTransactions(for: .category(category))
             }
         default:
             break
         }
+    }
+
+    func resetTransferState() {
+        pendingTransferWallet = nil
+        lastHighlightedIndexPath = nil
     }
 }
 
@@ -594,16 +597,11 @@ extension MainViewController {
 extension MainViewController: TransferBottomSheetDelegate {
     func transferBottomSheet(transferType: TransferType, didConfirmAmount amount: Double) {
         viewModel.handleTransfer(type: transferType, amount: amount)
-        router.closeTransferBottomSheet()
+        
     }
 
     func transferBottomSheetDidCancel() {
-        router.closeTransferBottomSheet()
+        viewModel.сloseTransfer()
         resetTransferState()
-    }
-
-    func resetTransferState() {
-        pendingTransferWallet = nil
-        lastHighlightedIndexPath = nil
     }
 }

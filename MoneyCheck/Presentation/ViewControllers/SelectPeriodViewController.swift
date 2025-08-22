@@ -28,7 +28,6 @@ protocol SelectPeriodViewControllerProtocol: AnyObject {}
 final class SelectPeriodViewController: UIViewController {
     private let viewModel: SelectPeriodViewModel
     private var cancellables = Set<AnyCancellable>()
-    private let router: SelectPeriodRouting
 
     private lazy var stackView: UIStackView = {
         let stackView = UIStackView()
@@ -45,8 +44,7 @@ final class SelectPeriodViewController: UIViewController {
         return button
     }()
 
-    init(viewModel: SelectPeriodViewModel, router: SelectPeriodRouting) {
-        self.router = router
+    init(viewModel: SelectPeriodViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -74,7 +72,6 @@ final class SelectPeriodViewController: UIViewController {
 
     @objc private func apply() {
         viewModel.savePeriod(viewModel.selectedPeriod)
-        router.closeSelectPeriod()
     }
 
     private func setupUI() {

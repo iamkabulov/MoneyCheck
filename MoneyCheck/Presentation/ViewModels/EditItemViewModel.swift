@@ -26,14 +26,21 @@ final class EditItemViewModel: ItemViewModelProtocol {
     @Published var transactions: [TransactionModel] = []
     var icons: [String]
     var colors: [String]
+    private let router: ItemRouting
 
     // MARK: - Initialization
-    init(id: UUID, type: ItemType, financeUseCase: FinanceUseCase) {
+    init(
+        id: UUID,
+        type: ItemType,
+        financeUseCase: FinanceUseCase,
+        router: ItemRouting
+    ) {
         self.id = id
         self.type = type
         self.icons = type.icons
         self.colors = type.colors
         self.financeUseCase = financeUseCase
+        self.router = router
         switch type {
             case .income:
                 self.financeUseCase
@@ -41,7 +48,8 @@ final class EditItemViewModel: ItemViewModelProtocol {
                     .sink { completion in
                         switch completion {
                             case .finished: break
-                            case .failure(_): break
+                            case .failure(let error):
+                                router.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { model in
                         self.name = model.name
@@ -57,7 +65,8 @@ final class EditItemViewModel: ItemViewModelProtocol {
                     .sink { completion in
                         switch completion {
                             case .finished: break
-                            case .failure(_): break
+                            case .failure(let error):
+                                router.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { model in
                         self.name = model.name
@@ -87,22 +96,48 @@ final class EditItemViewModel: ItemViewModelProtocol {
     }
 
     // MARK: - Public methods
-    func deleteItem() -> AnyPublisher<Void, Error> {
+    func deleteItem(){
         switch type {
             case .income:
                 return financeUseCase.deleteIncome(by: self.id)
+                    .sink { [weak self] completion in
+                        switch completion {
+                            case .finished:
+                                self?.router.closeItemView()
+                            case .failure(let error):
+                                self?.router.showError(nil, message: error.localizedDescription)
+                        }
+                    } receiveValue: { _ in }
+                    .store(in: &cancellables)
             case .wallet:
                 return financeUseCase.deleteWallet(by: self.id)
+                    .sink { [weak self] completion in
+                        switch completion {
+                            case .finished:
+                                self?.router.closeItemView()
+                            case .failure(let error):
+                                self?.router.showError(nil, message: error.localizedDescription)
+                        }
+                    } receiveValue: { _ in }
+                    .store(in: &cancellables)
             case .category:
                 return financeUseCase.deleteCategory(by: self.id)
+                    .sink { [weak self] completion in
+                        switch completion {
+                            case .finished:
+                                self?.router.closeItemView()
+                            case .failure(let error):
+                                self?.router.showError(nil, message: error.localizedDescription)
+                        }
+                    } receiveValue: { _ in }
+                    .store(in: &cancellables)
         }
 
     }
 
-    func saveItem() -> AnyPublisher<Void, Error> {
+    func saveItem() {
         guard !name.isEmpty else {
-            return Fail(error: NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Заполните все поля"]))
-                .eraseToAnyPublisher()
+            return router.showError(nil, message: "Заполните поле")
         }
 
         switch type {
@@ -119,6 +154,15 @@ final class EditItemViewModel: ItemViewModelProtocol {
                             transactions: self.transactions
                         )
                     )
+                    .sink { [weak self] completion in
+                        switch completion {
+                            case .finished: break
+                                self?.router.closeItemView()
+                            case .failure(let error):
+                                self?.router.showError(nil, message: error.localizedDescription)
+                        }
+                    } receiveValue: { _ in }
+                    .store(in: &cancellables)
             case .wallet:
                 return financeUseCase
                     .updateWallet(
@@ -132,6 +176,15 @@ final class EditItemViewModel: ItemViewModelProtocol {
                             transactions: self.transactions
                         )
                     )
+                    .sink { [weak self] completion in
+                        switch completion {
+                            case .finished:
+                                self?.router.closeItemView()
+                            case .failure(let error):
+                                self?.router.showError(nil, message: error.localizedDescription)
+                        }
+                    } receiveValue: { _ in }
+                    .store(in: &cancellables)
             case .category:
                 return financeUseCase
                     .updateCategory(
@@ -145,6 +198,15 @@ final class EditItemViewModel: ItemViewModelProtocol {
                             transactions: self.transactions
                         )
                     )
+                    .sink { [weak self] completion in
+                        switch completion {
+                            case .finished:
+                                self?.router.closeItemView()
+                            case .failure(let error):
+                                self?.router.showError(nil, message: error.localizedDescription)
+                        }
+                    } receiveValue: { _ in }
+                    .store(in: &cancellables)
         }
     }
 }
