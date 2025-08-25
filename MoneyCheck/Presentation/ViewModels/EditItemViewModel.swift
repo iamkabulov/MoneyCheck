@@ -107,7 +107,9 @@ final class EditItemViewModel: ItemViewModelProtocol {
                             case .failure(let error):
                                 self?.router.showError(nil, message: error.localizedDescription)
                         }
-                    } receiveValue: { _ in }
+                    } receiveValue: { [weak self] _ in
+                        self?.router.closeItemView()
+                    }
                     .store(in: &cancellables)
             case .wallet:
                 return financeUseCase.deleteWallet(by: self.id)
@@ -118,7 +120,9 @@ final class EditItemViewModel: ItemViewModelProtocol {
                             case .failure(let error):
                                 self?.router.showError(nil, message: error.localizedDescription)
                         }
-                    } receiveValue: { _ in }
+                    } receiveValue: { [weak self] _ in
+                        self?.router.closeItemView()
+                    }
                     .store(in: &cancellables)
             case .category:
                 return financeUseCase.deleteCategory(by: self.id)
@@ -129,7 +133,10 @@ final class EditItemViewModel: ItemViewModelProtocol {
                             case .failure(let error):
                                 self?.router.showError(nil, message: error.localizedDescription)
                         }
-                    } receiveValue: { _ in }
+                    } receiveValue: {
+                        [weak self] _ in
+                        self?.router.closeItemView()
+                    }
                     .store(in: &cancellables)
         }
 
@@ -161,7 +168,9 @@ final class EditItemViewModel: ItemViewModelProtocol {
                             case .failure(let error):
                                 self?.router.showError(nil, message: error.localizedDescription)
                         }
-                    } receiveValue: { _ in }
+                    } receiveValue: { [weak self] _ in
+                        self?.router.closeItemView()
+                    }
                     .store(in: &cancellables)
             case .wallet:
                 return financeUseCase
@@ -183,7 +192,9 @@ final class EditItemViewModel: ItemViewModelProtocol {
                             case .failure(let error):
                                 self?.router.showError(nil, message: error.localizedDescription)
                         }
-                    } receiveValue: { _ in }
+                    } receiveValue: { [weak self] _ in
+                        self?.router.closeItemView()
+                    }
                     .store(in: &cancellables)
             case .category:
                 return financeUseCase
@@ -205,7 +216,9 @@ final class EditItemViewModel: ItemViewModelProtocol {
                             case .failure(let error):
                                 self?.router.showError(nil, message: error.localizedDescription)
                         }
-                    } receiveValue: { _ in }
+                    } receiveValue: { [weak self] _ in
+                        self?.router.closeItemView()
+                    }
                     .store(in: &cancellables)
         }
     }

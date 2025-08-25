@@ -78,12 +78,13 @@ final class MainRouter {
         self.viewController?.present(bottomSheetVC, animated: true)
     }
 
-    func showTransactions(for entity: TransactionItem) {
+    func showTransactions(for entity: TransactionItem, period: PeriodType) {
         let viewModel = TransactionsViewModel(
             financeUseCase: financeUseCase,
             itemId: entity.id,
             itemType: entity.type,
-            router: self
+            router: self,
+            period: period
         )
         let transactionsVC = TransactionsViewController(viewModel: viewModel)
         self.viewController?.navigationController?.pushViewController(transactionsVC, animated: true)
@@ -121,7 +122,7 @@ extension MainRouter: TransferRouting {
 // MARK: - AddItemRouting
 extension MainRouter: ItemRouting {
     func closeItemView() {
-        self.viewController?.navigationController?.popViewController(animated: true)
+        self.viewController?.navigationController?.popToRootViewController(animated: true)
     }
 }
 

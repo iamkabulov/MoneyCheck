@@ -141,7 +141,7 @@ final class MainViewModel {
     }
 
     func showTransactions(for item: TransactionItem) {
-        router.showTransactions(for: item)
+        router.showTransactions(for: item, period: selectedPeriod)
     }
 
     func сloseTransfer() {

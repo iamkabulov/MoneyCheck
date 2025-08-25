@@ -250,13 +250,22 @@ final class CoreDataManager {
         }
     }
 
-    func fetchTransactions(by id: UUID) -> [Transaction] {
+    func fetchTransactions(by id: UUID, period: PeriodType) -> [Transaction] {
         let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+        switch period {
+            case .custom(let from, let to):
+                request.predicate = NSPredicate(format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date <= %@)",
+                                                id as CVarArg,
+                                                id as CVarArg,
+                                                from as CVarArg,
+                                                to as CVarArg)
+//            case .month: TODO: - cделать
+//            case .week:
 
-        request.predicate = NSPredicate(format: "sourceId == %@ OR destinationId == %@",
-                                        id as CVarArg,
-                                        id as CVarArg)
+            default: break
+        }
+
         do {
             let transactions = try context.fetch(request)
             return transactions

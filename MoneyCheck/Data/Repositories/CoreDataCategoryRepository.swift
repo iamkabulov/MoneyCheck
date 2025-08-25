@@ -8,7 +8,10 @@ final class CoreDataCategoryRepository: CategoryRepository {
 
     func getCategory(by id: UUID) -> AnyPublisher<CategoryModel, any Error> {
         guard let category = coreDataManager.fetchCategory(by: id) else { return Fail(error: NSError(domain: "", code: 0, userInfo: nil)).eraseToAnyPublisher()}
-        let transactions = coreDataManager.fetchTransactions(by: id)
+        let transactions = coreDataManager.fetchTransactions(
+            by: id,
+            period: .week
+        )
             .map { transaction in
                 TransactionModel(
                     id: transaction.id ?? UUID(),
@@ -46,7 +49,7 @@ final class CoreDataCategoryRepository: CategoryRepository {
         let categoryModels = categories.map { category in
             
             let transactions = coreDataManager
-                .fetchTransactions(by: category.id ?? UUID())
+                .fetchTransactions(by: category.id ?? UUID(), period: period)
                 .map { transaction in
                     TransactionModel(
                         id: transaction.id ?? UUID(),

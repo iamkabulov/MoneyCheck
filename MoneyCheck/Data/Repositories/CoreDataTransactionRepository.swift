@@ -31,11 +31,11 @@ final class CoreDataTransactionRepository: TransactionRepository {
         }.eraseToAnyPublisher()
     }
 
-    func getTransactions(by id: UUID) -> AnyPublisher<[TransactionModel], Error> {
+    func getTransactions(by id: UUID, period: PeriodType) -> AnyPublisher<[TransactionModel], Error> {
         return Future { [weak self] promise in
             guard let self = self else { return }
 
-            let transactions = self.coreDataManager.fetchTransactions(by: id)
+            let transactions = self.coreDataManager.fetchTransactions(by: id, period: period)
 
             let models = transactions.map { transaction in
                 TransactionModel(

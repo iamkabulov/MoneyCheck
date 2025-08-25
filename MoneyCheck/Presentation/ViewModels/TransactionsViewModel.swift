@@ -32,20 +32,37 @@ class TransactionsViewModel {
     @Published private(set) var sections: [TransactionSection] = []
     private let router: TransactionsRouting
     private var cancellables = Set<AnyCancellable>()
-    
-    init(financeUseCase: FinanceUseCase, itemId: UUID, itemType: ItemType, router: TransactionsRouting) {
+    private let period: PeriodType
+
+    init(
+        financeUseCase: FinanceUseCase,
+        itemId: UUID,
+        itemType: ItemType,
+        router: TransactionsRouting,
+        period: PeriodType
+    ) {
         self.financeUseCase = financeUseCase
         self.itemId = itemId
         self.itemType = itemType
         self.router = router
-        loadTransactions(by: itemId)
+        self.period = period
+        loadTransactions(by: itemId, period: period)
     }
     
-    private func loadTransactions(by id: UUID) {
-        financeUseCase.getTransactions(by: id)
+    private func loadTransactions(by id: UUID, period: PeriodType) {
+        financeUseCase.getTransactions(by: id, period: period)
             .map { [weak self] transactions -> [TransactionSection] in
                 guard let self = self else { return [] }
-                
+//                let transactions = transactions.filter { transaction in
+//                    switch period {
+//                        case .custom(let startDate, let endDate):
+//                            return transaction.date >= startDate && transaction.date <= endDate
+//                        default:
+//                            break
+//                    }
+//                    return false
+//                }
+
                 // Группируем транзакции по дням
                 let calendar = Calendar.current
                 let grouped = Dictionary(grouping: transactions) { transaction in
@@ -63,8 +80,9 @@ class TransactionsViewModel {
             }
             .sink { completion in
                 switch completion {
-                case .finished: break
-                case .failure(_): break
+                    case .finished: break
+                    case .failure(let error):
+                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { [weak self] sections in
                 self?.sections = sections
@@ -81,11 +99,12 @@ class TransactionsViewModel {
             .sink { completion in
                 switch completion {
                     case .finished: break
-                    case .failure(let error): print("Error updating transaction: \(error)")
+                    case .failure(let error):
+                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { [weak self] _ in
                 guard let self else { return }
-                self.loadTransactions(by: self.itemId)
+                self.loadTransactions(by: self.itemId, period: period)
             }
             .store(in: &cancellables)
 
@@ -93,7 +112,8 @@ class TransactionsViewModel {
             .sink { completion in
                 switch completion {
                     case .finished: break
-                    case .failure(_): break
+                    case .failure(let error):
+                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { income in
                 let calculatedBalance = self.calculateBalance(
@@ -110,7 +130,8 @@ class TransactionsViewModel {
             .sink { completion in
                 switch completion {
                     case .finished: break
-                    case .failure(_): break
+                    case .failure(let error):
+                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { wallet in
                 let calculatedBalance = self.calculateBalance(
@@ -127,7 +148,8 @@ class TransactionsViewModel {
             .sink { completion in
                 switch completion {
                     case .finished: break
-                    case .failure(_): break
+                    case .failure(let error):
+                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { wallet in
                 let calculatedBalance = self.calculateBalance(
@@ -144,7 +166,8 @@ class TransactionsViewModel {
             .sink { completion in
                 switch completion {
                     case .finished: break
-                    case .failure(_): break
+                    case .failure(let error):
+                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { category in
                 let calculatedBalance = self.calculateBalance(

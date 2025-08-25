@@ -10,7 +10,7 @@ final class CoreDataIncomeRepository: IncomeRepository {
         let incomes = coreDataManager.fetchIncomes()
         let incomeModels = incomes.map { income in
             let transactions = coreDataManager
-                .fetchTransactions(by: income.id ?? UUID())
+                .fetchTransactions(by: income.id ?? UUID(), period: period)
                 .map { transaction in
                     TransactionModel(
                         id: transaction.id ?? UUID(),
@@ -50,7 +50,10 @@ final class CoreDataIncomeRepository: IncomeRepository {
 
     func getIncome(by id: UUID) -> AnyPublisher<IncomeModel, Error> {
         guard let income = coreDataManager.fetchIncome(by: id) else { return Fail(error: NSError(domain: "", code: 0, userInfo: nil)).eraseToAnyPublisher()}
-        let transactions = coreDataManager.fetchTransactions(by: id)
+        let transactions = coreDataManager.fetchTransactions(
+            by: id,
+            period: .week
+        )
             .map { transaction in
                 TransactionModel(
                     id: transaction.id ?? UUID(),

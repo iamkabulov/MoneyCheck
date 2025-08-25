@@ -8,7 +8,7 @@ protocol FinanceUseCase {
     func getCategory(by id: UUID) -> AnyPublisher<CategoryModel, Error>
     func getIncomes(period: PeriodType) -> AnyPublisher<[IncomeModel], Error>
     func getIncome(by id: UUID) -> AnyPublisher<IncomeModel, Error>
-    func getTransactions(by id: UUID) -> AnyPublisher<[TransactionModel], Error>
+    func getTransactions(by id: UUID, period: PeriodType) -> AnyPublisher<[TransactionModel], Error>
     func updateWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error>
     func updateCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>
     func updateIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error>
@@ -70,8 +70,8 @@ final class FinanceUseCaseImpl: FinanceUseCase {
         return incomeRepository.getIncome(by: id)
     }
 
-    func getTransactions(by id: UUID) -> AnyPublisher<[TransactionModel], Error> {
-        return transactionRepository.getTransactions(by: id)
+    func getTransactions(by id: UUID, period: PeriodType) -> AnyPublisher<[TransactionModel], Error> {
+        return transactionRepository.getTransactions(by: id, period: period)
     }
     
     func updateWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error> {

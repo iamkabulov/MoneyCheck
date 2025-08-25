@@ -7,7 +7,10 @@ final class CoreDataWalletRepository: WalletRepository {
 
     func getWallet(by id: UUID) -> AnyPublisher<WalletModel, Error> {
         guard let wallet = coreDataManager.fetchWallet(by: id) else { return Fail(error: NSError(domain: "", code: 0, userInfo: nil)).eraseToAnyPublisher()}
-        let transactions = coreDataManager.fetchTransactions(by: id)
+        let transactions = coreDataManager.fetchTransactions(
+            by: id,
+            period: .week
+        )
             .map { transaction in
                 TransactionModel(
                     id: transaction.id ?? UUID(),
@@ -46,7 +49,7 @@ final class CoreDataWalletRepository: WalletRepository {
         let walletModels = wallets.map { wallet in
 
             let transactions = coreDataManager
-                .fetchTransactions(by: wallet.id ?? UUID())
+                .fetchTransactions(by: wallet.id ?? UUID(), period: .week)
                 .map { transaction in
                     TransactionModel(
                         id: transaction.id ?? UUID(),
