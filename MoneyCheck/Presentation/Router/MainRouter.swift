@@ -41,6 +41,8 @@ protocol TransactionsRouting: AnyObject {
 }
 
 protocol SelectPeriodRouting: AnyObject {
+    func openCustomPeriodView(vm: SelectPeriodViewModel)
+    func closeCustomPeriodView()
     func closeSelectPeriod()
 }
 
@@ -143,6 +145,16 @@ extension MainRouter: TransactionsRouting {
 
 // MARK: - SelectPeriodRouting
 extension MainRouter: SelectPeriodRouting {
+    func openCustomPeriodView(vm: SelectPeriodViewModel) {
+        let vc = CustomPeriodViewController(viewModel: vm, router: self)
+
+        self.viewController?.navigationController?.pushViewController(vc, animated: true)
+    }
+
+    func closeCustomPeriodView() {
+        self.viewController?.navigationController?.popViewController(animated: true)
+    }
+
     func closeSelectPeriod() {
         self.viewController?.navigationController?.popViewController(animated: true)
     }

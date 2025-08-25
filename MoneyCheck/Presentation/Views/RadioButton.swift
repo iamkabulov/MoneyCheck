@@ -25,7 +25,7 @@ class RadioButton: UIView {
         self.tapHandler = onTap
         self.period = period
         super.init(frame: .zero)
-        createSubViews(text: period.rawValue)
+        createSubViews(text: period.displayTitle)
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         addGestureRecognizer(tapGesture)
@@ -71,12 +71,12 @@ class RadioButton: UIView {
         tapHandler(period)
     }
 
-    func toggle() {
-        isChecked.toggle()
-    }
-
     private func updateUI() {
         radioButton.image = isChecked ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle")
+    }
+
+    func updateTitle(_ title: String) {
+        label.text = title
     }
 }
 

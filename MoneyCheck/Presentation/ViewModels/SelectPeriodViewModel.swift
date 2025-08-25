@@ -31,7 +31,7 @@ final class SelectPeriodViewModel {
         print("Select Period ViewModel deinit")
     }
 
-    private func getPeriod() {
+    func getPeriod() {
         financeUseCase.getPeriod()
             .sink { completion in
                 switch completion {
@@ -56,6 +56,10 @@ final class SelectPeriodViewModel {
             } receiveValue: { _ in
             }.store(in: &cancellables)
         router.closeSelectPeriod()
+    }
+
+    func customPeriodChose(vm: SelectPeriodViewModel) {
+        router.openCustomPeriodView(vm: vm)
     }
 }
 

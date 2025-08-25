@@ -60,9 +60,11 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     override func viewWillAppear(_ animated: Bool) {
         viewModel.loadPeriod()
         viewModel.loadData()
+        
         periodButton.title = switch viewModel.selectedPeriod {
             case .month: Date().monthName
             case .week: "Неделя"
+            case .custom(let from, let to): "\(from.periodName)-\(to.periodName)"
         }
     }
 
@@ -88,7 +90,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             make.leading.trailing.bottom.equalToSuperview()
         }
 
-        periodButton.title = viewModel.selectedPeriod.rawValue
+        periodButton.title = viewModel.selectedPeriod.displayTitle
         periodButton.target = self
         periodButton.action = #selector(handlePeriodButtonTapped)
         self.navigationItem.rightBarButtonItem = periodButton

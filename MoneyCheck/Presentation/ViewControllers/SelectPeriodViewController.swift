@@ -9,16 +9,30 @@ import UIKit
 import Combine
 import SnapKit
 
-enum PeriodType: String, CaseIterable {
-    case week = "Неделя"
-    case month = "Месяц"
+enum PeriodType: Equatable {
+
+    static var allCases: [PeriodType] {
+        return [
+            .week,
+            .month,// дефолтный кастом = текущий месяц
+            .custom(Date(), Date())
+        ]
+    }
+    case week
+    case month
+    case custom(Date, Date)
 
     var displayTitle: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM"
+
         switch self {
         case .week:
             return "Неделя"
         case .month:
             return Date().monthName // ← текущий месяц
+        case .custom(_, _):
+            return "Период"
         }
     }
 }
@@ -37,8 +51,8 @@ final class SelectPeriodViewController: UIViewController {
         return stackView
     }()
 
-    private lazy var applyButton: UIButton = {
-        let button = UIButton(type: .system)
+    private lazy var applyButton: PrimaryButton = {
+        let button = PrimaryButton()
         button.setTitle("Применить", for: .normal)
         button.addTarget(self, action: #selector(apply), for: .touchUpInside)
         return button
@@ -59,6 +73,7 @@ final class SelectPeriodViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         bindViewModel()
+        viewModel.getPeriod()
     }
 
     private func bindViewModel() {
@@ -93,6 +108,14 @@ final class SelectPeriodViewController: UIViewController {
         PeriodType.allCases.forEach { period in
             let button = RadioButton(period: period) { [weak self] selected in
                 self?.viewModel.selectedPeriod = selected
+                switch selected {
+                case .custom:
+                    guard let self else { return }
+//                    self.viewModel.selectedPeriod = .custom(from, to)
+                    self.viewModel.customPeriodChose(vm: self.viewModel)
+                default:
+                    break
+                }
             }
             stackView.addArrangedSubview(button)
         }
@@ -100,7 +123,16 @@ final class SelectPeriodViewController: UIViewController {
 
     private func updateSelection(_ selected: PeriodType) {
         for case let button as RadioButton in stackView.arrangedSubviews {
-            button.isChecked = (button.period == selected)
+            button.isChecked = (button.period.displayTitle == selected.displayTitle)
+
+            if case .custom(_, _) = button.period {
+                // обновляем тайтл кастомной кнопки (независимо от того, выбрана ли она)
+                switch selected {
+                    case .custom(let from, let to):
+                        button.updateTitle("Период с \(from.periodName) - по \(to.periodName)")
+                    default: break
+                }
+            }
         }
     }
 }
@@ -109,7 +141,48 @@ extension Date {
     var monthName: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ru_RU") // ← для русского языка
-        formatter.dateFormat = "LLLL yyyy"             // название месяца + год
+        formatter.timeZone = .current
+        formatter.dateFormat = "LLLL"             // название месяца + год
         return formatter.string(from: self).capitalized
+    }
+
+    var periodName: String {
+        let formatter = DateFormatter()
+        formatter.timeZone = .current
+        formatter.locale = Locale(identifier: "ru_RU")
+        formatter.dateFormat = "dd.MM"
+        return formatter.string(from: self).capitalized
+    }
+}
+
+extension PeriodType {
+    init?(rawValue name: String, from: Date? = nil, to: Date? = nil) {
+        switch name {
+        case "Неделя":
+            self = .week
+        case "Месяц":
+            self = .month
+        case "Период":
+            if let from, let to {
+                self = .custom(from, to)
+            } else {
+                return nil
+            }
+        default:
+            return nil
+        }
+    }
+}
+
+extension PeriodType {
+    static func == (lhs: PeriodType, rhs: PeriodType) -> Bool {
+        switch (lhs, rhs) {
+        case (.week, .week), (.month, .month):
+            return true
+        case let (.custom(lFrom, lTo), .custom(rFrom, rTo)):
+            return lFrom == rFrom && lTo == rTo
+        default:
+            return false
+        }
     }
 }

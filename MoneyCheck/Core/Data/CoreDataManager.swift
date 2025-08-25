@@ -304,8 +304,12 @@ final class CoreDataManager {
         let request: NSFetchRequest<Period> = Period.fetchRequest()
         do {
             let period = try context.fetch(request)
-            guard let period = period.first, let name = period.name else { return .month }
-            guard let result = PeriodType(rawValue: name) else { return .month }
+            guard let period = period.first, let name = period.name else {
+                return .month
+            }
+            guard let result = PeriodType(rawValue: name, from: period.start, to: period.end) else {
+                return .month
+            }
             return result
         } catch {
             print("Error fetching wallets: \(error)")
@@ -320,11 +324,20 @@ final class CoreDataManager {
             switch value {
                 case .month:
                     let period = Period(context: context)
-                    period.name = value.rawValue
+                    period.name = value.displayTitle
                     try context.save()
                 case .week:
                     let period = Period(context: context)
-                    period.name = value.rawValue
+                    period.name = value.displayTitle
+                    try context.save()
+                case .custom(let from, let to):
+                    let period = Period(context: context)
+                    period.name = value.displayTitle
+                    let calendar = Calendar(identifier: .iso8601)
+                    let normalizedFrom = calendar.startOfDay(for: from ?? Date())
+                    let normalizedTo = calendar.startOfDay(for: to ?? Date())
+                    period.start = normalizedFrom
+                    period.end = normalizedTo
                     try context.save()
             }
         } catch {

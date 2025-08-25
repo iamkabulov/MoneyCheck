@@ -140,6 +140,11 @@ final class CoreDataWalletRepository: WalletRepository {
                     return true
                 }
                 return false
+            case let .custom(from, to):
+                if transaction.date >= from && transaction.date <= to {
+                    return true
+                }
+                return false
         }
     }
 }
