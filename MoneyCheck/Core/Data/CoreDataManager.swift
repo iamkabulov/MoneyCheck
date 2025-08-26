@@ -356,8 +356,8 @@ final class CoreDataManager {
                     let period = Period(context: context)
                     period.name = value.displayTitle
                     let calendar = Calendar(identifier: .iso8601)
-                    let normalizedFrom = calendar.startOfDay(for: from ?? Date())
-                    let normalizedTo = calendar.startOfDay(for: to ?? Date())
+                    let normalizedFrom = calendar.startOfDay(for: from)
+                    let normalizedTo = calendar.startOfDay(for: to)
                     period.start = normalizedFrom
                     period.end = normalizedTo
                     try context.save()

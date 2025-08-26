@@ -1,29 +1,5 @@
 import UIKit
 
-enum TransactionItem {
-    case income(IncomeModel)
-    case wallet(WalletModel)
-    case category(CategoryModel)
-    
-    var id: UUID {
-        switch self {
-        case .income(let model): return model.id
-        case .wallet(let model): return model.id
-        case .category(let model): return model.id
-        }
-    }
-    
-    var type: ItemType {
-        switch self {
-            case .income(let model): return model.type
-            case .wallet(let model): return model.type
-            case .category(let model): return model.type
-        }
-    }
-}
-
-import UIKit
-
 // MARK: - Protocols
 protocol TransferRouting: AnyObject {
     func closeTransferBottomSheet()
@@ -35,6 +11,7 @@ protocol ItemRouting: AnyObject {
 }
 
 protocol TransactionsRouting: AnyObject {
+    func showTransactionEditView(_ transaction: TransactionModel)
     func closeTransactions()
     func showEditItemView(id: UUID, type: ItemType)
     func showError(_ title: String?, message: String)
@@ -44,6 +21,10 @@ protocol SelectPeriodRouting: AnyObject {
     func openCustomPeriodView(vm: SelectPeriodViewModel)
     func closeCustomPeriodView()
     func closeSelectPeriod()
+}
+
+protocol EditTransactionRouting: AnyObject {
+    func closeEditTransaction()
 }
 
 // MARK: - Реализация роутера
@@ -128,6 +109,16 @@ extension MainRouter: ItemRouting {
 
 // MARK: - TransactionsRouting
 extension MainRouter: TransactionsRouting {
+    func showTransactionEditView(_ transaction: TransactionModel) {
+        let vm = EditTransactionViewModel(
+            transaction: transaction,
+            financeUseCase: financeUseCase,
+            router: self
+        )
+        let vc = EditTransactionViewController(vm: vm)
+        self.viewController?.navigationController?.pushViewController(vc, animated: true)
+    }
+
     func showEditItemView(id: UUID, type: ItemType) {
         let viewModel = EditItemViewModel(
             id: id,
@@ -147,7 +138,7 @@ extension MainRouter: TransactionsRouting {
 // MARK: - SelectPeriodRouting
 extension MainRouter: SelectPeriodRouting {
     func openCustomPeriodView(vm: SelectPeriodViewModel) {
-        let vc = CustomPeriodViewController(viewModel: vm, router: self)
+        let vc = CustomPeriodViewController(viewModel: vm)
 
         self.viewController?.navigationController?.pushViewController(vc, animated: true)
     }
@@ -157,6 +148,12 @@ extension MainRouter: SelectPeriodRouting {
     }
 
     func closeSelectPeriod() {
+        self.viewController?.navigationController?.popViewController(animated: true)
+    }
+}
+
+extension MainRouter: EditTransactionRouting {
+    func closeEditTransaction() {
         self.viewController?.navigationController?.popViewController(animated: true)
     }
 }

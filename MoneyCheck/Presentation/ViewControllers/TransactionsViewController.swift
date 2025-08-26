@@ -30,6 +30,11 @@ final class TransactionsViewController: UIViewController {
         print("deinit TransactionsViewController")
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.loadTransactions(by: viewModel.itemId, period: viewModel.period)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -156,14 +161,6 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let transaction = viewModel.sections[indexPath.section].transactions[indexPath.row]
-        let editVC = EditTransactionViewController(transaction: transaction, financeUseCase: viewModel.financeUseCase)
-        editVC.delegate = self
-        navigationController?.pushViewController(editVC, animated: true)
-    }
-}
-
-extension TransactionsViewController: EditTransactionDelegate {
-    func editTransactionViewController(_ controller: EditTransactionViewController, didUpdate transaction: TransactionModel) {
-        viewModel.updateTransaction(transaction)
+        viewModel.showEditTransaction(for: transaction)
     }
 }

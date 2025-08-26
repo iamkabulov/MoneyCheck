@@ -4,7 +4,6 @@ final class CustomPeriodViewController: UIViewController {
 
     private let periodPicker = CustomPeriodPickerView()
     private let viewModel: SelectPeriodViewModel
-    private let router: SelectPeriodRouting
 
     private lazy var doneButton: PrimaryButton = {
         let button = PrimaryButton()
@@ -14,9 +13,8 @@ final class CustomPeriodViewController: UIViewController {
         return button
     }()
 
-    init(viewModel: SelectPeriodViewModel, router: SelectPeriodRouting) {
+    init(viewModel: SelectPeriodViewModel) {
         self.viewModel = viewModel
-        self.router = router
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -63,7 +61,6 @@ final class CustomPeriodViewController: UIViewController {
 
     @objc private func doneTapped() {
         self.validateSelection()
-        viewModel.selectedPeriod = .custom(periodPicker.selection.from, periodPicker.selection.to)
-        router.closeCustomPeriodView()
+        viewModel.saveCustomPeriod(.custom(periodPicker.selection.from, periodPicker.selection.to))
     }
 }

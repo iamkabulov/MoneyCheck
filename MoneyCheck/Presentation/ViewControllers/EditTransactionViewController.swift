@@ -2,15 +2,10 @@ import UIKit
 import Combine
 import SnapKit
 
-protocol EditTransactionDelegate: AnyObject {
-    func editTransactionViewController(_ controller: EditTransactionViewController, didUpdate transaction: TransactionModel)
-}
 
 //TODO: - Создать отдельно ViewModel
 final class EditTransactionViewController: UIViewController {
-    private let transaction: TransactionModel
-    private let financeUseCase: FinanceUseCase
-    weak var delegate: EditTransactionDelegate?
+    private let viewModel: EditTransactionViewModel
     private var cancellables = Set<AnyCancellable>()
 
     private lazy var amountTextField: UITextField = {
@@ -18,7 +13,7 @@ final class EditTransactionViewController: UIViewController {
         textField.placeholder = "Сумма"
         textField.keyboardType = .decimalPad
         textField.borderStyle = .roundedRect
-        textField.text = String(transaction.amount)
+        textField.text = String(viewModel.transaction.amount)
         return textField
     }()
     
@@ -26,22 +21,19 @@ final class EditTransactionViewController: UIViewController {
         let picker = UIDatePicker()
         picker.datePickerMode = .date
         picker.preferredDatePickerStyle = .inline
-        picker.date = transaction.date
+        picker.date = viewModel.transaction.date
         return picker
     }()
     
-    private lazy var saveButton: UIButton = {
-        let button = UIButton(type: .system)
+    private lazy var saveButton: PrimaryButton = {
+        let button = PrimaryButton()
         button.setTitle("Сохранить", for: .normal)
-        button.addAction(UIAction { [weak self] _ in
-            self?.saveTransaction()
-        }, for: .touchUpInside)
+        button.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         return button
     }()
     
-    init(transaction: TransactionModel, financeUseCase: FinanceUseCase) {
-        self.transaction = transaction
-        self.financeUseCase = financeUseCase
+    init(vm: EditTransactionViewModel) {
+        self.viewModel = vm
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -82,41 +74,7 @@ final class EditTransactionViewController: UIViewController {
         }
     }
     
-    private func saveTransaction() {
-        guard let amountText = amountTextField.text,
-              let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
-              amount > 0 else {
-            return
-        }
-        
-        let updatedTransaction = TransactionModel(
-            id: transaction.id,
-            date: datePicker.date,
-            amount: amount,
-            type: transaction.type,
-            sourceId: transaction.sourceId,
-            sourceName: transaction.sourceName,
-            sourceIcon: transaction.sourceIcon,
-            sourceColor: transaction.sourceColor,
-            destinationId: transaction.destinationId,
-            destinationName: transaction.destinationName,
-            destinationIcon: transaction.destinationIcon,
-            destinationColor: transaction.destinationColor
-        )
-        
-        financeUseCase.updateTransaction(updatedTransaction)
-            .sink { completion in
-                switch completion {
-                case .finished: break
-                case .failure(let error): print("Error updating transaction: \(error)")
-                }
-            } receiveValue: { [weak self] _ in
-                self?.delegate?
-                    .editTransactionViewController(
-                        self!, didUpdate: updatedTransaction
-                    )
-                self?.navigationController?.popViewController(animated: true)
-            }
-            .store(in: &cancellables)
+    @objc private func saveButtonTapped() {
+        viewModel.saveTransaction(amountTextField.text, date: datePicker.date)
     }
-} 
+}

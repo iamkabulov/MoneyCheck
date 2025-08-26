@@ -61,6 +61,11 @@ final class SelectPeriodViewModel {
     func customPeriodChose(vm: SelectPeriodViewModel) {
         router.openCustomPeriodView(vm: vm)
     }
+
+    func saveCustomPeriod(_ period: PeriodType) {
+        self.selectedPeriod = period
+        router.closeCustomPeriodView()
+    }
 }
 
 extension Calendar {
