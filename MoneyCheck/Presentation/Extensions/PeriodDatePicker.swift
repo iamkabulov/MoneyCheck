@@ -14,7 +14,11 @@ struct PeriodSelection {
 
 final class CustomPeriodPickerView: UIView {
 
-    var selection = PeriodSelection(from: Date(), to: Date())
+    var selection: PeriodSelection! {
+        didSet {
+            updateUI()
+        }
+    }
     var onDone: (() -> Void)?
 
     // MARK: - State
@@ -80,12 +84,6 @@ final class CustomPeriodPickerView: UIView {
             stack.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
 
-
-        let df = DateFormatter()
-        df.dateStyle = .medium
-        fromButton.setTitle("С: \(df.string(from: selection.from))", for: .normal)
-        toButton.setTitle("ПО: \(df.string(from: selection.to))", for: .normal)
-
         onDone?()
     }
 
@@ -108,16 +106,12 @@ final class CustomPeriodPickerView: UIView {
 
     @objc private func datePicked() {
         let picked = datePicker.date
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
 
         switch activeField {
         case .from:
             selection.from = picked
-            fromButton.setTitle("С: \(formatter.string(from: picked))", for: .normal)
         case .to:
             selection.to = picked
-            toButton.setTitle("ПО: \(formatter.string(from: picked))", for: .normal)
         }
 
 //        validateSelection()
@@ -138,6 +132,22 @@ final class CustomPeriodPickerView: UIView {
 
             fromButton.setTitleColor(.darkGray, for: .normal)
             fromButton.layer.borderColor = UIColor.lightGray.cgColor
+        }
+        updateUI()
+    }
+
+    private func updateUI() {
+        let df = DateFormatter()
+        df.dateStyle = .medium
+
+        fromButton.setTitle("С: \(df.string(from: selection.from))", for: .normal)
+        toButton.setTitle("ПО: \(df.string(from: selection.to))", for: .normal)
+
+        switch activeField {
+        case .from:
+            datePicker.date = selection.from
+        case .to:
+            datePicker.date = selection.to
         }
     }
 }

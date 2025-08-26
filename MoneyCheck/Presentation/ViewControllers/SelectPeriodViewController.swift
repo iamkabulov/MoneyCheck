@@ -14,8 +14,7 @@ enum PeriodType: Equatable {
     static var allCases: [PeriodType] {
         return [
             .week,
-            .month,// дефолтный кастом = текущий месяц
-            .custom(Date(), Date())
+            .month
         ]
     }
     case week
@@ -98,7 +97,7 @@ final class SelectPeriodViewController: UIViewController {
         stackView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview().inset(16)
-            make.height.equalTo(PeriodType.allCases.count * 70)
+            make.height.equalTo((PeriodType.allCases.count + 1) * 70)
         }
 
         applyButton.snp.makeConstraints { make in
@@ -108,16 +107,25 @@ final class SelectPeriodViewController: UIViewController {
         PeriodType.allCases.forEach { period in
             let button = RadioButton(period: period) { [weak self] selected in
                 self?.viewModel.selectedPeriod = selected
-                switch selected {
-                case .custom:
-                    guard let self else { return }
-//                    self.viewModel.selectedPeriod = .custom(from, to)
-                    self.viewModel.customPeriodChose(vm: self.viewModel)
-                default:
-                    break
-                }
             }
             stackView.addArrangedSubview(button)
+        }
+
+        switch viewModel.selectedPeriod {
+            case .custom(let from, let to):
+                let button = RadioButton(period: .custom(from, to)) { [weak self] selected in
+                    guard let self else { return }
+                    self.viewModel.customPeriodChose()
+                    self.viewModel.selectedPeriod = selected
+                }
+                stackView.addArrangedSubview(button)
+            default:
+                let button = RadioButton(period: .custom(Date(), Date())) { [weak self] selected in
+                    guard let self else { return }
+                    self.viewModel.customPeriodChose()
+                    self.viewModel.selectedPeriod = selected
+                }
+                stackView.addArrangedSubview(button)
         }
     }
 

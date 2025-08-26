@@ -251,32 +251,46 @@ final class CoreDataManager {
     }
 
     func fetchTransactions(by id: UUID, period: PeriodType) -> [Transaction] {
+        //TODO: - подумать над таймзоной пользователя
         let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+        var calendar = Calendar.current
+        calendar.timeZone = .current
         switch period {
             case .custom(let from, let to):
-                request.predicate = NSPredicate(format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date <= %@)",
-                                                id as CVarArg,
-                                                id as CVarArg,
-                                                from as CVarArg,
-                                                to as CVarArg)
+                let start = calendar.startOfDay(for: from)              // 00:00:00 локально для from
+                let toStart = calendar.startOfDay(for: to)              // 00:00:00 локально для to
+                guard let nextDayAfterTo = calendar.date(byAdding: .day, value: 1, to: toStart) else { return [] }
+                // Используем <= startOfNextDay как эксклюзивную верхнюю границу (date < nextDayAfterTo)
+                request.predicate = NSPredicate(
+                    format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date < %@)",
+                    id as CVarArg,
+                    id as CVarArg,
+                    start as CVarArg,
+                    nextDayAfterTo as CVarArg
+                )
             case .month:
-                let start = Calendar(identifier: .iso8601).currentMonthInterval().start
-                let end = Calendar(identifier: .iso8601).currentMonthInterval().end
-                request.predicate = NSPredicate(format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date <= %@)",
-                                                id as CVarArg,
-                                                id as CVarArg,
-                                                start as CVarArg,
-                                                end as CVarArg)
+                if let monthInterval = calendar.dateInterval(of: .month, for: Date()) {
+                    let start = calendar.startOfDay(for: monthInterval.start)
+                    let end = calendar.startOfDay(for: monthInterval.end)
+                    request.predicate = NSPredicate(format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date <= %@)",
+                                                    id as CVarArg,
+                                                    id as CVarArg,
+                                                    start as CVarArg,
+                                                    end as CVarArg)
+                }
 
             case .week:
-                let start = Calendar(identifier: .iso8601).currentWeekInterval().start
-                let end = Calendar(identifier: .iso8601).currentWeekInterval().end
-                request.predicate = NSPredicate(format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date <= %@)",
-                                                id as CVarArg,
-                                                id as CVarArg,
-                                                start as CVarArg,
-                                                end as CVarArg)
+                if let weekInterval = calendar.dateInterval(of: .weekOfYear, for: Date()) {
+                    let start = calendar.startOfDay(for: weekInterval.start)
+                    let end = calendar.startOfDay(for: weekInterval.end) // начало следующей недели
+                    request.predicate = NSPredicate(format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date <= %@)",
+                                                    id as CVarArg,
+                                                    id as CVarArg,
+                                                    start as CVarArg,
+                                                    end as CVarArg)
+                }
+
         }
 
         do {
@@ -355,7 +369,7 @@ final class CoreDataManager {
                 case .custom(let from, let to):
                     let period = Period(context: context)
                     period.name = value.displayTitle
-                    let calendar = Calendar(identifier: .iso8601)
+                    let calendar = Calendar.current
                     let normalizedFrom = calendar.startOfDay(for: from)
                     let normalizedTo = calendar.startOfDay(for: to)
                     period.start = normalizedFrom
@@ -378,4 +392,22 @@ final class CoreDataManager {
             print("Error deleting period: \(error)")
         }
     }
+}
+
+
+extension Calendar {
+    static func userCalendar(timeZone: TimeZone = .current) -> Calendar {
+        var calendar = Calendar.current
+        calendar.timeZone = timeZone
+        return calendar
+    }
+}
+
+func dayBounds(for date: Date, in timeZone: TimeZone = .current) -> (from: Date, to: Date) {
+    let calendar = Calendar.userCalendar(timeZone: timeZone)
+
+    let startOfDay = calendar.startOfDay(for: date)
+    let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: startOfDay)!
+
+    return (from: startOfDay, to: endOfDay)
 }

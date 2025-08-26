@@ -58,26 +58,12 @@ final class SelectPeriodViewModel {
         router.closeSelectPeriod()
     }
 
-    func customPeriodChose(vm: SelectPeriodViewModel) {
-        router.openCustomPeriodView(vm: vm)
+    func customPeriodChose() {
+        router.openCustomPeriodView(vm: self)
     }
 
     func saveCustomPeriod(_ period: PeriodType) {
         self.selectedPeriod = period
         router.closeCustomPeriodView()
-    }
-}
-
-extension Calendar {
-    func currentWeekInterval() -> DateInterval {
-        let now = Date()
-        let interval = dateInterval(of: .weekOfYear, for: now)
-        return interval ?? DateInterval(start: now, end: now)
-    }
-
-    func currentMonthInterval() -> DateInterval {
-        let now = Date()
-        let interval = dateInterval(of: .month, for: now)
-        return interval ?? DateInterval(start: now, end: now)
     }
 }

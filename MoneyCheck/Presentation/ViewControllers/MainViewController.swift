@@ -79,8 +79,8 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     private func setupUI() {
         view.backgroundColor = .systemBackground
         title = "Финансы"
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.largeTitleDisplayMode = .automatic
+//        navigationController?.navigationBar.prefersLargeTitles = true
+//        navigationItem.largeTitleDisplayMode = .automatic
 //        collectionView.isScrollEnabled = false
         collectionView.showsVerticalScrollIndicator = false
         view.addSubview(collectionView)
@@ -265,7 +265,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             heightDimension: .absolute(95)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-        group.interItemSpacing = .fixed(5)
+        group.interItemSpacing = .fixed(0)
 
         // Настройка секции
         let section = NSCollectionLayoutSection(group: group)

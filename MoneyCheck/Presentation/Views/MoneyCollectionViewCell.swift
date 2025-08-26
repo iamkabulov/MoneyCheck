@@ -31,6 +31,9 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         label.textColor = .label
         label.textAlignment = .center
         label.numberOfLines = 1
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.7
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
@@ -40,6 +43,9 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         label.textColor = .label
         label.textAlignment = .center
         label.numberOfLines = 1
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.7
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     

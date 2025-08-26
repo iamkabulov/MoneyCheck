@@ -29,6 +29,10 @@ final class CustomPeriodViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.setupUI()
+    }
+
+    private func setupUI() {
         title = "Выбор периода"
         view.backgroundColor = .systemBackground
 
@@ -48,8 +52,14 @@ final class CustomPeriodViewController: UIViewController {
         periodPicker.onDone = { [weak self] in
             self?.validateSelection()
         }
-    }
 
+        switch viewModel.selectedPeriod {
+            case .custom(let from, let to):
+                periodPicker.selection = PeriodSelection(from: from, to: to)
+            default:
+                periodPicker.selection = PeriodSelection(from: Date(), to: Date())
+        }
+    }
 
     private func validateSelection() {
         if periodPicker.selection.from <= periodPicker.selection.to {
