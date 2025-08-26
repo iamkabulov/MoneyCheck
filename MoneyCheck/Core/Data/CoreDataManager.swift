@@ -260,10 +260,23 @@ final class CoreDataManager {
                                                 id as CVarArg,
                                                 from as CVarArg,
                                                 to as CVarArg)
-//            case .month: TODO: - cделать
-//            case .week:
+            case .month:
+                let start = Calendar(identifier: .iso8601).currentMonthInterval().start
+                let end = Calendar(identifier: .iso8601).currentMonthInterval().end
+                request.predicate = NSPredicate(format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date <= %@)",
+                                                id as CVarArg,
+                                                id as CVarArg,
+                                                start as CVarArg,
+                                                end as CVarArg)
 
-            default: break
+            case .week:
+                let start = Calendar(identifier: .iso8601).currentWeekInterval().start
+                let end = Calendar(identifier: .iso8601).currentWeekInterval().end
+                request.predicate = NSPredicate(format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date <= %@)",
+                                                id as CVarArg,
+                                                id as CVarArg,
+                                                start as CVarArg,
+                                                end as CVarArg)
         }
 
         do {

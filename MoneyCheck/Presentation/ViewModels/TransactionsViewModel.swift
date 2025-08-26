@@ -112,8 +112,8 @@ class TransactionsViewModel {
             .sink { completion in
                 switch completion {
                     case .finished: break
-                    case .failure(let error):
-                        self.router.showError("Error", message: error.localizedDescription)
+                    case .failure(_): break
+//                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { income in
                 let calculatedBalance = self.calculateBalance(
@@ -130,8 +130,8 @@ class TransactionsViewModel {
             .sink { completion in
                 switch completion {
                     case .finished: break
-                    case .failure(let error):
-                        self.router.showError("Error", message: error.localizedDescription)
+                    case .failure(_): break
+//                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { wallet in
                 let calculatedBalance = self.calculateBalance(
@@ -148,8 +148,8 @@ class TransactionsViewModel {
             .sink { completion in
                 switch completion {
                     case .finished: break
-                    case .failure(let error):
-                        self.router.showError("Error", message: error.localizedDescription)
+                    case .failure(_): break
+//                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { wallet in
                 let calculatedBalance = self.calculateBalance(
@@ -166,8 +166,8 @@ class TransactionsViewModel {
             .sink { completion in
                 switch completion {
                     case .finished: break
-                    case .failure(let error):
-                        self.router.showError("Error", message: error.localizedDescription)
+                    case .failure(_): break
+//                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { category in
                 let calculatedBalance = self.calculateBalance(

@@ -49,7 +49,7 @@ final class CoreDataWalletRepository: WalletRepository {
         let walletModels = wallets.map { wallet in
 
             let transactions = coreDataManager
-                .fetchTransactions(by: wallet.id ?? UUID(), period: .week)
+                .fetchTransactions(by: wallet.id ?? UUID(), period: period)
                 .map { transaction in
                     TransactionModel(
                         id: transaction.id ?? UUID(),
@@ -75,9 +75,7 @@ final class CoreDataWalletRepository: WalletRepository {
                 balance: wallet.balance,
                 icon: wallet.icon ?? "",
                 color: wallet.color ?? "",
-                transactions: transactions.filter { transaction in
-                    filterTransactionBy(transaction, period: period)
-                }
+                transactions: transactions
             )
         }
 
@@ -129,25 +127,5 @@ final class CoreDataWalletRepository: WalletRepository {
         return Just(())
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
-    }
-
-    func filterTransactionBy(_ transaction: TransactionModel, period: PeriodType) -> Bool {
-        switch period {
-            case .month:
-                if transaction.date >= Calendar(identifier: .iso8601).currentMonthInterval().start && transaction.date <= Calendar(identifier: .iso8601).currentMonthInterval().end {
-                    return true
-                }
-                return false
-            case .week:
-                if transaction.date >= Calendar(identifier: .iso8601).currentWeekInterval().start && transaction.date <= Calendar(identifier: .iso8601).currentWeekInterval().end {
-                    return true
-                }
-                return false
-            case let .custom(from, to):
-                if transaction.date >= from && transaction.date <= to {
-                    return true
-                }
-                return false
-        }
     }
 }

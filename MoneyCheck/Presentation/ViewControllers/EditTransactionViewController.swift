@@ -11,7 +11,8 @@ final class EditTransactionViewController: UIViewController {
     private let transaction: TransactionModel
     private let financeUseCase: FinanceUseCase
     weak var delegate: EditTransactionDelegate?
-    
+    private var cancellables = Set<AnyCancellable>()
+
     private lazy var amountTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Сумма"
@@ -112,13 +113,10 @@ final class EditTransactionViewController: UIViewController {
             } receiveValue: { [weak self] _ in
                 self?.delegate?
                     .editTransactionViewController(
-                        self!,
-                        didUpdate: updatedTransaction
+                        self!, didUpdate: updatedTransaction
                     )
                 self?.navigationController?.popViewController(animated: true)
             }
             .store(in: &cancellables)
     }
-    
-    private var cancellables = Set<AnyCancellable>()
 } 

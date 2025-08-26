@@ -82,9 +82,6 @@ final class CoreDataTransactionRepository: TransactionRepository {
     }
     
     func updateTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error> {
-        return Future { [weak self] promise in
-            guard let self = self else { return }
-            
             let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
             request.predicate = NSPredicate(format: "id == %@", transaction.id as CVarArg)
             
@@ -104,13 +101,12 @@ final class CoreDataTransactionRepository: TransactionRepository {
                     existingTransaction.destinationColor = transaction.destinationColor
                     
                     self.coreDataManager.saveContext()
-                    promise(.success(()))
-                } else {
-                    promise(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Transaction not found"])))
                 }
             } catch {
-                promise(.failure(error))
+                return Fail(error: error).eraseToAnyPublisher()
             }
-        }.eraseToAnyPublisher()
+        return Just(())
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher()
     }
 } 
