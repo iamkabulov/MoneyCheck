@@ -251,23 +251,20 @@ final class CoreDataManager {
     }
 
     func fetchTransactions(by id: UUID, period: PeriodType) -> [Transaction] {
-        //TODO: - подумать над таймзоной пользователя
         let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
         var calendar = Calendar.current
-        calendar.timeZone = .current
+        calendar.timeZone = TimeZone.current
         switch period {
-            case .custom(let from, let to):
-                let start = calendar.startOfDay(for: from)              // 00:00:00 локально для from
-                let toStart = calendar.startOfDay(for: to)              // 00:00:00 локально для to
-                guard let nextDayAfterTo = calendar.date(byAdding: .day, value: 1, to: toStart) else { return [] }
-                // Используем <= startOfNextDay как эксклюзивную верхнюю границу (date < nextDayAfterTo)
+            case .custom(let from, let to):           // 00:00:00 локально для to
+                let start = calendar.startOfDay(for: from)
+                let end = calendar.endOfDay(for: to)
                 request.predicate = NSPredicate(
                     format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date < %@)",
                     id as CVarArg,
                     id as CVarArg,
                     start as CVarArg,
-                    nextDayAfterTo as CVarArg
+                    end as CVarArg
                 )
             case .month:
                 if let monthInterval = calendar.dateInterval(of: .month, for: Date()) {
@@ -279,7 +276,6 @@ final class CoreDataManager {
                                                     start as CVarArg,
                                                     end as CVarArg)
                 }
-
             case .week:
                 if let weekInterval = calendar.dateInterval(of: .weekOfYear, for: Date()) {
                     let start = calendar.startOfDay(for: weekInterval.start)
@@ -290,7 +286,6 @@ final class CoreDataManager {
                                                     start as CVarArg,
                                                     end as CVarArg)
                 }
-
         }
 
         do {
@@ -370,10 +365,8 @@ final class CoreDataManager {
                     let period = Period(context: context)
                     period.name = value.displayTitle
                     let calendar = Calendar.current
-                    let normalizedFrom = calendar.startOfDay(for: from)
-                    let normalizedTo = calendar.startOfDay(for: to)
-                    period.start = normalizedFrom
-                    period.end = normalizedTo
+                    period.start = calendar.startOfDay(for: from)
+                    period.end = calendar.endOfDay(for: to)
                     try context.save()
             }
         } catch {
@@ -394,20 +387,11 @@ final class CoreDataManager {
     }
 }
 
-
 extension Calendar {
-    static func userCalendar(timeZone: TimeZone = .current) -> Calendar {
-        var calendar = Calendar.current
-        calendar.timeZone = timeZone
-        return calendar
+    func endOfDay(for date: Date) -> Date {
+        guard let nextDay = self.date(byAdding: .day, value: 1, to: startOfDay(for: date)) else {
+            return date
+        }
+        return nextDay
     }
-}
-
-func dayBounds(for date: Date, in timeZone: TimeZone = .current) -> (from: Date, to: Date) {
-    let calendar = Calendar.userCalendar(timeZone: timeZone)
-
-    let startOfDay = calendar.startOfDay(for: date)
-    let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: startOfDay)!
-
-    return (from: startOfDay, to: endOfDay)
 }
