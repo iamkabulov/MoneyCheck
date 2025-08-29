@@ -597,8 +597,8 @@ extension MainViewController {
 
 // MARK: - TransferBottomSheetDelegate
 extension MainViewController: TransferBottomSheetDelegate {
-    func transferBottomSheet(transferType: TransferType, didConfirmAmount amount: Double) {
-        viewModel.handleTransfer(type: transferType, amount: amount)
+    func transferBottomSheet(transferType: TransferType, didConfirmAmount amount: Double, comment: String?) {
+        viewModel.handleTransfer(type: transferType, amount: amount, comment: comment)
         
     }
 

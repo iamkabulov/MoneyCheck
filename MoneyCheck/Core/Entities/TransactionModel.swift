@@ -10,6 +10,7 @@ struct TransactionModel: Identifiable, Codable {
     let id: UUID
     let date: Date
     let amount: Double
+    let comment: String?
     let type: TransactionType
     
     // Источник
@@ -36,7 +37,8 @@ struct TransactionModel: Identifiable, Codable {
         destinationId: UUID,
         destinationName: String,
         destinationIcon: String,
-        destinationColor: String
+        destinationColor: String,
+        comment: String? = nil
     ) {
         self.id = id
         self.date = date
@@ -50,5 +52,6 @@ struct TransactionModel: Identifiable, Codable {
         self.destinationName = destinationName
         self.destinationIcon = destinationIcon
         self.destinationColor = destinationColor
+        self.comment = comment
     }
 } 

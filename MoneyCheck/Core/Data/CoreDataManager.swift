@@ -216,7 +216,8 @@ final class CoreDataManager {
         destinationId: UUID,
         destinationName: String,
         destinationIcon: String,
-        destinationColor: String
+        destinationColor: String,
+        comment: String?
     ) -> Transaction {
         
         let transaction = Transaction(context: context)
@@ -232,23 +233,24 @@ final class CoreDataManager {
         transaction.destinationName = destinationName
         transaction.destinationIcon = destinationIcon
         transaction.destinationColor = destinationColor
-        
+        transaction.comment = comment
+
         saveContext()
         return transaction
     }
     
-    func fetchTransactions() -> [Transaction] {
-        let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
-        
-        do {
-            let transactions = try context.fetch(request)
-            return transactions
-        } catch {
-            print("❌ CoreDataManager: Error fetching transactions: \(error)")
-            return []
-        }
-    }
+//    func fetchTransactions() -> [Transaction] {
+//        let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
+//        request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+//        
+//        do {
+//            let transactions = try context.fetch(request)
+//            return transactions
+//        } catch {
+//            print("❌ CoreDataManager: Error fetching transactions: \(error)")
+//            return []
+//        }
+//    }
 
     func fetchTransactions(by id: UUID, period: PeriodType) -> [Transaction] {
         let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()

@@ -20,7 +20,7 @@ enum TransferType {
 }
 
 protocol TransferBottomSheetDelegate: AnyObject {
-    func transferBottomSheet(transferType: TransferType, didConfirmAmount amount: Double)
+    func transferBottomSheet(transferType: TransferType, didConfirmAmount amount: Double, comment: String?)
     func transferBottomSheetDidCancel()
 }
 
@@ -48,7 +48,7 @@ final class TransferBottomSheetViewController: UIViewController {
         return label
     }()
     
-    private lazy var textField: UITextField = {
+    private lazy var amountInput: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Сумма"
         textField.keyboardType = .decimalPad
@@ -57,7 +57,16 @@ final class TransferBottomSheetViewController: UIViewController {
         textField.textColor = .label
         return textField
     }()
-    
+
+    private lazy var commentInput: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "Комментарий"
+        textField.borderStyle = .roundedRect
+        textField.backgroundColor = .secondarySystemGroupedBackground
+        textField.textColor = .label
+        return textField
+    }()
+
     private let buttonsStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
@@ -83,12 +92,12 @@ final class TransferBottomSheetViewController: UIViewController {
         button.setTitleColor(UIColor(hex: "#007AFF"), for: .normal)
         button.addAction(UIAction { [weak self] _ in
             guard let self = self,
-                  let amountText = self.textField.text,
+                  let amountText = self.amountInput.text,
                   let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
                   amount > 0 else {
                 return
             }
-            self.delegate?.transferBottomSheet(transferType: transferType,didConfirmAmount: amount)
+            self.delegate?.transferBottomSheet(transferType: transferType,didConfirmAmount: amount, comment: commentInput.text)
         }, for: .touchDown)
         return button
     }()
@@ -98,9 +107,6 @@ final class TransferBottomSheetViewController: UIViewController {
         self.transferType = transferType
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .pageSheet
-        if let sheet = sheetPresentationController {
-            sheet.detents = [.custom { _ in 160 }]
-        }
         isModalInPresentation = false
     }
     
@@ -118,11 +124,10 @@ final class TransferBottomSheetViewController: UIViewController {
         setupUI()
         setupKeyboardDismissGesture()
 
-
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        textField.becomeFirstResponder()
+        amountInput.becomeFirstResponder()
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -130,14 +135,19 @@ final class TransferBottomSheetViewController: UIViewController {
     
     // MARK: - Private Methods
     private func setupUI() {
+        if let sheet = sheetPresentationController {
+            sheet.detents = [.custom { _ in 300 }]
+        }
+
         titleLabel.text = transferType.title
 
         
         view.addSubview(containerView)
         containerView.addSubview(titleLabel)
-        containerView.addSubview(textField)
+        containerView.addSubview(amountInput)
+        containerView.addSubview(commentInput)
         containerView.addSubview(buttonsStack)
-        
+
         buttonsStack.addArrangedSubview(cancelButton)
         buttonsStack.addArrangedSubview(okButton)
         
@@ -146,22 +156,24 @@ final class TransferBottomSheetViewController: UIViewController {
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
+            make.top.equalToSuperview().offset(40)
+            make.leading.trailing.equalToSuperview().inset(16)
         }
 
-        textField.addDoneButtonOnKeyboard()
-        textField.snp.makeConstraints { make in
+        amountInput.addDoneButtonOnKeyboard()
+        amountInput.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
+            make.leading.trailing.equalToSuperview().inset(16)
+        }
+
+        commentInput.snp.makeConstraints { make in
+            make.top.equalTo(amountInput.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview().inset(16)
         }
 
         buttonsStack.snp.makeConstraints { make in
-            make.top.equalTo(textField.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
+            make.top.equalTo(commentInput.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview().inset(16)
         }
     }
 }

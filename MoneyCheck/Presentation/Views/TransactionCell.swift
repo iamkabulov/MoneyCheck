@@ -31,7 +31,7 @@ final class TransactionCell: UITableViewCell {
         return label
     }()
     
-    private let dateLabel: UILabel = {
+    private let commentLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14)
         label.textColor = .secondaryLabel
@@ -63,7 +63,7 @@ final class TransactionCell: UITableViewCell {
         containerView.addSubview(iconContainerView)
         iconContainerView.addSubview(iconImageView)
         containerView.addSubview(titleLabel)
-        containerView.addSubview(dateLabel)
+        containerView.addSubview(commentLabel)
         containerView.addSubview(amountLabel)
         
         containerView.snp.makeConstraints { make in
@@ -87,7 +87,7 @@ final class TransactionCell: UITableViewCell {
             make.top.equalToSuperview().offset(12)
         }
         
-        dateLabel.snp.makeConstraints { make in
+        commentLabel.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
             make.top.equalTo(titleLabel.snp.bottom).offset(4)
         }
@@ -133,7 +133,21 @@ final class TransactionCell: UITableViewCell {
             amountLabel.textColor = .systemGreen
             amountLabel.text = "+\(transaction.amount) ₸"
         }
-        
-        dateLabel.text = transaction.date.formatted(date: .abbreviated, time: .shortened)
+
+        if transaction.comment == nil {
+            commentLabel.isHidden = true
+
+            titleLabel.snp.remakeConstraints { make in
+                make.centerY.equalToSuperview()
+                make.leading.equalTo(iconContainerView.snp.trailing).offset(12)
+            }
+        } else {
+            commentLabel.isHidden = false
+            commentLabel.text = transaction.comment
+            titleLabel.snp.remakeConstraints { make in
+                make.top.equalToSuperview().offset(12)
+                make.leading.equalTo(iconContainerView.snp.trailing).offset(12)
+            }
+        }
     }
 } 

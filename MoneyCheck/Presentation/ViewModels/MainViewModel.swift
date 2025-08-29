@@ -112,17 +112,17 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    func handleTransfer(type: TransferType, amount: Double) {
+    func handleTransfer(type: TransferType, amount: Double, comment: String?) {
         switch type {
         case .income(let income, let wallet):
-            addIncomeTransaction(from: income, to: wallet, amount: amount)
+            addIncomeTransaction(from: income, to: wallet, amount: amount, comment: comment)
         case .wallet(let source, let target):
-            transferMoney(from: source, to: target, amount: amount)
+            transferMoney(from: source, to: target, amount: amount, comment: comment)
         case .category(let wallet, let category):
             if category.type == .category {
-                addExpense(from: wallet, to: category, amount: amount)
+                addExpense(from: wallet, to: category, amount: amount, comment: comment)
             } else {
-                addIncome(to: wallet, from: category, amount: amount)
+                addIncome(to: wallet, from: category, amount: amount, comment: comment)
             }
         }
         router.closeTransferBottomSheet()
@@ -161,7 +161,7 @@ final class MainViewModel {
 }
 
 private extension MainViewModel {
-    func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double) {
+    func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double, comment: String?) {
         var updatedSourceWallet = sourceWallet
         var updatedTargetWallet = targetWallet
 
@@ -179,7 +179,8 @@ private extension MainViewModel {
             destinationId: targetWallet.id,
             destinationName: targetWallet.name,
             destinationIcon: targetWallet.icon,
-            destinationColor: targetWallet.color
+            destinationColor: targetWallet.color,
+            comment: comment
         )
 
         Publishers.Zip3(
@@ -199,7 +200,7 @@ private extension MainViewModel {
         .store(in: &cancellables)
     }
 
-    func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double) {
+    func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double, comment: String?) {
         var updatedWallet = wallet
         var updatedCategory = category
 
@@ -217,7 +218,8 @@ private extension MainViewModel {
             destinationId: category.id,
             destinationName: category.name,
             destinationIcon: category.icon,
-            destinationColor: category.color
+            destinationColor: category.color,
+            comment: comment
         )
 
         Publishers.Zip3(
@@ -237,7 +239,7 @@ private extension MainViewModel {
         .store(in: &cancellables)
     }
 
-    func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double) {
+    func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double, comment: String?) {
         var updatedWallet = wallet
         var updatedCategory = category
 
@@ -254,7 +256,8 @@ private extension MainViewModel {
             destinationId: wallet.id,
             destinationName: wallet.name,
             destinationIcon: wallet.icon,
-            destinationColor: wallet.color
+            destinationColor: wallet.color,
+            comment: comment
         )
 
         Publishers.Zip3(
@@ -274,7 +277,7 @@ private extension MainViewModel {
         .store(in: &cancellables)
     }
 
-    func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double) {
+    func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double, comment: String?) {
         var updatedIncome = income
         var updatedWallet = wallet
 
@@ -291,7 +294,8 @@ private extension MainViewModel {
             destinationId: wallet.id,
             destinationName: wallet.name,
             destinationIcon: wallet.icon,
-            destinationColor: wallet.color
+            destinationColor: wallet.color,
+            comment: comment
         )
 
         Publishers.Zip3(
