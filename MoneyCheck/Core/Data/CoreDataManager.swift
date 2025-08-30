@@ -394,6 +394,9 @@ extension Calendar {
         guard let nextDay = self.date(byAdding: .day, value: 1, to: startOfDay(for: date)) else {
             return date
         }
-        return nextDay
+        guard let day = self.date(byAdding: .second, value: -1, to: nextDay) else {
+            return date
+        }
+        return day
     }
 }

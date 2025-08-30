@@ -112,17 +112,17 @@ final class MainViewModel {
         .store(in: &cancellables)
     }
 
-    func handleTransfer(type: TransferType, amount: Double, comment: String?) {
+    func handleTransfer(type: TransferType, amount: Double, date: Date, comment: String?) {
         switch type {
         case .income(let income, let wallet):
-            addIncomeTransaction(from: income, to: wallet, amount: amount, comment: comment)
+                addIncomeTransaction(from: income, to: wallet, amount: amount, date: date, comment: comment)
         case .wallet(let source, let target):
-            transferMoney(from: source, to: target, amount: amount, comment: comment)
+            transferMoney(from: source, to: target, amount: amount, date: date, comment: comment)
         case .category(let wallet, let category):
             if category.type == .category {
-                addExpense(from: wallet, to: category, amount: amount, comment: comment)
+                addExpense(from: wallet, to: category, amount: amount, date: date, comment: comment)
             } else {
-                addIncome(to: wallet, from: category, amount: amount, comment: comment)
+                addIncome(to: wallet, from: category, amount: amount, date: date, comment: comment)
             }
         }
         router.closeTransferBottomSheet()
@@ -161,7 +161,7 @@ final class MainViewModel {
 }
 
 private extension MainViewModel {
-    func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double, comment: String?) {
+    func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double, date: Date, comment: String?) {
         var updatedSourceWallet = sourceWallet
         var updatedTargetWallet = targetWallet
 
@@ -170,6 +170,7 @@ private extension MainViewModel {
 
 
         let transaction = TransactionModel(
+            date: date,
             amount: amount,
             type: .transfer,
             sourceId: sourceWallet.id,
@@ -200,7 +201,7 @@ private extension MainViewModel {
         .store(in: &cancellables)
     }
 
-    func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double, comment: String?) {
+    func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double, date: Date, comment: String?) {
         var updatedWallet = wallet
         var updatedCategory = category
 
@@ -209,6 +210,7 @@ private extension MainViewModel {
 
 
         let transaction = TransactionModel(
+            date: date,
             amount: amount,
             type: .expense,
             sourceId: wallet.id,
@@ -239,7 +241,7 @@ private extension MainViewModel {
         .store(in: &cancellables)
     }
 
-    func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double, comment: String?) {
+    func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double, date: Date, comment: String?) {
         var updatedWallet = wallet
         var updatedCategory = category
 
@@ -247,6 +249,7 @@ private extension MainViewModel {
         updatedCategory.amount += amount
 
         let transaction = TransactionModel(
+            date: date,
             amount: amount,
             type: .income,
             sourceId: category.id,
@@ -277,7 +280,7 @@ private extension MainViewModel {
         .store(in: &cancellables)
     }
 
-    func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double, comment: String?) {
+    func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double, date: Date, comment: String?) {
         var updatedIncome = income
         var updatedWallet = wallet
 
@@ -285,6 +288,7 @@ private extension MainViewModel {
         updatedWallet.balance += amount
 
         let transaction = TransactionModel(
+            date: date,
             amount: amount,
             type: .income,
             sourceId: income.id,

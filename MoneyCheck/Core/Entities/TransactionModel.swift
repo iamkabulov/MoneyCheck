@@ -27,7 +27,7 @@ struct TransactionModel: Identifiable, Codable {
     
     init(
         id: UUID = UUID(),
-        date: Date = Date(),
+        date: Date,
         amount: Double,
         type: TransactionType,
         sourceId: UUID,

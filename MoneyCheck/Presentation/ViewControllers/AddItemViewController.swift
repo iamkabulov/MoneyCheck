@@ -96,8 +96,8 @@ class AddItemViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupConstraints()
-        setupKeyboardHandling()
         setupBindings()
+        setupKeyboardDismissGesture()
 
         if viewModel is EditItemViewModel {
             deleteButton.title = "Удалить"
@@ -195,21 +195,6 @@ class AddItemViewController: UIViewController {
         saveButton.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
-    }
-    
-    private func setupKeyboardHandling() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillShow),
-            name: UIResponder.keyboardWillShowNotification,
-            object: nil
-        )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillHide),
-            name: UIResponder.keyboardWillHideNotification,
-            object: nil
-        )
     }
     
     private func createTextField(placeholder: String) -> UITextField {

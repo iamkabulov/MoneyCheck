@@ -3,7 +3,6 @@ import Combine
 import SnapKit
 
 
-//TODO: - Создать отдельно ViewModel
 final class EditTransactionViewController: UIViewController {
     private let viewModel: EditTransactionViewModel
     private var cancellables = Set<AnyCancellable>()
@@ -48,6 +47,7 @@ final class EditTransactionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        setupKeyboardDismissGesture()
     }
 
     override func viewWillAppear(_ animated: Bool) {
