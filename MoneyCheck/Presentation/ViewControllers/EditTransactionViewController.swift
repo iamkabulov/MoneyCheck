@@ -5,6 +5,7 @@ import SnapKit
 
 final class EditTransactionViewController: UIViewController {
     private let viewModel: EditTransactionViewModel
+    private var selectedDate: Date?
     private var cancellables = Set<AnyCancellable>()
 
     private lazy var amountTextField: UITextField = {
@@ -16,14 +17,10 @@ final class EditTransactionViewController: UIViewController {
         return textField
     }()
     
-    private lazy var datePicker: UIDatePicker = {
-        let picker = UIDatePicker()
-        picker.datePickerMode = .date
-        picker.preferredDatePickerStyle = .inline
-        picker.date = viewModel.transaction.date
-        return picker
-    }()
-    
+    private lazy var datePicker = HorizontalDatePicker(
+        initialDate: viewModel.transaction.date
+    )
+
     private lazy var saveButton: PrimaryButton = {
         let button = PrimaryButton()
         button.setTitle("Сохранить", for: .normal)
@@ -34,6 +31,9 @@ final class EditTransactionViewController: UIViewController {
     init(vm: EditTransactionViewModel) {
         self.viewModel = vm
         super.init(nibName: nil, bundle: nil)
+        datePicker.onDateSelected = { [weak self] date in
+            self?.selectedDate = date
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -72,9 +72,16 @@ final class EditTransactionViewController: UIViewController {
             make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
             make.leading.trailing.equalToSuperview().inset(16)
         }
+
+        datePicker.snp.makeConstraints { make in
+            make.height.equalTo(50)
+        }
     }
     
     @objc private func saveButtonTapped() {
-        viewModel.saveTransaction(amountTextField.text, date: datePicker.date)
+        guard let selectedDate = selectedDate else {
+            return
+        }
+        viewModel.saveTransaction(amountTextField.text, date: selectedDate)
     }
 }

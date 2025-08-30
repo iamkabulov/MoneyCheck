@@ -10,6 +10,9 @@ import SnapKit
 
 class DateCell: UICollectionViewCell {
     private let label = UILabel()
+    static let reuseIdentifier: String = {
+        return String(describing: DateCell.self)
+    }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
