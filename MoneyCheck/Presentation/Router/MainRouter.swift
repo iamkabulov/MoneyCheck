@@ -40,6 +40,7 @@ final class MainRouter {
     func showAddNewItem(type: ItemType) {
         let viewModel = AddItemViewModel(type: type, financeUseCase: financeUseCase, router: self)
         let addVC = AddItemViewController(viewModel: viewModel)
+        addVC.hidesBottomBarWhenPushed = true
         self.viewController?.navigationController?.pushViewController(addVC, animated: true)
     }
 
@@ -68,6 +69,7 @@ final class MainRouter {
             period: period
         )
         let transactionsVC = TransactionsViewController(viewModel: viewModel)
+        transactionsVC.hidesBottomBarWhenPushed = true
         self.viewController?.navigationController?.pushViewController(transactionsVC, animated: true)
     }
 
@@ -79,6 +81,7 @@ final class MainRouter {
         let selectPeriodVC = SelectPeriodViewController(
             viewModel: viewModel
         )
+        selectPeriodVC.hidesBottomBarWhenPushed = true
         self.viewController?.navigationController?.pushViewController(selectPeriodVC, animated: true)
     }
 
@@ -116,6 +119,7 @@ extension MainRouter: TransactionsRouting {
             router: self
         )
         let vc = EditTransactionViewController(vm: vm)
+        vc.hidesBottomBarWhenPushed = true
         self.viewController?.navigationController?.pushViewController(vc, animated: true)
     }
 

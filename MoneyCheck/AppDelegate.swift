@@ -14,41 +14,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         window = UIWindow(frame: UIScreen.main.bounds)
-        
-        // Initialize CoreData and mock data
-        let coreDataManager = CoreDataManager.shared
-        coreDataManager.initializeMockDataIfNeeded()
-        
-        // Initialize repositories
-        let walletRepository = CoreDataWalletRepository()
-        let categoryRepository = CoreDataCategoryRepository()
-        let incomeRepository = CoreDataIncomeRepository()
-        let transactionRepository = CoreDataTransactionRepository()
-        let periodRepository = CoreDataPeriodRepository()
-
-        // Initialize use case
-        let financeUseCase = FinanceUseCaseImpl(
-            walletRepository: walletRepository,
-            categoryRepository: categoryRepository,
-            incomeRepository: incomeRepository,
-            transactionRepository: transactionRepository,
-            periodRepository: periodRepository
-        )
-
-        // Initialize router without view controller
-        let router = MainRouter(financeUseCase: financeUseCase)
-
-        // Initialize view model
-        let viewModel = MainViewModel(financeUseCase: financeUseCase, router: router)
-
-        // Initialize view controller with router
-        let viewController = MainViewController(viewModel: viewModel)
-        
-        // Set view controller to router
-        router.viewController = viewController
-//        viewController.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-
-        let navigationController = UINavigationController(rootViewController: viewController)
 
 
         let appearance = UINavigationBarAppearance()
@@ -61,8 +26,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        
-        window?.rootViewController = navigationController
+
+        window?.rootViewController = MainTabBarController()
         window?.makeKeyAndVisible()
         
         return true
