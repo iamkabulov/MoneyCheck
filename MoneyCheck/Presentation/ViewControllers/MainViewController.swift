@@ -62,10 +62,8 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         viewModel.loadData()
         
         periodButton.title = switch viewModel.selectedPeriod {
-            case .lastMonth: "Прошлый месяц"
-            case .month: Date().monthName
-            case .week: "Неделя"
-            case .custom(let from, let to): "\(from.periodName)-\(to.periodName)"
+            case .custom(let from, let to): "\(from.periodName) - \(to.periodName)"
+            default: viewModel.selectedPeriod.displayTitle
         }
     }
 

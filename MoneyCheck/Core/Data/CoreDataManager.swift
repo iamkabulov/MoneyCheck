@@ -238,19 +238,6 @@ final class CoreDataManager {
         saveContext()
         return transaction
     }
-    
-//    func fetchTransactions() -> [Transaction] {
-//        let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
-//        request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
-//        
-//        do {
-//            let transactions = try context.fetch(request)
-//            return transactions
-//        } catch {
-//            print("❌ CoreDataManager: Error fetching transactions: \(error)")
-//            return []
-//        }
-//    }
 
     func fetchTransactions(by id: UUID, period: PeriodType) -> [Transaction] {
         let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
@@ -303,6 +290,8 @@ final class CoreDataManager {
                                                     start as CVarArg,
                                                     end as CVarArg)
                 }
+            case .wholeTime:
+                request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
         }
 
         do {
@@ -366,10 +355,10 @@ final class CoreDataManager {
         let request: NSFetchRequest<Period> = Period.fetchRequest()
         do {
             let period = try context.fetch(request)
-            guard let period = period.first, let name = period.name else {
+            guard let period = period.first else {
                 return .month
             }
-            guard let result = PeriodType(rawValue: name, from: period.start, to: period.end) else {
+            guard let result = PeriodType.from(id: Int(period.id), from: period.start, to: period.end) else {
                 return .month
             }
             return result
@@ -386,22 +375,26 @@ final class CoreDataManager {
             switch value {
                 case .lastMonth:
                     let period = Period(context: context)
-                    period.name = value.displayTitle
+                    period.id = Int64(value.id)
                     try context.save()
                 case .month:
                     let period = Period(context: context)
-                    period.name = value.displayTitle
+                    period.id = Int64(value.id)
                     try context.save()
                 case .week:
                     let period = Period(context: context)
-                    period.name = value.displayTitle
+                    period.id = Int64(value.id)
                     try context.save()
                 case .custom(let from, let to):
                     let period = Period(context: context)
-                    period.name = value.displayTitle
+                    period.id = Int64(value.id)
                     let calendar = Calendar.current
                     period.start = calendar.startOfDay(for: from)
                     period.end = calendar.endOfDay(for: to)
+                    try context.save()
+                case .wholeTime:
+                    let period = Period(context: context)
+                    period.id = Int64(value.id)
                     try context.save()
             }
         } catch {

@@ -15,27 +15,57 @@ enum PeriodType: Equatable {
         return [
             .week,
             .lastMonth,
-            .month
+            .month,
+            .wholeTime
         ]
     }
     case week
     case lastMonth
     case month
     case custom(Date, Date)
+    case wholeTime
 
-    var displayTitle: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM"
-
+    /// ID для хранения в CoreData
+    var id: Int {
         switch self {
-        case .week:
-            return "Неделя"
-        case .lastMonth:
-            return "Прошлый месяц"
-        case .month:
-            return Date().monthName // ← текущий месяц
-        case .custom(_, _):
-            return "Период"
+        case .week: return 0
+        case .lastMonth: return 1
+        case .month: return 2
+        case .custom: return 3
+        case .wholeTime: return 4
+        }
+    }
+
+    /// Локализованное имя (для UI)
+    var displayTitle: String {
+        switch self {
+            case .week:
+                return String(localized: "week")
+            case .lastMonth:
+                return String(localized: "lastMonth")
+            case .month:
+                return Date().monthName
+            case .custom:
+                return String(localized: "customPeriod")
+            case .wholeTime:
+                return String(localized: "wholeTime")
+        }
+    }
+
+    /// Восстановление из CoreData
+    static func from(id: Int, from: Date? = nil, to: Date? = nil) -> PeriodType? {
+        switch id {
+        case 0: return .week
+        case 1: return .lastMonth
+        case 2: return .month
+        case 3:
+            if let from, let to {
+                return .custom(from, to)
+            }
+            return nil
+        case 4: return .wholeTime
+        default:
+            return nil
         }
     }
 }
@@ -50,7 +80,7 @@ final class SelectPeriodViewController: UIViewController {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.distribution = .fillEqually
-        stackView.spacing = 4
+        stackView.spacing = 10
         return stackView
     }()
 
@@ -101,7 +131,7 @@ final class SelectPeriodViewController: UIViewController {
         stackView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).inset(20)
             make.leading.trailing.equalToSuperview().inset(16)
-            make.height.equalTo((PeriodType.allCases.count + 1) * 70)
+            make.height.equalTo((PeriodType.allCases.count + 1) * 80)
         }
 
         applyButton.snp.makeConstraints { make in
@@ -135,13 +165,13 @@ final class SelectPeriodViewController: UIViewController {
 
     private func updateSelection(_ selected: PeriodType) {
         for case let button as RadioButton in stackView.arrangedSubviews {
-            button.isChecked = (button.period.displayTitle == selected.displayTitle)
+            button.isChecked = (button.period.id == selected.id)
 
             if case .custom(_, _) = button.period {
                 // обновляем тайтл кастомной кнопки (независимо от того, выбрана ли она)
                 switch selected {
                     case .custom(let from, let to):
-                        button.updateTitle("Период с \(from.periodName) - по \(to.periodName)")
+                        button.updateTitle(String(localized: "customPeriod") + ": \(from.periodName) - \(to.periodName)")
                     default: break
                 }
             }
@@ -152,7 +182,7 @@ final class SelectPeriodViewController: UIViewController {
 extension Date {
     var monthName: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ru_RU") // ← для русского языка
+        formatter.locale = Locale.current
         formatter.timeZone = .current
         formatter.dateFormat = "LLLL"             // название месяца + год
         return formatter.string(from: self).capitalized
@@ -161,31 +191,9 @@ extension Date {
     var periodName: String {
         let formatter = DateFormatter()
         formatter.timeZone = .current
-        formatter.locale = Locale(identifier: "ru_RU")
+        formatter.locale = Locale.current
         formatter.dateFormat = "dd.MM"
         return formatter.string(from: self).capitalized
-    }
-}
-
-extension PeriodType {
-    init?(rawValue name: String, from: Date? = nil, to: Date? = nil) {
-        switch name {
-            //TODO: - подумать как обойтись без строки
-            case "Неделя":
-                self = .week
-            case "Месяц":
-                self = .month
-            case "Прошлый месяц":
-                self = .lastMonth
-            case "Период":
-                if let from, let to {
-                    self = .custom(from, to)
-                } else {
-                    return nil
-                }
-            default:
-                return nil
-        }
     }
 }
 

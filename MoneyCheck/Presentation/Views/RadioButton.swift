@@ -5,6 +5,7 @@
 //  Created by Нурсултан Кабулов on 15.08.2025.
 //
 import UIKit
+import SnapKit
 
 class RadioButton: UIView {
     let period: PeriodType
@@ -72,7 +73,11 @@ class RadioButton: UIView {
     }
 
     private func updateUI() {
-        radioButton.image = isChecked ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle")
+        if case .custom(_, _) = period {
+            radioButton.image = UIImage(systemName: "chevron.right")
+        } else {
+            radioButton.image = isChecked ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle")
+        }
     }
 
     func updateTitle(_ title: String) {
