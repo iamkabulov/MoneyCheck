@@ -268,6 +268,21 @@ final class CoreDataManager {
                     start as CVarArg,
                     end as CVarArg
                 )
+            case .lastMonth:
+                if let lastMonthDate = calendar.date(byAdding: .month, value: -1, to: Date()),
+                   let monthInterval = calendar.dateInterval(of: .month, for: lastMonthDate) {
+
+                    let start = calendar.startOfDay(for: monthInterval.start)
+                    let end = calendar.startOfDay(for: monthInterval.end)
+
+                    request.predicate = NSPredicate(
+                        format: "(sourceId == %@ OR destinationId == %@) AND (date >= %@ AND date <= %@)",
+                        id as CVarArg,
+                        id as CVarArg,
+                        start as CVarArg,
+                        end as CVarArg
+                    )
+                }
             case .month:
                 if let monthInterval = calendar.dateInterval(of: .month, for: Date()) {
                     let start = calendar.startOfDay(for: monthInterval.start)
@@ -369,6 +384,10 @@ final class CoreDataManager {
 
         do {
             switch value {
+                case .lastMonth:
+                    let period = Period(context: context)
+                    period.name = value.displayTitle
+                    try context.save()
                 case .month:
                     let period = Period(context: context)
                     period.name = value.displayTitle

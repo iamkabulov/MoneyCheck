@@ -14,10 +14,12 @@ enum PeriodType: Equatable {
     static var allCases: [PeriodType] {
         return [
             .week,
+            .lastMonth,
             .month
         ]
     }
     case week
+    case lastMonth
     case month
     case custom(Date, Date)
 
@@ -28,6 +30,8 @@ enum PeriodType: Equatable {
         switch self {
         case .week:
             return "Неделя"
+        case .lastMonth:
+            return "Прошлый месяц"
         case .month:
             return Date().monthName // ← текущий месяц
         case .custom(_, _):
@@ -95,7 +99,7 @@ final class SelectPeriodViewController: UIViewController {
         view.addSubview(applyButton)
 
         stackView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(view.safeAreaLayoutGuide).inset(20)
             make.leading.trailing.equalToSuperview().inset(16)
             make.height.equalTo((PeriodType.allCases.count + 1) * 70)
         }
@@ -166,18 +170,21 @@ extension Date {
 extension PeriodType {
     init?(rawValue name: String, from: Date? = nil, to: Date? = nil) {
         switch name {
-        case "Неделя":
-            self = .week
-        case "Месяц":
-            self = .month
-        case "Период":
-            if let from, let to {
-                self = .custom(from, to)
-            } else {
+            //TODO: - подумать как обойтись без строки
+            case "Неделя":
+                self = .week
+            case "Месяц":
+                self = .month
+            case "Прошлый месяц":
+                self = .lastMonth
+            case "Период":
+                if let from, let to {
+                    self = .custom(from, to)
+                } else {
+                    return nil
+                }
+            default:
                 return nil
-            }
-        default:
-            return nil
         }
     }
 }

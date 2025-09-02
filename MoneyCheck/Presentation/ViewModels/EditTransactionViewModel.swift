@@ -47,16 +47,17 @@ final class EditTransactionViewModel {
         self.router = router
     }
 
-    func saveTransaction(_ value: String?, date: Date) {
+    func saveTransaction(_ value: String?, date: Date?, comment: String?) {
         guard let amountText = value,
               let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
-              amount > 0 else {
+              amount > 0
+        else {
             return
         }
 
         let updatedTransaction = TransactionModel(
             id: transaction.id,
-            date: date,
+            date: date ?? transaction.date,
             amount: amount,
             type: transaction.type,
             sourceId: transaction.sourceId,
@@ -66,7 +67,8 @@ final class EditTransactionViewModel {
             destinationId: transaction.destinationId,
             destinationName: transaction.destinationName,
             destinationIcon: transaction.destinationIcon,
-            destinationColor: transaction.destinationColor
+            destinationColor: transaction.destinationColor,
+            comment: comment
         )
 
         financeUseCase.updateTransaction(updatedTransaction)

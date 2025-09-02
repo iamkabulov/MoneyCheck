@@ -16,7 +16,17 @@ final class EditTransactionViewController: UIViewController {
         textField.text = String(viewModel.transaction.amount)
         return textField
     }()
-    
+
+    private lazy var commentInput: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "Комментарий"
+        textField.borderStyle = .roundedRect
+        textField.backgroundColor = .secondarySystemGroupedBackground
+        textField.textColor = .label
+        textField.text = viewModel.transaction.comment
+        return textField
+    }()
+
     private lazy var datePicker = HorizontalDatePicker(
         initialDate: viewModel.transaction.date
     )
@@ -63,18 +73,25 @@ final class EditTransactionViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.navigationBar.prefersLargeTitles = false
+//        navigationController?.navigationBar.prefersLargeTitles = false
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        navigationController?.navigationBar.prefersLargeTitles = true
+//        navigationController?.navigationBar.prefersLargeTitles = true
     }
 
     private func setupUI() {
         view.backgroundColor = .systemBackground
         title = "Редактирование транзакции"
-        let stackView = UIStackView(arrangedSubviews: [amountTextField, datePicker, saveButton])
+        let stackView = UIStackView(
+            arrangedSubviews: [
+                amountTextField,
+                commentInput,
+                datePicker,
+                saveButton
+            ]
+        )
         stackView.axis = .vertical
         stackView.spacing = 16
         
@@ -90,10 +107,7 @@ final class EditTransactionViewController: UIViewController {
     }
     
     @objc private func saveButtonTapped() {
-        guard let selectedDate = selectedDate else {
-            return
-        }
-        viewModel.saveTransaction(amountTextField.text, date: selectedDate)
+        viewModel.saveTransaction(amountTextField.text, date: selectedDate, comment: commentInput.text)
     }
 
     @objc private func deleteButtonTapped() {

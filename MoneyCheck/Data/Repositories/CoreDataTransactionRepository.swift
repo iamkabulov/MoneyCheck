@@ -101,7 +101,8 @@ final class CoreDataTransactionRepository: TransactionRepository {
                     existingTransaction.destinationName = transaction.destinationName
                     existingTransaction.destinationIcon = transaction.destinationIcon
                     existingTransaction.destinationColor = transaction.destinationColor
-                    
+                    existingTransaction.comment = transaction.comment
+
                     self.coreDataManager.saveContext()
                 }
             } catch {
