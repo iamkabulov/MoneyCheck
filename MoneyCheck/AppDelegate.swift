@@ -46,8 +46,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // Set view controller to router
         router.viewController = viewController
-        
+//        viewController.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+
         let navigationController = UINavigationController(rootViewController: viewController)
+
+
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithDefaultBackground()
+
+        // убираем текст у кнопки назад
+        let backButtonAppearance = UIBarButtonItemAppearance(style: .plain)
+        backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.clear]
+        appearance.backButtonAppearance = backButtonAppearance
+
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
         
         window?.rootViewController = navigationController
         window?.makeKeyAndVisible()

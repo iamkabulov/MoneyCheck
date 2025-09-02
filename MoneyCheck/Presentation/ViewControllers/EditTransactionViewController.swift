@@ -27,13 +27,24 @@ final class EditTransactionViewController: UIViewController {
         button.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         return button
     }()
-    
+
+    private lazy var deleteButton: UIBarButtonItem = {
+        let button = UIBarButtonItem()
+        button.target = self
+        button.action = #selector(deleteButtonTapped)
+        button.title = "Удалить"
+        button.tintColor = .systemRed
+        return button
+    }()
+
     init(vm: EditTransactionViewModel) {
         self.viewModel = vm
         super.init(nibName: nil, bundle: nil)
         datePicker.onDateSelected = { [weak self] date in
             self?.selectedDate = date
         }
+
+        navigationItem.rightBarButtonItem = deleteButton
     }
     
     required init?(coder: NSCoder) {
@@ -83,5 +94,9 @@ final class EditTransactionViewController: UIViewController {
             return
         }
         viewModel.saveTransaction(amountTextField.text, date: selectedDate)
+    }
+
+    @objc private func deleteButtonTapped() {
+        viewModel.deleteTransaction()
     }
 }

@@ -80,4 +80,17 @@ final class EditTransactionViewModel {
             }
             .store(in: &cancellables)
     }
+
+    func deleteTransaction() {
+        financeUseCase.deleteTransaction(by: transaction.id)
+            .sink { completion in
+                switch completion {
+                    case .finished: break
+                    case .failure(let error): print("Error deleting transaction: \(error)")
+                }
+            } receiveValue: { [weak self] _ in
+                self?.router.closeEditTransaction()
+            }
+            .store(in: &cancellables)
+    }
 }

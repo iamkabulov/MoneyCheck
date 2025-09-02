@@ -22,6 +22,7 @@ protocol FinanceUseCase {
     func deleteCategory(by id: UUID) -> AnyPublisher<Void, Error>
     func getPeriod() -> AnyPublisher<PeriodType, Error>
     func savePeriod(period: PeriodType) -> AnyPublisher<Void, Error>
+    func deleteTransaction(by id: UUID) -> AnyPublisher<Void, Error>
 }
 
 final class FinanceUseCaseImpl: FinanceUseCase {
@@ -151,5 +152,9 @@ final class FinanceUseCaseImpl: FinanceUseCase {
 
     func savePeriod(period: PeriodType) -> AnyPublisher<Void, any Error> {
         return periodRepository.savePeriod(period)
+    }
+
+    func deleteTransaction(by id: UUID) -> AnyPublisher<Void, any Error> {
+        return transactionRepository.deleteTransaction(by: id)
     }
 }

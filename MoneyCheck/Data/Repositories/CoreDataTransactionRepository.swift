@@ -111,4 +111,11 @@ final class CoreDataTransactionRepository: TransactionRepository {
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
     }
-} 
+
+    func deleteTransaction(by id: UUID) -> AnyPublisher<Void, Error> {
+        coreDataManager.deleteTransaction(by: id)
+        return Just(())
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher()
+    }
+}

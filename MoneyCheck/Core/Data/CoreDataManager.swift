@@ -299,6 +299,20 @@ final class CoreDataManager {
         }
     }
 
+    func deleteTransaction(by id: UUID) {
+        let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+
+        do {
+            if let transaction = try context.fetch(request).first {
+                context.delete(transaction)
+                try context.save()
+            }
+        } catch {
+            print("Error deleting transaction: \(error)")
+        }
+    }
+
     // MARK: - Mock Data Initialization
     func initializeMockDataIfNeeded() {
         let wallets = fetchWallets()
