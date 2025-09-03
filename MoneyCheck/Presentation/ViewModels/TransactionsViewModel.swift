@@ -4,7 +4,8 @@ import Combine
 struct TransactionSection {
     let date: Date
     let transactions: [TransactionModel]
-    
+    let itemId: UUID
+
     var totalAmount: Double {
         transactions.reduce(0) { total, transaction in
             if transaction.type == .transfer {
@@ -21,16 +22,12 @@ struct TransactionSection {
             return total
         }
     }
-    
-    let itemId: UUID
 }
 
-class TransactionsViewModel {
-    let financeUseCase: FinanceUseCase
+final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol> {
     let itemId: UUID
     let itemType: ItemType
     @Published private(set) var sections: [TransactionSection] = []
-    private let router: TransactionsRouting
     private var cancellables = Set<AnyCancellable>()
     let period: PeriodType
 
@@ -38,17 +35,20 @@ class TransactionsViewModel {
         financeUseCase: FinanceUseCase,
         itemId: UUID,
         itemType: ItemType,
-        router: TransactionsRouting,
+        router: TransactionsRouterProtocol,
         period: PeriodType
     ) {
-        self.financeUseCase = financeUseCase
         self.itemId = itemId
         self.itemType = itemType
-        self.router = router
         self.period = period
+        super.init(financeUseCase: financeUseCase, router: router)
         loadTransactions(by: itemId, period: period)
     }
-    
+
+    deinit {
+        print("Deinit TransactionsViewModel")
+    }
+
     func loadTransactions(by id: UUID, period: PeriodType) {
         financeUseCase.getTransactions(by: id, period: period)
             .map { [weak self] transactions -> [TransactionSection] in
@@ -82,7 +82,7 @@ class TransactionsViewModel {
                 switch completion {
                     case .finished: break
                     case .failure(let error):
-                        self.router.showError("Error", message: error.localizedDescription)
+                        self.router?.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { [weak self] sections in
                 self?.sections = sections
@@ -91,10 +91,10 @@ class TransactionsViewModel {
     }
 
     func showEditItemView(id: UUID, itemType: ItemType) {
-        router.showEditItemView(id: id, type: itemType)
+        router?.showEditItemView(id: id, type: itemType)
     }
 
     func showEditTransaction(for transaction: TransactionModel) {
-        router.showTransactionEditView(transaction)
+        router?.showTransactionEditView(transaction)
     }
 }

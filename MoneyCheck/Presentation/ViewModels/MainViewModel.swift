@@ -1,9 +1,7 @@
 import Foundation
 import Combine
 
-final class MainViewModel {
-    let financeUseCase: FinanceUseCase
-    let router: MainRouter
+final class MainViewModel: BaseViewModel<MainRouter> {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Published properties
@@ -27,9 +25,8 @@ final class MainViewModel {
         incomes.reduce(0) { $0 + $1.amount }
     }
 
-    init(financeUseCase: FinanceUseCase, router: MainRouter) {
-        self.financeUseCase = financeUseCase
-        self.router = router
+    override init(financeUseCase: FinanceUseCase, router: MainRouter) {
+        super.init(financeUseCase: financeUseCase, router: router)
     }
 
     // MARK: - Public methods
@@ -125,27 +122,27 @@ final class MainViewModel {
                 addIncome(to: wallet, from: category, amount: amount, date: date, comment: comment)
             }
         }
-        router.closeTransferBottomSheet()
+        router?.dismiss(animated: true)
     }
 
     func presentTransfer(type: TransferType, delegate: TransferBottomSheetDelegate) {
-        router.presentTransferBottomSheet(type: type, delegate: delegate)
+        router?.presentTransferBottomSheet(type: type, delegate: delegate)
     }
 
     func showSelectPeriod() {
-        router.showSelectPeriod()
+        router?.showSelectPeriod()
     }
 
     func showAddNewItem(type: ItemType) {
-        router.showAddNewItem(type: type)
+        router?.showAddNewItem(type: type)
     }
 
     func showTransactions(for item: TransactionItem) {
-        router.showTransactions(for: item, period: selectedPeriod)
+        router?.showTransactions(for: item, period: selectedPeriod)
     }
 
     func сloseTransfer() {
-        router.closeTransferBottomSheet()
+        router?.dismiss(animated: true)
     }
 
     // MARK: - Helper Methods

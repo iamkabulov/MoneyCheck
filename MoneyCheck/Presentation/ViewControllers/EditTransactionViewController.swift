@@ -47,8 +47,8 @@ final class EditTransactionViewController: UIViewController {
         return button
     }()
 
-    init(vm: EditTransactionViewModel) {
-        self.viewModel = vm
+    init(viewModel: EditTransactionViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
         datePicker.onDateSelected = { [weak self] date in
             self?.selectedDate = date

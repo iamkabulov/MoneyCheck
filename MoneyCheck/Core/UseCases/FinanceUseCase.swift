@@ -27,26 +27,20 @@ protocol FinanceUseCase {
 
 final class FinanceUseCaseImpl: FinanceUseCase {
 
-    private let walletRepository: WalletRepository
-    private let categoryRepository: CategoryRepository
-    private let incomeRepository: IncomeRepository
-    private let transactionRepository: TransactionRepository
-    private let periodRepository: PeriodRepository
+    static let shared = FinanceUseCaseImpl()
 
-    init(
-        walletRepository: WalletRepository,
-        categoryRepository: CategoryRepository,
-        incomeRepository: IncomeRepository,
-        transactionRepository: TransactionRepository,
-        periodRepository: PeriodRepository
-    ) {
-        self.walletRepository = walletRepository
-        self.categoryRepository = categoryRepository
-        self.incomeRepository = incomeRepository
-        self.transactionRepository = transactionRepository
-        self.periodRepository = periodRepository
+    private let walletRepository = CoreDataWalletRepository()
+    private let categoryRepository = CoreDataCategoryRepository()
+    private let incomeRepository = CoreDataIncomeRepository()
+    private let transactionRepository = CoreDataTransactionRepository()
+    private let periodRepository = CoreDataPeriodRepository()
+
+    private init() { }
+
+    deinit {
+        print("Deinit FinanceUseCaseImpl")
     }
-    
+
     func getWallets(period: PeriodType) -> AnyPublisher<[WalletModel], Error> {
         return walletRepository.getWallets(period: period)
     }

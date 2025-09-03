@@ -9,21 +9,18 @@
 import Foundation
 import Combine
 
-final class SelectPeriodViewModel {
+final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol> {
 
+    // MARK: - Published properties
     @Published var selectedPeriod: PeriodType
-    private let financeUseCase: FinanceUseCase
-    private let router: SelectPeriodRouting
     let screenTitle = "Выберите период"
     private var cancellables = Set<AnyCancellable>()
 
-    // MARK: - Published properties
 
     // MARK: - Initialization
-    init(financeUseCase: FinanceUseCase, router: SelectPeriodRouting) {
-        self.financeUseCase = financeUseCase
-        self.router = router
+    override init(financeUseCase: FinanceUseCase, router: SelectPeriodRouterProtocol) {
         self.selectedPeriod = .month
+        super.init(financeUseCase: financeUseCase, router: router)
         self.getPeriod()
     }
 
@@ -55,15 +52,15 @@ final class SelectPeriodViewModel {
                 }
             } receiveValue: { _ in
             }.store(in: &cancellables)
-        router.closeSelectPeriod()
+        router?.pop(animated: true)
     }
 
     func customPeriodChose() {
-        router.openCustomPeriodView(vm: self)
+        router?.openCustomPeriodView(vm: self)
     }
 
     func saveCustomPeriod(_ period: PeriodType) {
         self.selectedPeriod = period
-        router.closeCustomPeriodView()
+        router?.pop(animated: true)
     }
 }

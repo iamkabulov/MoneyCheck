@@ -9,47 +9,19 @@
 import UIKit
 
 final class MainTabBarController: UITabBarController {
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTabs()
     }
 
     private func setupTabs() {
-
-        // Initialize CoreData and mock data
-        let coreDataManager = CoreDataManager.shared
-        coreDataManager.initializeMockDataIfNeeded()
-
-        // Initialize repositories
-        let walletRepository = CoreDataWalletRepository()
-        let categoryRepository = CoreDataCategoryRepository()
-        let incomeRepository = CoreDataIncomeRepository()
-        let transactionRepository = CoreDataTransactionRepository()
-        let periodRepository = CoreDataPeriodRepository()
-
-        // Initialize use case
-        let financeUseCase = FinanceUseCaseImpl(
-            walletRepository: walletRepository,
-            categoryRepository: categoryRepository,
-            incomeRepository: incomeRepository,
-            transactionRepository: transactionRepository,
-            periodRepository: periodRepository
+        let mainNav = UINavigationController(rootViewController: UIViewController()) 
+        mainNav.tabBarItem = UITabBarItem(
+            title: "Главная",
+            image: UIImage(systemName: "house"),
+            selectedImage: UIImage(systemName: "house.fill")
         )
-
-        // Initialize router without view controller
-        let router = MainRouter(financeUseCase: financeUseCase)
-
-        // Initialize view model
-        let viewModel = MainViewModel(financeUseCase: financeUseCase, router: router)
-
-        // Initialize view controller with router
-        let mainVC = MainViewController(viewModel: viewModel)
-        let mainNav = UINavigationController(rootViewController: mainVC)
-        // Set view controller to router
-        router.viewController = mainVC
-
-
-        mainNav.tabBarItem = UITabBarItem(title: "Главная", image: UIImage(systemName: "house"), selectedImage: UIImage(systemName: "house.fill"))
 
         // Example: Wallet VC
         let walletVC = UIViewController() // сделаешь потом свой экран
@@ -65,13 +37,13 @@ final class MainTabBarController: UITabBarController {
         dashboardVC.tabBarItem = UITabBarItem(title: "Аналитика", image: UIImage(systemName: "chart.bar"), selectedImage: UIImage(systemName: "chart.bar.fill"))
 
         // Tab bar
-        let tabBarController = UITabBarController()
-        tabBarController.viewControllers = [
-            mainNav,
-            walletVC,
-            dashboardVC,
-            settingsVC
-        ]
+//        let tabBarController = UITabBarController()
+//        tabBarController.viewControllers = [
+//            mainNav,
+//            walletVC,
+//            dashboardVC,
+//            settingsVC
+//        ]
 
         viewControllers = [mainNav, walletVC, dashboardVC, settingsVC]
     }

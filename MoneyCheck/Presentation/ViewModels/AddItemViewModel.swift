@@ -16,9 +16,8 @@ protocol ItemViewModelProtocol: AnyObject {
     func saveItem()
 }
 
-final class AddItemViewModel: ItemViewModelProtocol {
+final class AddItemViewModel: BaseViewModel<AddItemRouterProtocol>, ItemViewModelProtocol {
 
-    private let financeUseCase: FinanceUseCase
     let type: ItemType
     private var cancellables = Set<AnyCancellable>()
     
@@ -30,25 +29,28 @@ final class AddItemViewModel: ItemViewModelProtocol {
     var selectedIconPublisher: Published<String>.Publisher { $selectedIcon }
     var selectedColorPublisher: Published<String>.Publisher { $selectedColor }
     var namePublisher: Published<String>.Publisher { $name }
-    private let router: ItemRouting
 
     // MARK: - Public properties
     var icons: [String]
     var colors: [String]
     
     // MARK: - Initialization
-    init(type: ItemType, financeUseCase: FinanceUseCase, router: ItemRouting) {
+    init(type: ItemType, financeUseCase: FinanceUseCase, router: AddItemRouterProtocol) {
         self.type = type
-        self.financeUseCase = financeUseCase
-        self.router = router
         self.icons = type.icons
         self.colors = type.colors
+        super.init(financeUseCase: financeUseCase, router: router)
     }
-    
+
+    deinit {
+        print("deinit AddItemViewModel")
+    }
+
     // MARK: - Public methods
     func saveItem() {
         guard !name.isEmpty else {
-            return router.showError(nil, message: "Заполните поле")
+            router?.showError(nil, message: "Заполните поле")
+            return
         }
         
         switch type {
@@ -61,13 +63,13 @@ final class AddItemViewModel: ItemViewModelProtocol {
                     )
                     .sink { [weak self] completion in
                         switch completion {
-                            case .finished: break
-                            self?.router.closeItemView()
-                        case .failure(let error):
-                            self?.router.showError(nil, message: error.localizedDescription)
+                            case .finished:
+                                self?.router?.pop(animated: true)
+                            case .failure(let error):
+                                self?.router?.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router.closeItemView()
+                        self?.router?.pop(animated: true)
                     }
                     .store(in: &cancellables)
         case .wallet:
@@ -79,13 +81,13 @@ final class AddItemViewModel: ItemViewModelProtocol {
                     )
                     .sink { [weak self] completion in
                         switch completion {
-                        case .finished: break
-                            self?.router.closeItemView()
+                        case .finished:
+                            self?.router?.pop(animated: true)
                         case .failure(let error):
-                            self?.router.showError(nil, message: error.localizedDescription)
+                            self?.router?.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router.closeItemView()
+                        self?.router?.pop(animated: true)
                     }
                     .store(in: &cancellables)
         case .category:
@@ -97,13 +99,13 @@ final class AddItemViewModel: ItemViewModelProtocol {
                     )
                     .sink { [weak self] completion in
                         switch completion {
-                        case .finished: break
-                            self?.router.closeItemView() // роутинг прямо здесь
+                        case .finished:
+                            self?.router?.pop(animated: true)
                         case .failure(let error):
-                            self?.router.showError(nil, message: error.localizedDescription)
+                            self?.router?.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router.closeItemView()
+                        self?.router?.pop(animated: true)
                     }
                     .store(in: &cancellables)
         }

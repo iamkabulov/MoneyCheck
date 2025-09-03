@@ -8,12 +8,11 @@
 import Foundation
 import Combine
 
-final class EditItemViewModel: ItemViewModelProtocol {
+final class EditItemViewModel: BaseViewModel<AddItemRouterProtocol>, ItemViewModelProtocol {
     var namePublisher: Published<String>.Publisher { $name }
     var selectedIconPublisher: Published<String>.Publisher { $selectedIcon }
     var selectedColorPublisher: Published<String>.Publisher { $selectedColor }
 
-    private let financeUseCase: FinanceUseCase
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Published properties
@@ -26,21 +25,19 @@ final class EditItemViewModel: ItemViewModelProtocol {
     @Published var transactions: [TransactionModel] = []
     var icons: [String]
     var colors: [String]
-    private let router: ItemRouting
 
     // MARK: - Initialization
     init(
         id: UUID,
         type: ItemType,
         financeUseCase: FinanceUseCase,
-        router: ItemRouting
+        router: AddItemRouterProtocol
     ) {
         self.id = id
         self.type = type
         self.icons = type.icons
         self.colors = type.colors
-        self.financeUseCase = financeUseCase
-        self.router = router
+        super.init(financeUseCase: financeUseCase, router: router)
         switch type {
             case .income:
                 self.financeUseCase
@@ -49,7 +46,7 @@ final class EditItemViewModel: ItemViewModelProtocol {
                         switch completion {
                             case .finished: break
                             case .failure(let error):
-                                router.showError(nil, message: error.localizedDescription)
+                                self.router?.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { model in
                         self.name = model.name
@@ -95,6 +92,10 @@ final class EditItemViewModel: ItemViewModelProtocol {
         }
     }
 
+    deinit {
+        print("Deinit EditItemViewModel")
+    }
+
     // MARK: - Public methods
     func deleteItem(){
         switch type {
@@ -103,12 +104,12 @@ final class EditItemViewModel: ItemViewModelProtocol {
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router.closeItemView()
+                                self?.router?.pop(animated: true)
                             case .failure(let error):
-                                self?.router.showError(nil, message: error.localizedDescription)
+                                self?.router?.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router.closeItemView()
+                        self?.router?.pop(animated: true)
                     }
                     .store(in: &cancellables)
             case .wallet:
@@ -116,12 +117,12 @@ final class EditItemViewModel: ItemViewModelProtocol {
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router.closeItemView()
+                                self?.router?.pop(animated: true)
                             case .failure(let error):
-                                self?.router.showError(nil, message: error.localizedDescription)
+                                self?.router?.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router.closeItemView()
+                        self?.router?.pop(animated: true)
                     }
                     .store(in: &cancellables)
             case .category:
@@ -129,13 +130,13 @@ final class EditItemViewModel: ItemViewModelProtocol {
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router.closeItemView()
+                                self?.router?.pop(animated: true)
                             case .failure(let error):
-                                self?.router.showError(nil, message: error.localizedDescription)
+                                self?.router?.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: {
                         [weak self] _ in
-                        self?.router.closeItemView()
+                        self?.router?.pop(animated: true)
                     }
                     .store(in: &cancellables)
         }
@@ -144,7 +145,8 @@ final class EditItemViewModel: ItemViewModelProtocol {
 
     func saveItem() {
         guard !name.isEmpty else {
-            return router.showError(nil, message: "Заполните поле")
+            self.router?.showError(nil, message: "Заполните поле")
+            return
         }
 
         switch type {
@@ -163,13 +165,13 @@ final class EditItemViewModel: ItemViewModelProtocol {
                     )
                     .sink { [weak self] completion in
                         switch completion {
-                            case .finished: break
-                                self?.router.closeItemView()
+                            case .finished:
+                                self?.router?.pop(animated: true)
                             case .failure(let error):
-                                self?.router.showError(nil, message: error.localizedDescription)
+                                self?.router?.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router.closeItemView()
+                        self?.router?.pop(animated: true)
                     }
                     .store(in: &cancellables)
             case .wallet:
@@ -188,12 +190,12 @@ final class EditItemViewModel: ItemViewModelProtocol {
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router.closeItemView()
+                                self?.router?.pop(animated: true)
                             case .failure(let error):
-                                self?.router.showError(nil, message: error.localizedDescription)
+                                self?.router?.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router.closeItemView()
+                        self?.router?.pop(animated: true)
                     }
                     .store(in: &cancellables)
             case .category:
@@ -212,12 +214,12 @@ final class EditItemViewModel: ItemViewModelProtocol {
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router.closeItemView()
+                                self?.router?.pop(animated: true)
                             case .failure(let error):
-                                self?.router.showError(nil, message: error.localizedDescription)
+                                self?.router?.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router.closeItemView()
+                        self?.router?.pop(animated: true)
                     }
                     .store(in: &cancellables)
         }

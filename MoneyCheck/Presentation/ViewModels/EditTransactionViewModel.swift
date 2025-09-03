@@ -30,21 +30,14 @@ enum TransactionItem {
     }
 }
 
-final class EditTransactionViewModel {
+final class EditTransactionViewModel: BaseViewModel<EditTransactionRouterProtocol> {
     @Published var transaction: TransactionModel
-    private let router: EditTransactionRouting
-    private let financeUseCase: FinanceUseCase
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
-    init(
-        transaction: TransactionModel,
-        financeUseCase: FinanceUseCase,
-        router: EditTransactionRouting
-    ) {
+    init(transaction: TransactionModel, financeUseCase: FinanceUseCase, router: EditTransactionRouterProtocol) {
         self.transaction = transaction
-        self.financeUseCase = financeUseCase
-        self.router = router
+        super.init(financeUseCase: financeUseCase, router: router)
     }
 
     func saveTransaction(_ value: String?, date: Date?, comment: String?) {
@@ -78,7 +71,7 @@ final class EditTransactionViewModel {
                 case .failure(let error): print("Error updating transaction: \(error)")
                 }
             } receiveValue: { [weak self] _ in
-                self?.router.closeEditTransaction()
+                self?.router?.pop(animated: true)
             }
             .store(in: &cancellables)
     }
@@ -91,7 +84,7 @@ final class EditTransactionViewModel {
                     case .failure(let error): print("Error deleting transaction: \(error)")
                 }
             } receiveValue: { [weak self] _ in
-                self?.router.closeEditTransaction()
+                self?.router?.pop(animated: true)
             }
             .store(in: &cancellables)
     }
