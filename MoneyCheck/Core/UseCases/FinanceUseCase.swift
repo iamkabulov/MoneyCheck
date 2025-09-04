@@ -132,23 +132,23 @@ final class FinanceUseCaseImpl: FinanceUseCase {
         return walletRepository.deleteWallet(by: id)
     }
 
-    func deleteIncome(by id: UUID) -> AnyPublisher<Void, any Error> {
+    func deleteIncome(by id: UUID) -> AnyPublisher<Void, Error> {
         return incomeRepository.deleteIncome(by: id)
     }
 
-    func deleteCategory(by id: UUID) -> AnyPublisher<Void, any Error> {
+    func deleteCategory(by id: UUID) -> AnyPublisher<Void, Error> {
         return categoryRepository.deleteCategory(by: id)
     }
 
-    func getPeriod() -> AnyPublisher<PeriodType, any Error> {
+    func getPeriod() -> AnyPublisher<PeriodType, Error> {
         return periodRepository.getPeriod()
     }
 
-    func savePeriod(period: PeriodType) -> AnyPublisher<Void, any Error> {
+    func savePeriod(period: PeriodType) -> AnyPublisher<Void, Error> {
         return periodRepository.savePeriod(period)
     }
 
-    func deleteTransaction(by id: UUID) -> AnyPublisher<Void, any Error> {
+    func deleteTransaction(by id: UUID) -> AnyPublisher<Void, Error> {
         return transactionRepository.deleteTransaction(by: id)
     }
 }

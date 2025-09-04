@@ -27,9 +27,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
 
-        let mainNav = UINavigationController()
-        MainRouter(navigationController: mainNav).start()
-        window?.rootViewController = mainNav
+
+        window?.rootViewController = MainTabBarController()
         window?.makeKeyAndVisible()
         
         return true
