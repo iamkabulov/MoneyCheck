@@ -42,7 +42,7 @@ final class CoreDataWalletRepository: WalletRepository {
             id: wallet.id ?? UUID(),
             name: wallet.name ?? "",
             type: ItemType(rawValue: wallet.type ?? "") ?? .wallet,
-            balance: wallet.balance,
+            amount: 0,
             icon: wallet.icon ?? "",
             color: wallet.color ?? "",
             transactions: transactions
@@ -81,7 +81,7 @@ final class CoreDataWalletRepository: WalletRepository {
                 id: wallet.id ?? UUID(),
                 name: wallet.name ?? "",
                 type: ItemType(rawValue: wallet.type ?? "") ?? .wallet,
-                balance: wallet.balance,
+                amount: 0,
                 icon: wallet.icon ?? "",
                 color: wallet.color ?? "",
                 transactions: transactions
@@ -94,10 +94,11 @@ final class CoreDataWalletRepository: WalletRepository {
     }
 
     func addWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error> {
-        let _ = coreDataManager.createWallet(
+        coreDataManager.createWallet(
+            id: wallet.id,
             name: wallet.name,
             type: wallet.type.rawValue,
-            balance: wallet.balance,
+            balance: wallet.amount,
             icon: wallet.icon,
             color: wallet.color
         )
@@ -111,7 +112,6 @@ final class CoreDataWalletRepository: WalletRepository {
         if let existingWallet = wallets.first(where: { $0.id == wallet.id }) {
             existingWallet.name = wallet.name
             existingWallet.type = wallet.type.rawValue
-            existingWallet.balance = wallet.balance
             existingWallet.icon = wallet.icon
             coreDataManager.updateWallet(existingWallet)
         }

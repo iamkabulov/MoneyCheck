@@ -42,7 +42,7 @@ final class CoreDataCategoryRepository: CategoryRepository {
             id: category.id ?? UUID(),
             name: category.name ?? "",
             type: .category,
-            amount: category.amount,
+            amount: 0,
             icon: category.icon ?? "",
             color: category.color ?? "",
             transactions: transactions
@@ -80,7 +80,7 @@ final class CoreDataCategoryRepository: CategoryRepository {
                 id: category.id ?? UUID(),
                 name: category.name ?? "",
                 type: ItemType(rawValue: category.type ?? "") ?? .category,
-                amount: abs(category.amount),
+                amount: 0,
                 icon: category.icon ?? "",
                 color: category.color ?? "",
                 transactions: transactions
@@ -92,8 +92,9 @@ final class CoreDataCategoryRepository: CategoryRepository {
     }
 
     func addCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error> {
-        let _ = coreDataManager
-            .createCategory(name: category.name,
+        coreDataManager
+            .createCategory(id: category.id,
+                            name: category.name,
                             type: category.type.rawValue,
                             amount: category.amount,
                             icon: category.icon,
@@ -109,7 +110,6 @@ final class CoreDataCategoryRepository: CategoryRepository {
         if let existingCategory = categories.first(where: { $0.id == category.id }) {
             existingCategory.name = category.name
             existingCategory.type = category.type.rawValue
-            existingCategory.amount = category.amount
             existingCategory.icon = category.icon
             existingCategory.color = category.color
             coreDataManager.updateCategory(existingCategory)

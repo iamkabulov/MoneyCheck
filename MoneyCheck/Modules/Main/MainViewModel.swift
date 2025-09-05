@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-final class MainViewModel: BaseViewModel<MainRouter> {
+final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Published properties
@@ -14,7 +14,7 @@ final class MainViewModel: BaseViewModel<MainRouter> {
 
     // MARK: - Calculated properties
     var totalBalance: Double {
-        wallets.reduce(0) { $0 + $1.balance }
+        wallets.reduce(0) { $0 + $1.amount }
     }
 
     var totalExpenses: Double {
@@ -25,13 +25,13 @@ final class MainViewModel: BaseViewModel<MainRouter> {
         incomes.reduce(0) { $0 + $1.amount }
     }
 
-    override init(financeUseCase: FinanceUseCase, router: MainRouter) {
-        super.init(financeUseCase: financeUseCase, router: router)
+    override init(useCase: MainUseCaseProtocol, router: MainRouter) {
+        super.init(useCase: useCase, router: router)
     }
 
     // MARK: - Public methods
     func loadPeriod() {
-        financeUseCase.getPeriod()
+        useCase.getPeriod()
             .sink { [weak self] completion in
                 if case .failure(let error) = completion {
                     self?.error = error
@@ -48,9 +48,9 @@ final class MainViewModel: BaseViewModel<MainRouter> {
     func loadData() {
         isLoading = true
         Publishers.CombineLatest3(
-            financeUseCase.getWallets(period: selectedPeriod),
-            financeUseCase.getCategories(period: selectedPeriod),
-            financeUseCase.getIncomes(period: selectedPeriod)
+            useCase.getWallets(period: selectedPeriod),
+            useCase.getCategories(period: selectedPeriod),
+            useCase.getIncomes(period: selectedPeriod)
         )
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
@@ -69,7 +69,7 @@ final class MainViewModel: BaseViewModel<MainRouter> {
                     id: wallet.id,
                     name: wallet.name,
                     type: wallet.type,
-                    balance: calculatedBalance ?? 0,
+                    amount: calculatedBalance ?? 0,
                     icon: wallet.icon,
                     color: wallet.color,
                     transactions: wallet.transactions
@@ -122,27 +122,27 @@ final class MainViewModel: BaseViewModel<MainRouter> {
                 addIncome(to: wallet, from: category, amount: amount, date: date, comment: comment)
             }
         }
-        router?.dismiss(animated: true)
+        router.dismiss(animated: true)
     }
 
     func presentTransfer(type: TransferType, delegate: TransferBottomSheetDelegate) {
-        router?.presentTransferBottomSheet(type: type, delegate: delegate)
+        router.presentTransferBottomSheet(type: type, delegate: delegate)
     }
 
     func showSelectPeriod() {
-        router?.showSelectPeriod()
+        router.showSelectPeriod()
     }
 
     func showAddNewItem(type: ItemType) {
-        router?.showAddNewItem(type: type)
+        router.showAddNewItem(type: type)
     }
 
     func showTransactions(for item: TransactionItem) {
-        router?.showTransactions(for: item, period: selectedPeriod)
+        router.showTransactions(for: item, period: selectedPeriod)
     }
 
     func сloseTransfer() {
-        router?.dismiss(animated: true)
+        router.dismiss(animated: true)
     }
 
     // MARK: - Helper Methods
@@ -162,8 +162,8 @@ private extension MainViewModel {
         var updatedSourceWallet = sourceWallet
         var updatedTargetWallet = targetWallet
 
-        updatedSourceWallet.balance -= amount
-        updatedTargetWallet.balance += amount
+        updatedSourceWallet.amount -= amount
+        updatedTargetWallet.amount += amount
 
 
         let transaction = TransactionModel(
@@ -181,11 +181,11 @@ private extension MainViewModel {
             comment: comment
         )
 
-        Publishers.Zip3(
-            financeUseCase.updateWallet(updatedSourceWallet),
-            financeUseCase.updateWallet(updatedTargetWallet),
-            financeUseCase.addTransaction(transaction)
-        )
+//        Publishers.Zip3(
+//            useCase.updateWallet(updatedSourceWallet),
+//            useCase.updateWallet(updatedTargetWallet),
+            useCase.addTransaction(transaction)
+//        )
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {
@@ -202,7 +202,7 @@ private extension MainViewModel {
         var updatedWallet = wallet
         var updatedCategory = category
 
-        updatedWallet.balance -= amount
+        updatedWallet.amount -= amount
         updatedCategory.amount += amount
 
 
@@ -220,12 +220,12 @@ private extension MainViewModel {
             destinationColor: category.color,
             comment: comment
         )
-
-        Publishers.Zip3(
-            financeUseCase.updateWallet(updatedWallet),
-            financeUseCase.updateCategory(updatedCategory),
-            financeUseCase.addTransaction(transaction)
-        )
+//
+//        Publishers.Zip3(
+//            useCase.updateWallet(updatedWallet),
+//            useCase.updateCategory(updatedCategory),
+            useCase.addTransaction(transaction)
+//        )
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {
@@ -242,7 +242,7 @@ private extension MainViewModel {
         var updatedWallet = wallet
         var updatedCategory = category
 
-        updatedWallet.balance += amount
+        updatedWallet.amount += amount
         updatedCategory.amount += amount
 
         let transaction = TransactionModel(
@@ -260,11 +260,11 @@ private extension MainViewModel {
             comment: comment
         )
 
-        Publishers.Zip3(
-            financeUseCase.updateWallet(updatedWallet),
-            financeUseCase.updateCategory(updatedCategory),
-            financeUseCase.addTransaction(transaction)
-        )
+//        Publishers.Zip3(
+//            useCase.updateWallet(updatedWallet),
+//            useCase.updateCategory(updatedCategory),
+            useCase.addTransaction(transaction)
+//        )
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {
@@ -282,7 +282,7 @@ private extension MainViewModel {
         var updatedWallet = wallet
 
         updatedIncome.amount += amount
-        updatedWallet.balance += amount
+        updatedWallet.amount += amount
 
         let transaction = TransactionModel(
             date: date,
@@ -299,11 +299,11 @@ private extension MainViewModel {
             comment: comment
         )
 
-        Publishers.Zip3(
-            financeUseCase.updateIncome(updatedIncome),
-            financeUseCase.updateWallet(updatedWallet),
-            financeUseCase.addTransaction(transaction)
-        )
+//        Publishers.Zip3(
+//            useCase.updateIncome(updatedIncome),
+//            useCase.updateWallet(updatedWallet),
+            useCase.addTransaction(transaction)
+//        )
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completion in
             if case .failure(let error) = completion {

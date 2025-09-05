@@ -16,7 +16,7 @@ final class EditTransactionFactory {
         let router = EditTransactionRouter(navigationController: navigationController)
         let viewModel = EditTransactionViewModel(
             transaction: transaction,
-            financeUseCase: FinanceUseCaseImpl.shared,
+            useCase: TransactionsUseCase(),
             router: router
         )
 

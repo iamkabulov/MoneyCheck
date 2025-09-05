@@ -32,16 +32,15 @@ final class CoreDataManager {
     }
     
     // MARK: - Wallet Methods
-    func createWallet(name: String, type: String, balance: Double, icon: String, color: String) -> Wallet {
+    func createWallet(id: UUID = UUID(), name: String, type: String, balance: Double, icon: String, color: String) {
         let wallet = Wallet(context: context)
-        wallet.id = UUID()
+        wallet.id = id
         wallet.name = name
         wallet.type = type
-        wallet.balance = balance
         wallet.icon = icon
         wallet.color = color
         saveContext()
-        return wallet
+        return
     }
     
     func fetchWallets() -> [Wallet] {
@@ -91,16 +90,15 @@ final class CoreDataManager {
     }
 
     // MARK: - Category Methods
-    func createCategory(name: String, type: String, amount: Double, icon: String, color: String) -> Category {
+    func createCategory(id: UUID = UUID(), name: String, type: String, amount: Double, icon: String, color: String) {
         let category = Category(context: context)
-        category.id = UUID()
+        category.id = id
         category.name = name
         category.type = type
-        category.amount = amount
         category.icon = icon
         category.color = color
         saveContext()
-        return category
+        return
     }
     
     func fetchCategories() -> [Category] {
@@ -150,15 +148,14 @@ final class CoreDataManager {
     }
 
     // MARK: - Income Methods
-    func createIncome(name: String, amount: Double, icon: String, color: String) -> Income {
+    func createIncome(id: UUID = UUID(), name: String, amount: Double, icon: String, color: String) {
         let income = Income(context: context)
-        income.id = UUID()
+        income.id = id
         income.name = name
-        income.amount = amount
         income.icon = icon
         income.color = color
         saveContext()
-        return income
+        return
     }
     
     func fetchIncomes() -> [Income] {
@@ -291,7 +288,9 @@ final class CoreDataManager {
                                                     end as CVarArg)
                 }
             case .wholeTime:
-                request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+                request.predicate = NSPredicate(format: "(sourceId == %@ OR destinationId == %@)",
+                                                id as CVarArg,
+                                                id as CVarArg)
         }
 
         do {

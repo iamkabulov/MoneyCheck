@@ -24,7 +24,7 @@ struct TransactionSection {
     }
 }
 
-final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol> {
+final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, TransactionsUseCaseProtocol> {
     let itemId: UUID
     let itemType: ItemType
     @Published private(set) var sections: [TransactionSection] = []
@@ -32,7 +32,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol> {
     let period: PeriodType
 
     init(
-        financeUseCase: FinanceUseCase,
+        useCase: TransactionsUseCaseProtocol,
         itemId: UUID,
         itemType: ItemType,
         router: TransactionsRouterProtocol,
@@ -41,7 +41,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol> {
         self.itemId = itemId
         self.itemType = itemType
         self.period = period
-        super.init(financeUseCase: financeUseCase, router: router)
+        super.init(useCase: useCase, router: router)
         loadTransactions(by: itemId, period: period)
     }
 
@@ -50,7 +50,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol> {
     }
 
     func loadTransactions(by id: UUID, period: PeriodType) {
-        financeUseCase.getTransactions(by: id, period: period)
+        useCase.getTransactions(by: id, period: period)
             .map { [weak self] transactions -> [TransactionSection] in
                 guard let self = self else { return [] }
 //                let transactions = transactions.filter { transaction in
@@ -82,7 +82,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol> {
                 switch completion {
                     case .finished: break
                     case .failure(let error):
-                        self.router?.showError("Error", message: error.localizedDescription)
+                        self.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { [weak self] sections in
                 self?.sections = sections
@@ -91,10 +91,10 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol> {
     }
 
     func showEditItemView(id: UUID, itemType: ItemType) {
-        router?.showEditItemView(id: id, type: itemType)
+        router.showEditItemView(id: id, type: itemType)
     }
 
     func showEditTransaction(for transaction: TransactionModel) {
-        router?.showTransactionEditView(transaction)
+        router.showTransactionEditView(transaction)
     }
 }

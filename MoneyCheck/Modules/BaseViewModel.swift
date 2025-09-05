@@ -8,12 +8,12 @@
 
 import Foundation
 
-class BaseViewModel<RouterType: Any> {
-    let financeUseCase: FinanceUseCase
-    var router: RouterType?
+class BaseViewModel<RouterType: Any, UseCaseType: Any> {
+    let useCase: UseCaseType
+    let router: RouterType
 
-    init(financeUseCase: FinanceUseCase, router: RouterType) {
-        self.financeUseCase = financeUseCase
+    init(useCase: UseCaseType, router: RouterType) {
+        self.useCase = useCase
         self.router = router
     }
 }

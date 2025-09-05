@@ -40,7 +40,7 @@ final class CoreDataIncomeRepository: IncomeRepository {
                 id: income.id ?? UUID(),
                 name: income.name ?? "",
                 type: ItemType(rawValue: income.type ?? "Доход") ?? .income,
-                amount: income.amount,
+                amount: 0,
                 icon: income.icon ?? "",
                 color: income.color ?? "",
                 transactions: transactions
@@ -78,7 +78,7 @@ final class CoreDataIncomeRepository: IncomeRepository {
             id: income.id ?? UUID(),
             name: income.name ?? "",
             type: ItemType(rawValue: income.type ?? "Доход") ?? .income,
-            amount: income.amount,
+            amount: 0,
             icon: income.icon ?? "",
             color: income.color ?? "",
             transactions: transactions
@@ -93,7 +93,6 @@ final class CoreDataIncomeRepository: IncomeRepository {
         let incomes = coreDataManager.fetchIncomes()
         if let existingIncome = incomes.first(where: { $0.id == income.id }) {
             existingIncome.name = income.name
-            existingIncome.amount = income.amount
             existingIncome.icon = income.icon
             existingIncome.color = income.color
             coreDataManager.updateIncome(existingIncome)
@@ -105,7 +104,8 @@ final class CoreDataIncomeRepository: IncomeRepository {
     
     func addIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error> {
         let _ = coreDataManager
-            .createIncome(name: income.name,
+            .createIncome(id: income.id,
+                          name: income.name,
                           amount: income.amount,
                           icon: income.icon,
                           color: income.color)

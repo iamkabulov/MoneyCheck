@@ -19,7 +19,10 @@ final class MainFactory {
     func makeMainModule() -> UINavigationController {
         let navigationController = UINavigationController()
         let router = MainRouter(navigationController: navigationController)
-        let viewModel = MainViewModel(financeUseCase: FinanceUseCaseImpl.shared, router: router)
+        let viewModel = MainViewModel(
+            useCase: MainUseCase(),
+            router: router
+        )
         let vc = MainViewController(viewModel: viewModel)
         navigationController.setViewControllers([vc], animated: false)
         return navigationController

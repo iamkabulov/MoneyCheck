@@ -28,7 +28,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
 
 
-        window?.rootViewController = MainTabBarController()
+        window?.rootViewController = TabBarFactory().makeTabBarModule()
         window?.makeKeyAndVisible()
         
         return true

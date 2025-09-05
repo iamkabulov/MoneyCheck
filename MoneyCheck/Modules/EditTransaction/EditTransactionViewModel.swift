@@ -30,14 +30,14 @@ enum TransactionItem {
     }
 }
 
-final class EditTransactionViewModel: BaseViewModel<EditTransactionRouterProtocol> {
+final class EditTransactionViewModel: BaseViewModel<EditTransactionRouterProtocol, EditTransactionUseCaseProtocol> {
     @Published var transaction: TransactionModel
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
-    init(transaction: TransactionModel, financeUseCase: FinanceUseCase, router: EditTransactionRouterProtocol) {
+    init(transaction: TransactionModel, useCase: EditTransactionUseCaseProtocol, router: EditTransactionRouterProtocol) {
         self.transaction = transaction
-        super.init(financeUseCase: financeUseCase, router: router)
+        super.init(useCase: useCase, router: router)
     }
 
     deinit {
@@ -68,27 +68,27 @@ final class EditTransactionViewModel: BaseViewModel<EditTransactionRouterProtoco
             comment: comment
         )
 
-        financeUseCase.updateTransaction(updatedTransaction)
+        useCase.updateTransaction(updatedTransaction)
             .sink { completion in
                 switch completion {
                 case .finished: break
                 case .failure(let error): print("Error updating transaction: \(error)")
                 }
             } receiveValue: { [weak self] _ in
-                self?.router?.pop(animated: true)
+                self?.router.pop(animated: true)
             }
             .store(in: &cancellables)
     }
 
     func deleteTransaction() {
-        financeUseCase.deleteTransaction(by: transaction.id)
+        useCase.deleteTransaction(by: transaction.id)
             .sink { completion in
                 switch completion {
                     case .finished: break
                     case .failure(let error): print("Error deleting transaction: \(error)")
                 }
             } receiveValue: { [weak self] _ in
-                self?.router?.pop(animated: true)
+                self?.router.pop(animated: true)
             }
             .store(in: &cancellables)
     }

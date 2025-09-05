@@ -17,7 +17,7 @@ final class EditItemFactory {
         let viewModel = EditItemViewModel(
             id: id,
             type: type,
-            financeUseCase: FinanceUseCaseImpl.shared,
+            useCase: ItemUseCase(),
             router: router
         )
 

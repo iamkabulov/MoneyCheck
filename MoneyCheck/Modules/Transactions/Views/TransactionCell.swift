@@ -134,7 +134,7 @@ final class TransactionCell: UITableViewCell {
             amountLabel.text = "+\(transaction.amount) ₸"
         }
 
-        if transaction.comment == nil {
+        if transaction.comment == nil { //TODO: - Нужно посмотреть почему не работает!!!
             commentLabel.isHidden = true
 
             titleLabel.snp.remakeConstraints { make in

@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-final class EditItemViewModel: BaseViewModel<ItemRouterProtocol>, ItemViewModelProtocol {
+final class EditItemViewModel: BaseViewModel<ItemRouterProtocol, EditItemUseCaseProtocol>, ItemViewModelProtocol {
     var namePublisher: Published<String>.Publisher { $name }
     var selectedIconPublisher: Published<String>.Publisher { $selectedIcon }
     var selectedColorPublisher: Published<String>.Publisher { $selectedColor }
@@ -30,23 +30,23 @@ final class EditItemViewModel: BaseViewModel<ItemRouterProtocol>, ItemViewModelP
     init(
         id: UUID,
         type: ItemType,
-        financeUseCase: FinanceUseCase,
+        useCase: EditItemUseCaseProtocol,
         router: ItemRouterProtocol
     ) {
         self.id = id
         self.type = type
         self.icons = type.icons
         self.colors = type.colors
-        super.init(financeUseCase: financeUseCase, router: router)
+        super.init(useCase: useCase, router: router)
         switch type {
             case .income:
-                self.financeUseCase
+                self.useCase
                     .getIncome(by: id)
                     .sink { completion in
                         switch completion {
                             case .finished: break
                             case .failure(let error):
-                                self.router?.showError(nil, message: error.localizedDescription)
+                                self.router.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { model in
                         self.name = model.name
@@ -57,7 +57,7 @@ final class EditItemViewModel: BaseViewModel<ItemRouterProtocol>, ItemViewModelP
                     }
                     .store(in: &cancellables)
             case .wallet:
-                self.financeUseCase
+                self.useCase
                     .getWallet(by: id)
                     .sink { completion in
                         switch completion {
@@ -67,14 +67,14 @@ final class EditItemViewModel: BaseViewModel<ItemRouterProtocol>, ItemViewModelP
                         }
                     } receiveValue: { model in
                         self.name = model.name
-                        self.amount = model.balance
+                        self.amount = model.amount
                         self.selectedIcon = model.icon
                         self.selectedColor = model.color
                         self.transactions = model.transactions
                     }
                     .store(in: &cancellables)
             case .category:
-                self.financeUseCase
+                self.useCase
                     .getCategory(by: id)
                     .sink { completion in
                         switch completion {
@@ -100,43 +100,43 @@ final class EditItemViewModel: BaseViewModel<ItemRouterProtocol>, ItemViewModelP
     func deleteItem(){
         switch type {
             case .income:
-                return financeUseCase.deleteIncome(by: self.id)
+                return useCase.deleteIncome(by: self.id)
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router?.pop(animated: true)
+                                self?.router.pop(animated: true)
                             case .failure(let error):
-                                self?.router?.showError(nil, message: error.localizedDescription)
+                                self?.router.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router?.pop(animated: true)
+                        self?.router.pop(animated: true)
                     }
                     .store(in: &cancellables)
             case .wallet:
-                return financeUseCase.deleteWallet(by: self.id)
+                return useCase.deleteWallet(by: self.id)
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router?.pop(animated: true)
+                                self?.router.pop(animated: true)
                             case .failure(let error):
-                                self?.router?.showError(nil, message: error.localizedDescription)
+                                self?.router.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router?.pop(animated: true)
+                        self?.router.pop(animated: true)
                     }
                     .store(in: &cancellables)
             case .category:
-                return financeUseCase.deleteCategory(by: self.id)
+                return useCase.deleteCategory(by: self.id)
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router?.pop(animated: true)
+                                self?.router.pop(animated: true)
                             case .failure(let error):
-                                self?.router?.showError(nil, message: error.localizedDescription)
+                                self?.router.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: {
                         [weak self] _ in
-                        self?.router?.pop(animated: true)
+                        self?.router.pop(animated: true)
                     }
                     .store(in: &cancellables)
         }
@@ -145,13 +145,13 @@ final class EditItemViewModel: BaseViewModel<ItemRouterProtocol>, ItemViewModelP
 
     func saveItem() {
         guard !name.isEmpty else {
-            self.router?.showError(nil, message: "Заполните поле")
+            self.router.showError(nil, message: "Заполните поле")
             return
         }
 
         switch type {
             case .income:
-                return financeUseCase
+                return useCase
                     .updateIncome(
                         IncomeModel(
                             id: self.id,
@@ -166,22 +166,22 @@ final class EditItemViewModel: BaseViewModel<ItemRouterProtocol>, ItemViewModelP
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router?.pop(animated: true)
+                                self?.router.pop(animated: true)
                             case .failure(let error):
-                                self?.router?.showError(nil, message: error.localizedDescription)
+                                self?.router.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router?.pop(animated: true)
+                        self?.router.pop(animated: true)
                     }
                     .store(in: &cancellables)
             case .wallet:
-                return financeUseCase
+                return useCase
                     .updateWallet(
                         WalletModel(
                             id: self.id,
                             name: self.name,
                             type: self.type,
-                            balance: self.amount,
+                            amount: self.amount,
                             icon: self.selectedIcon,
                             color: self.selectedColor,
                             transactions: self.transactions
@@ -190,16 +190,16 @@ final class EditItemViewModel: BaseViewModel<ItemRouterProtocol>, ItemViewModelP
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router?.pop(animated: true)
+                                self?.router.pop(animated: true)
                             case .failure(let error):
-                                self?.router?.showError(nil, message: error.localizedDescription)
+                                self?.router.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router?.pop(animated: true)
+                        self?.router.pop(animated: true)
                     }
                     .store(in: &cancellables)
             case .category:
-                return financeUseCase
+                return useCase
                     .updateCategory(
                         CategoryModel(
                             id: self.id,
@@ -214,12 +214,12 @@ final class EditItemViewModel: BaseViewModel<ItemRouterProtocol>, ItemViewModelP
                     .sink { [weak self] completion in
                         switch completion {
                             case .finished:
-                                self?.router?.pop(animated: true)
+                                self?.router.pop(animated: true)
                             case .failure(let error):
-                                self?.router?.showError(nil, message: error.localizedDescription)
+                                self?.router.showError(nil, message: error.localizedDescription)
                         }
                     } receiveValue: { [weak self] _ in
-                        self?.router?.pop(animated: true)
+                        self?.router.pop(animated: true)
                     }
                     .store(in: &cancellables)
         }

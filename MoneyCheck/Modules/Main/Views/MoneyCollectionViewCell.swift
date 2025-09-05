@@ -115,7 +115,7 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
     func configureForWallet(_ wallet: WalletModel) {
         configure(
             name: wallet.name,
-            amount: wallet.balance,
+            amount: wallet.amount,
             icon: wallet.icon,
             color: wallet.color
         )

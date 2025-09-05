@@ -9,7 +9,7 @@
 import Foundation
 import Combine
 
-final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol> {
+final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol, PeriodSelectUseCaseProtocol> {
 
     // MARK: - Published properties
     @Published var selectedPeriod: PeriodType
@@ -18,9 +18,12 @@ final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol> {
 
 
     // MARK: - Initialization
-    override init(financeUseCase: FinanceUseCase, router: SelectPeriodRouterProtocol) {
+    override init(
+        useCase: PeriodSelectUseCaseProtocol,
+        router: SelectPeriodRouterProtocol
+    ) {
         self.selectedPeriod = .month
-        super.init(financeUseCase: financeUseCase, router: router)
+        super.init(useCase: useCase, router: router)
         self.getPeriod()
     }
 
@@ -29,7 +32,7 @@ final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol> {
     }
 
     func getPeriod() {
-        financeUseCase.getPeriod()
+        useCase.getPeriod()
             .sink { completion in
                 switch completion {
                     case .finished: break
@@ -42,7 +45,7 @@ final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol> {
     }
 
     func savePeriod(_ period: PeriodType) {
-        financeUseCase
+        useCase
             .savePeriod(period: period)
             .sink { completion in
                 switch completion {
@@ -52,15 +55,15 @@ final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol> {
                 }
             } receiveValue: { _ in
             }.store(in: &cancellables)
-        router?.pop(animated: true)
+        router.pop(animated: true)
     }
 
     func customPeriodChose() {
-        router?.openCustomPeriodView(vm: self)
+        router.openCustomPeriodView(vm: self)
     }
 
     func saveCustomPeriod(_ period: PeriodType) {
         self.selectedPeriod = period
-        router?.pop(animated: true)
+        router.pop(animated: true)
     }
 }
