@@ -18,7 +18,7 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
     }
 
     var totalExpenses: Double {
-        categories.filter { $0.type == .category }.reduce(0) { $0 + $1.amount }
+        categories.reduce(0) { $0 + $1.amount }
     }
 
     var totalIncome: Double {
@@ -111,16 +111,16 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
 
     func handleTransfer(type: TransferType, amount: Double, date: Date, comment: String?) {
         switch type {
-        case .income(let income, let wallet):
+            case .income(let income, let wallet):
                 addIncomeTransaction(from: income, to: wallet, amount: amount, date: date, comment: comment)
-        case .wallet(let source, let target):
-            transferMoney(from: source, to: target, amount: amount, date: date, comment: comment)
-        case .category(let wallet, let category):
-            if category.type == .category {
-                addExpense(from: wallet, to: category, amount: amount, date: date, comment: comment)
-            } else {
-                addIncome(to: wallet, from: category, amount: amount, date: date, comment: comment)
-            }
+            case .wallet(let source, let target):
+                transferMoney(from: source, to: target, amount: amount, date: date, comment: comment)
+            case .category(let wallet, let category):
+                if category.type == .category {
+                    addExpense(from: wallet, to: category, amount: amount, date: date, comment: comment)
+                } else {
+                    addIncome(to: wallet, from: category, amount: amount, date: date, comment: comment)
+                }
         }
         router.dismiss(animated: true)
     }
@@ -159,12 +159,6 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
 
 private extension MainViewModel {
     func transferMoney(from sourceWallet: WalletModel, to targetWallet: WalletModel, amount: Double, date: Date, comment: String?) {
-        var updatedSourceWallet = sourceWallet
-        var updatedTargetWallet = targetWallet
-
-        updatedSourceWallet.amount -= amount
-        updatedTargetWallet.amount += amount
-
 
         let transaction = TransactionModel(
             date: date,
@@ -181,30 +175,20 @@ private extension MainViewModel {
             comment: comment
         )
 
-//        Publishers.Zip3(
-//            useCase.updateWallet(updatedSourceWallet),
-//            useCase.updateWallet(updatedTargetWallet),
-            useCase.addTransaction(transaction)
-//        )
-        .receive(on: DispatchQueue.main)
-        .sink { [weak self] completion in
-            if case .failure(let error) = completion {
-                print("❌ MainViewModel: Transfer failed with error: \(error)")
-                self?.error = error
+        useCase.addTransaction(transaction)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                if case .failure(let error) = completion {
+                    print("❌ MainViewModel: Transfer failed with error: \(error)")
+                    self?.error = error
+                }
+            } receiveValue: { [weak self] _ in
+                self?.loadData()
             }
-        } receiveValue: { [weak self] _ in
-            self?.loadData()
-        }
-        .store(in: &cancellables)
+            .store(in: &cancellables)
     }
 
     func addExpense(from wallet: WalletModel, to category: CategoryModel, amount: Double, date: Date, comment: String?) {
-        var updatedWallet = wallet
-        var updatedCategory = category
-
-        updatedWallet.amount -= amount
-        updatedCategory.amount += amount
-
 
         let transaction = TransactionModel(
             date: date,
@@ -220,30 +204,21 @@ private extension MainViewModel {
             destinationColor: category.color,
             comment: comment
         )
-//
-//        Publishers.Zip3(
-//            useCase.updateWallet(updatedWallet),
-//            useCase.updateCategory(updatedCategory),
-            useCase.addTransaction(transaction)
-//        )
-        .receive(on: DispatchQueue.main)
-        .sink { [weak self] completion in
-            if case .failure(let error) = completion {
-                print("❌ MainViewModel: Adding expense failed with error: \(error)")
-                self?.error = error
+
+        useCase.addTransaction(transaction)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                if case .failure(let error) = completion {
+                    print("❌ MainViewModel: Adding expense failed with error: \(error)")
+                    self?.error = error
+                }
+            } receiveValue: { [weak self] _ in
+                self?.loadData()
             }
-        } receiveValue: { [weak self] _ in
-            self?.loadData()
-        }
-        .store(in: &cancellables)
+            .store(in: &cancellables)
     }
 
     func addIncome(to wallet: WalletModel, from category: CategoryModel, amount: Double, date: Date, comment: String?) {
-        var updatedWallet = wallet
-        var updatedCategory = category
-
-        updatedWallet.amount += amount
-        updatedCategory.amount += amount
 
         let transaction = TransactionModel(
             date: date,
@@ -260,21 +235,17 @@ private extension MainViewModel {
             comment: comment
         )
 
-//        Publishers.Zip3(
-//            useCase.updateWallet(updatedWallet),
-//            useCase.updateCategory(updatedCategory),
-            useCase.addTransaction(transaction)
-//        )
-        .receive(on: DispatchQueue.main)
-        .sink { [weak self] completion in
-            if case .failure(let error) = completion {
-                print("❌ MainViewModel: Adding income failed with error: \(error)")
-                self?.error = error
+        useCase.addTransaction(transaction)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                if case .failure(let error) = completion {
+                    print("❌ MainViewModel: Adding income failed with error: \(error)")
+                    self?.error = error
+                }
+            } receiveValue: { [weak self] _ in
+                self?.loadData()
             }
-        } receiveValue: { [weak self] _ in
-            self?.loadData()
-        }
-        .store(in: &cancellables)
+            .store(in: &cancellables)
     }
 
     func addIncomeTransaction(from income: IncomeModel, to wallet: WalletModel, amount: Double, date: Date, comment: String?) {
@@ -298,38 +269,33 @@ private extension MainViewModel {
             destinationColor: wallet.color,
             comment: comment
         )
-
-//        Publishers.Zip3(
-//            useCase.updateIncome(updatedIncome),
-//            useCase.updateWallet(updatedWallet),
-            useCase.addTransaction(transaction)
-//        )
-        .receive(on: DispatchQueue.main)
-        .sink { [weak self] completion in
-            if case .failure(let error) = completion {
-                print("❌ MainViewModel: Adding income transaction failed with error: \(error)")
-                self?.error = error
+        useCase.addTransaction(transaction)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completion in
+                if case .failure(let error) = completion {
+                    print("❌ MainViewModel: Adding income transaction failed with error: \(error)")
+                    self?.error = error
+                }
+            } receiveValue: { [weak self] _ in
+                self?.loadData()
             }
-        } receiveValue: { [weak self] _ in
-            self?.loadData()
-        }
-        .store(in: &cancellables)
+            .store(in: &cancellables)
     }
 
     func calculateBalance(for walletId: UUID, transactions: [TransactionModel]) -> Double {
         transactions.reduce(0) { partial, transaction in
             switch transaction.type {
-            case .income:
-                return partial + transaction.amount
-            case .expense:
-                return partial - transaction.amount
-            case .transfer:
-                if transaction.sourceId == walletId {
-                    return partial - transaction.amount
-                } else if transaction.destinationId == walletId {
+                case .income:
                     return partial + transaction.amount
-                }
-                return partial
+                case .expense:
+                    return partial - transaction.amount
+                case .transfer:
+                    if transaction.sourceId == walletId {
+                        return partial - transaction.amount
+                    } else if transaction.destinationId == walletId {
+                        return partial + transaction.amount
+                    }
+                    return partial
             }
         }
     }
