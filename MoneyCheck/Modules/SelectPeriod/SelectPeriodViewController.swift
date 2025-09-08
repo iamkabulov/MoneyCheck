@@ -106,7 +106,6 @@ final class SelectPeriodViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         bindViewModel()
-        viewModel.getPeriod()
     }
 
     private func bindViewModel() {
@@ -168,7 +167,6 @@ final class SelectPeriodViewController: UIViewController {
             button.isChecked = (button.period.id == selected.id)
 
             if case .custom(_, _) = button.period {
-                // обновляем тайтл кастомной кнопки (независимо от того, выбрана ли она)
                 switch selected {
                     case .custom(let from, let to):
                         button.updateTitle(String(localized: "customPeriod") + ": \(from.periodName) - \(to.periodName)")
@@ -200,7 +198,7 @@ extension Date {
 extension PeriodType {
     static func == (lhs: PeriodType, rhs: PeriodType) -> Bool {
         switch (lhs, rhs) {
-        case (.week, .week), (.month, .month):
+        case (.week, .week), (.month, .month), (.lastMonth, .lastMonth), (.wholeTime, .wholeTime):
             return true
         case let (.custom(lFrom, lTo), .custom(rFrom, rTo)):
             return lFrom == rFrom && lTo == rTo

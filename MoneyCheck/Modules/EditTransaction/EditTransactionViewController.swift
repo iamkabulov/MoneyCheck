@@ -8,12 +8,10 @@ final class EditTransactionViewController: UIViewController {
     private var selectedDate: Date?
     private var cancellables = Set<AnyCancellable>()
 
-    private lazy var amountTextField: UITextField = {
-        let textField = UITextField()
+    private lazy var amountInput: AmounInput = {
+        let textField = AmounInput()
         textField.placeholder = "Сумма"
-        textField.keyboardType = .decimalPad
-        textField.borderStyle = .roundedRect
-        textField.text = String(viewModel.transaction.amount)
+        textField.text = Double.amountFormatter(viewModel.transaction.amount)
         return textField
     }()
 
@@ -86,7 +84,7 @@ final class EditTransactionViewController: UIViewController {
         title = "Редактирование транзакции"
         let stackView = UIStackView(
             arrangedSubviews: [
-                amountTextField,
+                amountInput,
                 commentInput,
                 datePicker,
                 saveButton
@@ -107,7 +105,7 @@ final class EditTransactionViewController: UIViewController {
     }
     
     @objc private func saveButtonTapped() {
-        viewModel.saveTransaction(amountTextField.text, date: selectedDate, comment: commentInput.text)
+        viewModel.saveTransaction(amountInput.text, date: selectedDate, comment: commentInput.text)
     }
 
     @objc private func deleteButtonTapped() {

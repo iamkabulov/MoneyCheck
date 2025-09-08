@@ -89,7 +89,7 @@ final class TransactionCell: UITableViewCell {
         
         commentLabel.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
-            make.top.equalTo(titleLabel.snp.bottom).offset(4)
+            make.top.equalTo(iconImageView.snp.centerY).offset(2)
         }
         
         amountLabel.snp.makeConstraints { make in
@@ -109,14 +109,14 @@ final class TransactionCell: UITableViewCell {
                 iconContainerView.backgroundColor = UIColor(hex: transaction.sourceColor)
                 titleLabel.text = transaction.sourceName
                 amountLabel.textColor = .systemGreen
-                amountLabel.text = "+\(transaction.amount) ₸"
+                amountLabel.text = "+\(Double.amountFormatter(transaction.amount)) ₸"
             } else {
                 // Исходящий перевод (мы отправители)
                 iconImageView.image = UIImage(systemName: transaction.destinationIcon)
                 iconContainerView.backgroundColor = UIColor(hex: transaction.destinationColor)
                 titleLabel.text = transaction.destinationName
                 amountLabel.textColor = .systemBlue
-                amountLabel.text = "-\(transaction.amount) ₸"
+                amountLabel.text = "-\(Double.amountFormatter(transaction.amount)) ₸"
             }
             
         case .expense:
@@ -124,30 +124,46 @@ final class TransactionCell: UITableViewCell {
             iconContainerView.backgroundColor = UIColor(hex: transaction.destinationColor)
             titleLabel.text = transaction.destinationName
             amountLabel.textColor = .systemRed
-            amountLabel.text = "-\(transaction.amount) ₸"
-            
+                amountLabel.text = "-\(Double.amountFormatter(transaction.amount)) ₸"
+
         case .income:
             iconImageView.image = UIImage(systemName: transaction.sourceIcon)
             iconContainerView.backgroundColor = UIColor(hex: transaction.sourceColor)
             titleLabel.text = transaction.sourceName
             amountLabel.textColor = .systemGreen
-            amountLabel.text = "+\(transaction.amount) ₸"
+                amountLabel.text = "+\(Double.amountFormatter(transaction.amount)) ₸"
         }
 
-        if transaction.comment == nil { //TODO: - Нужно посмотреть почему не работает!!!
+        if let comment = transaction.comment, comment.isEmpty == false {
+            commentLabel.isHidden = false
+            commentLabel.text = comment
+            titleLabel.snp.remakeConstraints { make in
+                make.bottom.equalTo(iconImageView.snp.centerY).inset(2)
+                make.leading.equalTo(iconContainerView.snp.trailing).offset(12)
+            }
+        } else {
             commentLabel.isHidden = true
 
             titleLabel.snp.remakeConstraints { make in
                 make.centerY.equalToSuperview()
                 make.leading.equalTo(iconContainerView.snp.trailing).offset(12)
             }
-        } else {
-            commentLabel.isHidden = false
-            commentLabel.text = transaction.comment
-            titleLabel.snp.remakeConstraints { make in
-                make.top.equalToSuperview().offset(12)
-                make.leading.equalTo(iconContainerView.snp.trailing).offset(12)
-            }
+
         }
     }
 } 
+
+extension Double {
+    static func amountFormatter(_ amount: Double) -> String {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.groupingSeparator = " " // можно взять из Locale, но явно задаём (formatter иметь можно и с локалью)
+        f.decimalSeparator = Locale.current.decimalSeparator ?? ","
+        f.maximumFractionDigits = 2 // визуально форматтер не будет трогать дробную часть в нашей реализации
+        guard let formattedString = f.string(from: NSNumber(value: amount)) else {
+            return "0"
+        }
+        
+        return formattedString
+    }
+}

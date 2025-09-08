@@ -50,13 +50,9 @@ final class TransferBottomSheetViewController: UIViewController {
         return label
     }()
     
-    private lazy var amountInput: UITextField = {
-        let textField = UITextField()
+    private lazy var amountInput: AmounInput = {
+        let textField = AmounInput()
         textField.placeholder = "Сумма"
-        textField.keyboardType = .decimalPad
-        textField.borderStyle = .roundedRect
-        textField.backgroundColor = .secondarySystemGroupedBackground
-        textField.textColor = .label
         return textField
     }()
 
@@ -97,7 +93,7 @@ final class TransferBottomSheetViewController: UIViewController {
         button.addAction(UIAction { [weak self] _ in
             guard let self = self,
                   let amountText = self.amountInput.text,
-                  let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
+                  let amount = Double(amountText.replacingOccurrences(of: ",", with: ".").replacingOccurrences(of: " ", with: "")),
                   amount > 0 else {
                 return
             }

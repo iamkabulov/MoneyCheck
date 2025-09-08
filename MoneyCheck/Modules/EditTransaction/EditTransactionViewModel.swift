@@ -46,9 +46,8 @@ final class EditTransactionViewModel: BaseViewModel<EditTransactionRouterProtoco
 
     func saveTransaction(_ value: String?, date: Date?, comment: String?) {
         guard let amountText = value,
-              let amount = Double(amountText.replacingOccurrences(of: ",", with: ".")),
-              amount > 0
-        else {
+              let amount = Double(amountText.replacingOccurrences(of: ",", with: ".").replacingOccurrences(of: " ", with: "")),
+              amount > 0 else {
             return
         }
 

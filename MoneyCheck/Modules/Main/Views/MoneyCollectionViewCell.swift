@@ -27,25 +27,24 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
     
     private let nameLabel: UILabel = {
         let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .footnote)
+        label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .label
         label.textAlignment = .center
         label.numberOfLines = 1
         label.adjustsFontSizeToFitWidth = true
-        label.minimumScaleFactor = 0.7
+        label.minimumScaleFactor = 0.75
         label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
     private let amountLabel: UILabel = {
         let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .footnote)
+        label.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
         label.textColor = .label
         label.textAlignment = .center
         label.numberOfLines = 1
         label.adjustsFontSizeToFitWidth = true
-        label.minimumScaleFactor = 0.7
-        label.lineBreakMode = .byTruncatingTail
+        label.minimumScaleFactor = 0.75
         return label
     }()
     
@@ -97,7 +96,7 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         
         nameLabel.text = name
         if let amount = amount {
-            amountLabel.text = formatAmount(amount)
+            amountLabel.text = Double.amountFormatter(amount)
         }
         iconImageView.image = UIImage(systemName: icon)
         iconContainerView.backgroundColor = UIColor(hex: color)
@@ -130,7 +129,7 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         iconContainerView.addSubview(iconImageView)
 
         containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(4)
+            make.edges.equalToSuperview()
         }
 
         nameLabel.snp.makeConstraints { make in
@@ -138,21 +137,8 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         }
 
         iconImageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(10)
+            make.edges.equalToSuperview().inset(6)
         }
-    }
-    
-    private func formatAmount(_ amount: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = " "
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
-        
-        if let formattedAmount = formatter.string(from: NSNumber(value: amount)) {
-            return "\(formattedAmount) ₸"
-        }
-        return "0 ₸"
     }
     
     override func prepareForReuse() {
