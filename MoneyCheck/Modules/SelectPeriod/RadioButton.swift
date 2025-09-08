@@ -42,9 +42,9 @@ class RadioButton: UIView {
 
     private func createSubViews(text: String) {
         layer.borderWidth = 1
-        layer.borderColor = UIColor.black.cgColor
+        layer.borderColor = UIColor.systemGray4.cgColor
         layer.cornerRadius = 8
-
+        backgroundColor = .secondarySystemBackground
         label.textColor = .label
         label.numberOfLines = 0
         label.text = text

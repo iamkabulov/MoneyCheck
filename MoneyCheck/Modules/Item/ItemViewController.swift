@@ -8,25 +8,44 @@ class ItemViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
-    private lazy var scrollView: UIScrollView = {
+    private lazy var iconScrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
         return scrollView
     }()
-    
-    private lazy var contentView: UIView = {
+
+    private lazy var colorScrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsVerticalScrollIndicator = false
+        return scrollView
+    }()
+
+    private lazy var iconContentView: UIView = {
         let view = UIView()
         return view
     }()
-    
-    private lazy var stackView: UIStackView = {
+
+    private lazy var colorContentView: UIView = {
+        let view = UIView()
+        return view
+    }()
+
+    private lazy var iconStackView: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 16
+        stack.spacing = 8
         stack.distribution = .fill
         return stack
     }()
-    
+
+    private lazy var colorStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.distribution = .fill
+        return stack
+    }()
+
     lazy var nameField: UITextField = {
         let field = createTextField(placeholder: "Название")
         field.delegate = self
@@ -42,22 +61,38 @@ class ItemViewController: UIViewController {
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
+//        collectionView.isPagingEnabled = true
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.register(IconCell.self, forCellWithReuseIdentifier: IconCell.reuseIdentifier)
         collectionView.showsHorizontalScrollIndicator = false
         return collectionView
     }()
-    
+
+    private let colorsPageControl: UIPageControl = {
+        let pc = UIPageControl()
+        pc.currentPageIndicatorTintColor = .lightGray
+        pc.pageIndicatorTintColor = .systemGray4
+        return pc
+    }()
+
+    private let iconsPageControl: UIPageControl = {
+        let pc = UIPageControl()
+        pc.currentPageIndicatorTintColor = .lightGray
+        pc.pageIndicatorTintColor = .systemGray4
+        return pc
+    }()
+
     private lazy var colorsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         layout.minimumInteritemSpacing = 8
         layout.minimumLineSpacing = 8
         layout.itemSize = CGSize(width: 50, height: 50)
-        
+
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
+//        collectionView.isPagingEnabled = true
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.register(ColorCell.self, forCellWithReuseIdentifier: ColorCell.reuseIdentifier)
@@ -65,12 +100,12 @@ class ItemViewController: UIViewController {
         return collectionView
     }()
     
-    private lazy var saveButton: UIButton = {
-        let button = UIButton(type: .system)
+    private lazy var saveButton: PrimaryButton = {
+        let button = PrimaryButton(type: .system)
         button.setTitle("Сохранить", for: .normal)
-        button.backgroundColor = .systemBlue
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 12
+//        button.backgroundColor = .systemBlue
+//        button.setTitleColor(.white, for: .normal)
+//        button.layer.cornerRadius = 12
         button.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -106,7 +141,37 @@ class ItemViewController: UIViewController {
             self.navigationItem.rightBarButtonItem = deleteButton
             self.navigationItem.rightBarButtonItem?.tintColor = .systemRed
         }
+        colorsPageControl.numberOfPages = viewModel.colors.count
+        iconsPageControl.numberOfPages = viewModel.icons.count
+    }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        updatePageControl()
+    }
+
+    private func updatePageControl() {
+        if let layout = colorsCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            let itemWidth = layout.itemSize.width
+            guard itemWidth > 0 else { return } // защита от деления на 0
+
+            let itemsPerPage = floor(colorsCollectionView.bounds.width / itemWidth)
+            guard itemsPerPage > 0 else { return } // защита от NaN
+
+            let pages = ceil(Double(viewModel.colors.count) / itemsPerPage)
+            colorsPageControl.numberOfPages = Int(pages)
+        }
+        if let layout = iconsCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            let itemWidth = layout.itemSize.width
+            guard itemWidth > 0 else { return } // защита от деления на 0
+
+            let itemsPerPage = floor(iconsCollectionView.bounds.width / itemWidth)
+            guard itemsPerPage > 0 else { return } // защита от NaN
+
+            let pages = ceil(Double(viewModel.icons.count) / itemsPerPage)
+            iconsPageControl.numberOfPages = Int(pages)
+        }
     }
 
     @objc func deleteItem() {
@@ -143,47 +208,75 @@ class ItemViewController: UIViewController {
     private func setupUI() {
         view.backgroundColor = .systemBackground
         title = viewModel.type.title
-        view.addSubview(scrollView)
-        scrollView.addSubview(contentView)
-        contentView.addSubview(stackView)
-        
-        stackView.addArrangedSubview(createFieldContainer(field: nameField, title: "Название"))
+        view.addSubview(iconScrollView)
+        view.addSubview(colorScrollView)
+        view.addSubview(saveButton)
+        iconScrollView.addSubview(iconContentView)
+        colorScrollView.addSubview(colorContentView)
+        iconContentView.addSubview(iconStackView)
+        colorContentView.addSubview(colorStackView)
+
+        iconStackView.addArrangedSubview(createFieldContainer(field: nameField, title: "Название"))
         
         let iconsLabel = UILabel()
         iconsLabel.text = "Иконка"
         iconsLabel.font = .systemFont(ofSize: 14, weight: .medium)
         iconsLabel.textColor = .secondaryLabel
-        stackView.addArrangedSubview(iconsLabel)
-        stackView.addArrangedSubview(iconsCollectionView)
-        
+        iconStackView.addArrangedSubview(iconsLabel)
+        iconStackView.addArrangedSubview(iconsCollectionView)
+        iconStackView.addArrangedSubview(iconsPageControl)
+
         let colorsLabel = UILabel()
         colorsLabel.text = "Цвет"
         colorsLabel.font = .systemFont(ofSize: 14, weight: .medium)
         colorsLabel.textColor = .secondaryLabel
-        stackView.addArrangedSubview(colorsLabel)
-        stackView.addArrangedSubview(colorsCollectionView)
-        
-        stackView.addArrangedSubview(saveButton)
+        colorStackView.addArrangedSubview(colorsLabel)
+        colorStackView.addArrangedSubview(colorsCollectionView)
+        colorStackView.addArrangedSubview(colorsPageControl)
+
+//        stackView.addArrangedSubview(saveButton)
     }
     
     private func setupConstraints() {
-        scrollView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+        //TODO: - подумать как вынести в отдельный компонент
+        iconScrollView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(20)
+            make.leading.trailing.equalToSuperview()
+            make.height.greaterThanOrEqualToSuperview()
         }
         
-        contentView.snp.makeConstraints { make in
+        iconContentView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
             make.width.equalToSuperview()
             make.height.greaterThanOrEqualToSuperview()
         }
-        
-        stackView.snp.makeConstraints { make in
+
+        colorScrollView.snp.makeConstraints { make in
+            make.top.equalTo(iconStackView.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.height.greaterThanOrEqualToSuperview()
+        }
+
+        colorContentView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.width.equalToSuperview()
+            make.height.greaterThanOrEqualToSuperview()
+        }
+
+        iconStackView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(20)
             make.leading.equalToSuperview().offset(16)
             make.trailing.equalToSuperview().offset(-16)
             make.bottom.lessThanOrEqualToSuperview().offset(-20)
         }
-        
+
+        colorStackView.snp.makeConstraints { make in
+            make.top.equalTo(iconStackView.snp.bottom)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+            make.bottom.lessThanOrEqualToSuperview().offset(-20)
+        }
+
         iconsCollectionView.snp.makeConstraints { make in
             make.height.equalTo(70)
         }
@@ -191,9 +284,10 @@ class ItemViewController: UIViewController {
         colorsCollectionView.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
-        
+
         saveButton.snp.makeConstraints { make in
-            make.height.equalTo(50)
+            make.top.equalTo(colorStackView.snp.bottom).offset(20)
+            make.leading.trailing.equalToSuperview().inset(20)
         }
     }
     
@@ -236,21 +330,6 @@ class ItemViewController: UIViewController {
     @objc private func saveButtonTapped() {
         viewModel.saveItem()
     }
-    
-    @objc private func keyboardWillShow(notification: NSNotification) {
-        guard let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
-            return
-        }
-        
-        let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardSize.height, right: 0)
-        scrollView.contentInset = contentInsets
-        scrollView.scrollIndicatorInsets = contentInsets
-    }
-    
-    @objc private func keyboardWillHide(notification: NSNotification) {
-        scrollView.contentInset = .zero
-        scrollView.scrollIndicatorInsets = .zero
-    }
 }
 
 // MARK: - UICollectionViewDataSource
@@ -269,12 +348,7 @@ extension ItemViewController: UICollectionViewDataSource {
                 return UICollectionViewCell()
             }
             let icon = viewModel.icons[indexPath.item]
-            cell
-                .configure(
-                    with: icon,
-                    color: viewModel.selectedColor,
-                    selectedIcon: viewModel.selectedIcon
-                )
+            cell.configure(with: icon, color: viewModel.selectedColor, selectedIcon: viewModel.selectedIcon)
             return cell
         } else {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ColorCell.reuseIdentifier, for: indexPath) as? ColorCell else {
@@ -297,6 +371,31 @@ extension ItemViewController: UICollectionViewDelegate {
             viewModel.selectedColor = viewModel.colors[indexPath.item]
             colorsCollectionView.reloadData()
             iconsCollectionView.reloadData()
+        }
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if let collectionView = scrollView as? UICollectionView, collectionView == colorsCollectionView,
+               let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            let itemWidth = layout.itemSize.width + layout.minimumLineSpacing
+            guard itemWidth > 0 else { return }
+
+            let itemsPerPage = floor(colorsCollectionView.bounds.width / itemWidth)
+            guard itemsPerPage > 0 else { return }
+
+            let page = round(scrollView.contentOffset.x / (itemsPerPage * itemWidth))
+            colorsPageControl.currentPage = Int(page)
+        }
+        if let collectionView = scrollView as? UICollectionView, collectionView == iconsCollectionView,
+               let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            let itemWidth = layout.itemSize.width + layout.minimumLineSpacing
+            guard itemWidth > 0 else { return }
+
+            let itemsPerPage = floor(iconsCollectionView.bounds.width / itemWidth)
+            guard itemsPerPage > 0 else { return }
+
+            let page = round(scrollView.contentOffset.x / (itemsPerPage * itemWidth))
+            iconsPageControl.currentPage = Int(page)
         }
     }
 }

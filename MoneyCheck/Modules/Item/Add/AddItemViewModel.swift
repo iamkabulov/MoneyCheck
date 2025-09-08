@@ -43,6 +43,8 @@ final class AddItemViewModel: BaseViewModel<ItemRouterProtocol, CreateItemUseCas
         self.type = type
         self.icons = type.icons
         self.colors = type.colors
+        self.selectedIcon = icons.first ?? ""
+        self.selectedColor = colors.first ?? ""
         super.init(useCase: useCase, router: router)
     }
 
