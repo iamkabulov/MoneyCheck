@@ -73,6 +73,7 @@ class ItemViewController: UIViewController {
         let pc = UIPageControl()
         pc.currentPageIndicatorTintColor = .lightGray
         pc.pageIndicatorTintColor = .systemGray4
+        pc.isUserInteractionEnabled = false
         return pc
     }()
 
@@ -80,6 +81,7 @@ class ItemViewController: UIViewController {
         let pc = UIPageControl()
         pc.currentPageIndicatorTintColor = .lightGray
         pc.pageIndicatorTintColor = .systemGray4
+        pc.isUserInteractionEnabled = false
         return pc
     }()
 
