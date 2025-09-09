@@ -5,6 +5,7 @@
 //  Created by Нурсултан Кабулов on 09.09.2025.
 //
 import UIKit
+import SnapKit
 
 final class PagedCollectionView: UIView {
     // MARK: - UI
@@ -63,7 +64,6 @@ final class PagedCollectionView: UIView {
         pageControl.snp.makeConstraints { make in
             make.top.equalTo(collectionView.snp.bottom).offset(4)
             make.centerX.equalToSuperview()
-            make.bottom.equalToSuperview()
         }
     }
     

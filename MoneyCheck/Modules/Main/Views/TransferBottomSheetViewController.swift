@@ -140,7 +140,7 @@ final class TransferBottomSheetViewController: UIViewController {
     // MARK: - Private Methods
     private func setupUI() {
         if let sheet = sheetPresentationController {
-            sheet.detents = [.custom { _ in 300 }]
+            sheet.detents = [.custom { _ in 280 }]
         }
 
         titleLabel.text = transferType.title
@@ -157,11 +157,12 @@ final class TransferBottomSheetViewController: UIViewController {
         buttonsStack.addArrangedSubview(okButton)
         
         containerView.snp.makeConstraints { make in
-            make.top.leading.trailing.bottom.equalToSuperview()
+            make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(view.keyboardLayoutGuide).offset(-16)
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(40)
+            make.top.equalToSuperview().offset(20)
             make.leading.trailing.equalToSuperview().inset(16)
         }
 
@@ -171,6 +172,7 @@ final class TransferBottomSheetViewController: UIViewController {
             make.leading.trailing.equalToSuperview().inset(16)
         }
 
+        commentInput.addDoneButtonOnKeyboard()
         commentInput.snp.makeConstraints { make in
             make.top.equalTo(amountInput.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview().inset(16)

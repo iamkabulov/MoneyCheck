@@ -17,7 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
         let appearance = UINavigationBarAppearance()
-        appearance.configureWithDefaultBackground()
+        appearance.configureWithOpaqueBackground()
 
         // убираем текст у кнопки назад
         let backButtonAppearance = UIBarButtonItemAppearance(style: .plain)
@@ -28,7 +28,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
 
-
+        CoreDataManager.shared.initializeMockDataIfNeeded()
         window?.rootViewController = TabBarFactory().makeTabBarModule()
         window?.makeKeyAndVisible()
         

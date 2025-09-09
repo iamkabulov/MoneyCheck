@@ -15,6 +15,20 @@ final class EditTransactionViewController: UIViewController {
         return textField
     }()
 
+    private lazy var stackView: UIStackView = {
+        let stack = UIStackView(
+            arrangedSubviews: [
+                amountInput,
+                commentInput,
+                datePicker
+            ]
+        )
+        stack.axis = .vertical
+        stack.spacing = 16
+        return stack
+    }()
+
+
     private lazy var commentInput: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Комментарий"
@@ -82,18 +96,9 @@ final class EditTransactionViewController: UIViewController {
     private func setupUI() {
         view.backgroundColor = .systemBackground
         title = "Редактирование транзакции"
-        let stackView = UIStackView(
-            arrangedSubviews: [
-                amountInput,
-                commentInput,
-                datePicker,
-                saveButton
-            ]
-        )
-        stackView.axis = .vertical
-        stackView.spacing = 16
         
         view.addSubview(stackView)
+        view.addSubview(saveButton)
         stackView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
             make.leading.trailing.equalToSuperview().inset(16)
@@ -101,6 +106,11 @@ final class EditTransactionViewController: UIViewController {
 
         datePicker.snp.makeConstraints { make in
             make.height.equalTo(50)
+        }
+
+        saveButton.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalTo(view.keyboardLayoutGuide.snp.top).offset(-16)
         }
     }
     

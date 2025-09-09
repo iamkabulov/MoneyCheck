@@ -149,7 +149,7 @@ class ItemViewController: UIViewController {
         }
 
         saveButton.snp.makeConstraints { make in
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            make.bottom.equalTo(view.keyboardLayoutGuide.snp.top).offset(-16)
             make.leading.trailing.equalToSuperview().inset(16)
         }
     }
