@@ -21,7 +21,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // убираем текст у кнопки назад
         let backButtonAppearance = UIBarButtonItemAppearance(style: .plain)
-        backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.clear]
+
+        backButtonAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: -1000, vertical: 0)
         appearance.backButtonAppearance = backButtonAppearance
 
         UINavigationBar.appearance().standardAppearance = appearance
