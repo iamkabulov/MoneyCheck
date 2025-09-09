@@ -74,7 +74,6 @@ final class CustomPeriodPickerView: UIView {
         let stack = UIStackView(arrangedSubviews: [buttonsStack, datePicker])
         stack.axis = .vertical
         stack.spacing = 12
-        stack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stack)
 
         NSLayoutConstraint.activate([

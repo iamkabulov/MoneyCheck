@@ -154,24 +154,23 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     }
 
     private func createIncomesSection() -> NSCollectionLayoutSection {
-        // Размер элемента
+        // Размер элемента: ширина = 1/5 от ширины строки, высота фиксированная
         let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0 / 6.0),
+            widthDimension: .fractionalWidth(1.0 / 5.0),
             heightDimension: .absolute(90)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4)
 
-        // Размер группы
+        // Размер группы: вся ширина, высота = 90
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(90)
+            heightDimension: .absolute(90)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
         // Настройка секции
         let section = NSCollectionLayoutSection(group: group)
-        section.orthogonalScrollingBehavior = .continuous
         section.interGroupSpacing = 0
         section.contentInsets = NSDirectionalEdgeInsets(
             top: Constants.Section.topInset,
@@ -180,7 +179,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             trailing: Constants.Section.trailingInset
         )
 
-        // Добавляем header
+        // Header
         let headerSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
             heightDimension: .estimated(Constants.headerHeight)
@@ -191,9 +190,14 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             alignment: .top
         )
 
-        // Добавляем background
+        // Background
         let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
-        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: Constants.headerHeight, leading: 0, bottom: 0, trailing: 0)
+        backgroundItem.contentInsets = NSDirectionalEdgeInsets(
+            top: Constants.headerHeight,
+            leading: 0,
+            bottom: 0,
+            trailing: 0
+        )
 
         section.boundarySupplementaryItems = [header]
         section.decorationItems = [backgroundItem]
@@ -202,24 +206,23 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     }
 
     private func createWalletsSection() -> NSCollectionLayoutSection {
-        // Размер элемента
+        // Размер элемента: ширина = 1/5 от ширины строки, высота фиксированная
         let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0 / 6.0),
+            widthDimension: .fractionalWidth(1.0 / 5.0),
             heightDimension: .absolute(90)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4)
 
-        // Размер группы
+        // Размер группы: вся ширина, высота = 90
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(90)
+            heightDimension: .absolute(90)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
         // Настройка секции
         let section = NSCollectionLayoutSection(group: group)
-        section.orthogonalScrollingBehavior = .continuous
         section.interGroupSpacing = 0
         section.contentInsets = NSDirectionalEdgeInsets(
             top: Constants.Section.topInset,
@@ -228,7 +231,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             trailing: Constants.Section.trailingInset
         )
 
-        // Добавляем header
+        // Header
         let headerSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
             heightDimension: .estimated(Constants.headerHeight)
@@ -239,9 +242,14 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             alignment: .top
         )
 
-        // Добавляем background
+        // Background
         let backgroundItem = NSCollectionLayoutDecorationItem.background(elementKind: "background")
-        backgroundItem.contentInsets = NSDirectionalEdgeInsets(top: Constants.headerHeight, leading: 0, bottom: 0, trailing: 0)
+        backgroundItem.contentInsets = NSDirectionalEdgeInsets(
+            top: Constants.headerHeight,
+            leading: 0,
+            bottom: 0,
+            trailing: 0
+        )
 
         section.boundarySupplementaryItems = [header]
         section.decorationItems = [backgroundItem]

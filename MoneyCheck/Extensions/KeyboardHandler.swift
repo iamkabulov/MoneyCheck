@@ -5,7 +5,6 @@
 //  Created by Нурсултан Кабулов on 10.08.2025.
 //
 
-import Foundation
 import UIKit
 
 extension UITextField {
@@ -31,6 +30,7 @@ public extension UIViewController {
     func setupKeyboardDismissGesture() {
         let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tap.cancelsTouchesInView = false
+        tap.delegate = KeyboardGestureDelegate.shared
         view.addGestureRecognizer(tap)
     }
 
@@ -38,3 +38,19 @@ public extension UIViewController {
         view.endEditing(true)
     }
 }
+
+private class KeyboardGestureDelegate: NSObject, UIGestureRecognizerDelegate {
+    static let shared = KeyboardGestureDelegate()
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        // Игнорим тапы по UIControl (UIButton, UITextField и т.п.)
+        return !(touch.view is UIControl)
+    }
+}
+
+//extension UIViewController: @retroactive UIGestureRecognizerDelegate {
+//    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+//        // Игнорим тапы по кнопкам, текстовым полям и т.п.
+//        return !(touch.view is UIControl)
+//    }
+//}
