@@ -111,7 +111,7 @@ final class TransferBottomSheetViewController: UIViewController {
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.distribution = .equalCentering
-        stackView.spacing = 8
+        stackView.spacing = 20
         return stackView
     }()
 
@@ -263,7 +263,7 @@ final class TransferBottomSheetViewController: UIViewController {
 
         stackView.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(16)
-            make.leading.trailing.equalToSuperview().inset(120)
+            make.leading.trailing.equalToSuperview().inset(100)
         }
 
         fromIcon.snp.makeConstraints { make in

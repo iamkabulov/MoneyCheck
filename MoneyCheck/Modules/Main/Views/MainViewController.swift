@@ -6,13 +6,14 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     private enum Constants {
         static let headerHeight: CGFloat = 30
         enum Section {
-            static let topInset: CGFloat = 8
-            static let leadingInset: CGFloat = 16
-            static let trailingInset: CGFloat = 16
-            static let bottomInset: CGFloat = 8
+            static let topInset: CGFloat = 0
+            static let leadingInset: CGFloat = 8
+            static let trailingInset: CGFloat = 8
+            static let bottomInset: CGFloat = 0
         }
     }
     // MARK: - Properties
+    private var collapsedSections: [Bool] = [false, false, false] // 0 - income, 1 - wallets, 2 - categories
     private let viewModel: MainViewModel
     private var cancellables = Set<AnyCancellable>()
     private var lastHighlightedIndexPath: IndexPath?
@@ -157,15 +158,15 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Размер элемента: ширина = 1/5 от ширины строки, высота фиксированная
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0 / 5.0),
-            heightDimension: .absolute(90)
+            heightDimension: .absolute(95)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4)
+        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
 
         // Размер группы: вся ширина, высота = 90
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .absolute(90)
+            heightDimension: .absolute(95)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
@@ -201,7 +202,6 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 
         section.boundarySupplementaryItems = [header]
         section.decorationItems = [backgroundItem]
-
         return section
     }
 
@@ -209,15 +209,15 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Размер элемента: ширина = 1/5 от ширины строки, высота фиксированная
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0 / 5.0),
-            heightDimension: .absolute(90)
+            heightDimension: .absolute(95)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4)
+        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
 
         // Размер группы: вся ширина, высота = 90
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .absolute(90)
+            heightDimension: .absolute(95)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
@@ -261,10 +261,10 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Размер элемента: ширина = 1/5 от ширины строки, высота фиксированная
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0 / 5.0),
-            heightDimension: .absolute(90)
+            heightDimension: .absolute(95)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4)
+        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
 
         // Размер группы: вся ширина, высота = 95
         let groupSize = NSCollectionLayoutSize(
@@ -328,7 +328,20 @@ extension MainViewController: UICollectionViewDataSource {
         return 3 // Incomes, Wallets, Categories
     }
 
+    @objc private func handleHeaderTap(_ gesture: UITapGestureRecognizer) {
+        guard let section = gesture.view?.tag else { return }
+        collapsedSections[section].toggle()
+
+        collectionView.performBatchUpdates {
+            collectionView.reloadSections(IndexSet(integer: section))
+        }
+    }
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if collapsedSections[section] {
+            return 0
+        }
+
         switch section {
         case 0: return viewModel.incomes.count + 1
         case 1: return viewModel.wallets.count + 1
@@ -395,15 +408,20 @@ extension MainViewController: UICollectionViewDataSource {
             ) as! SectionHeaderView
 
             switch indexPath.section {
-            case 0:
-                header.configure(title: "Доходы", amount: viewModel.totalIncome)
-            case 1:
-                header.configure(title: "Кошельки", amount: viewModel.totalBalance)
-            case 2:
-                header.configure(title: "Расходы", amount: viewModel.totalExpenses)
-            default:
-                break
+                case 0:
+                    header.configure(title: "Доходы", amount: viewModel.totalIncome, collapsed: collapsedSections[0])
+                case 1:
+                    header.configure(title: "Кошельки", amount: viewModel.totalBalance, collapsed: collapsedSections[1])
+                case 2:
+                    header.configure(title: "Расходы", amount: viewModel.totalExpenses, collapsed: collapsedSections[2])
+                default:
+                    break
             }
+
+            // 👇 добавляем gesture
+            let tap = UITapGestureRecognizer(target: self, action: #selector(handleHeaderTap(_:)))
+            header.addGestureRecognizer(tap)
+            header.tag = indexPath.section
 
             return header
         }

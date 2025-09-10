@@ -59,9 +59,7 @@ final class CircleIconView: UIView {
         }
 
         imageView.snp.makeConstraints { make in
-            make.centerY.equalTo(circleView.snp.centerY)
-            make.centerX.equalTo(circleView.snp.centerX)
-            make.width.height.equalTo(circleView.snp.height).multipliedBy(0.8)
+            make.edges.equalToSuperview().inset(8)
         }
 
         nameLabel.snp.makeConstraints { make in

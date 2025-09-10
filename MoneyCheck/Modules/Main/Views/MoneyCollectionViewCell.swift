@@ -133,11 +133,17 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         }
 
         nameLabel.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
+            make.top.equalToSuperview().inset(4)
+            make.leading.trailing.equalToSuperview()
         }
 
         iconImageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(6)
+            make.edges.equalToSuperview().inset(8)
+        }
+
+        amountLabel.snp.makeConstraints { make in
+            make.bottom.equalToSuperview().inset(4)
+            make.leading.trailing.equalToSuperview()
         }
     }
     

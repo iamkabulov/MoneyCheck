@@ -19,7 +19,14 @@ final class SectionHeaderView: UICollectionReusableView {
         label.textAlignment = .right
         return label
     }()
-    
+
+    private let arrowImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.image = UIImage(systemName: "chevron.down", withConfiguration: UIImage.SymbolConfiguration(pointSize: 10, weight: .medium))
+        iv.tintColor = .label
+        return iv
+    }()
+
     // MARK: - Initialization
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -31,26 +38,32 @@ final class SectionHeaderView: UICollectionReusableView {
     }
     
     // MARK: - Configuration
-    func configure(title: String, amount: Double? = nil) {
+    func configure(title: String, amount: Double, collapsed: Bool) {
         titleLabel.text = title
-        if let amount = amount {
-            amountLabel.text = formatAmount(amount)
-            amountLabel.isHidden = false
-        } else {
-            amountLabel.isHidden = true
+        amountLabel.text = formatAmount(amount)
+
+        // Поворот стрелочки при изменении состояния
+        UIView.animate(withDuration: 0.25) {
+            self.arrowImageView.transform = collapsed ? CGAffineTransform(rotationAngle: -.pi/2) : .identity
         }
     }
-    
+
     // MARK: - Private Methods
     private func setupUI() {
         addSubview(titleLabel)
         addSubview(amountLabel)
+        addSubview(arrowImageView)
 
-        titleLabel.snp.makeConstraints { make in
+        arrowImageView.snp.makeConstraints { make in
             make.leading.equalToSuperview()
             make.centerY.equalToSuperview()
         }
-        
+
+        titleLabel.snp.makeConstraints { make in
+            make.centerY.equalTo(arrowImageView.snp.centerY)
+            make.leading.equalTo(arrowImageView.snp.trailing).offset(4)
+        }
+
         amountLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview()
             make.centerY.equalToSuperview()
