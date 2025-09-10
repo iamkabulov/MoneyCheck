@@ -249,8 +249,6 @@ final class TransferBottomSheetViewController: UIViewController {
         stackView.addArrangedSubview(fromIcon)
         stackView.addArrangedSubview(arrowIcon)
         stackView.addArrangedSubview(toIcon)
-//        buttonsStack.addArrangedSubview(cancelButton)
-//        buttonsStack.addArrangedSubview(okButton)
         
         containerView.snp.makeConstraints { make in
             make.edges.equalToSuperview()

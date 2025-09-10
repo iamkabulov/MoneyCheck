@@ -111,6 +111,31 @@ extension HorizontalDatePicker: UICollectionViewDataSource, UICollectionViewDele
         let w = collectionView.bounds.width / 3.5
         return CGSize(width: w, height: collectionView.bounds.height)
     }
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let bounds = collectionView.bounds
+        let cellWidth = bounds.width / 3.5
+
+        // Центр выбранной ячейки
+        let snappedCellCenterX = (CGFloat(indexPath.item) + 0.5) * cellWidth
+
+        // Сдвигаем скролл так, чтобы выбранная ячейка попала в highlightView
+        var newOffsetX = snappedCellCenterX - (bounds.width - cellWidth / 2)
+
+        // clamp, чтобы не уходить за пределы
+        let maxOffsetX = max(0, collectionView.contentSize.width - bounds.width)
+        newOffsetX = min(max(newOffsetX, 0), maxOffsetX)
+
+        collectionView.setContentOffset(CGPoint(x: newOffsetX, y: 0), animated: true)
+
+        // Обновляем выбранный индекс
+        selectedIndex = indexPath.item
+        collectionView.reloadData()
+        feedbackGenerator.selectionChanged()
+        onDateSelected?(dateForIndex(selectedIndex))
+        feedbackGenerator.prepare()
+    }
+
 }
 
 // MARK: - Snapping под выбор справа

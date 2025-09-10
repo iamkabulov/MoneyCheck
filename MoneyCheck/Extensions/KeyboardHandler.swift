@@ -43,8 +43,14 @@ private class KeyboardGestureDelegate: NSObject, UIGestureRecognizerDelegate {
     static let shared = KeyboardGestureDelegate()
 
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        // Игнорим тапы по UIControl (UIButton, UITextField и т.п.)
-        return !(touch.view is UIControl)
+        guard let view = touch.view else { return true }
+        if view is UIControl {
+            return false
+        }
+        if view.superview is DateCell {
+            return false
+        }
+        return true
     }
 }
 
