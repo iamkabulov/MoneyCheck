@@ -347,7 +347,7 @@ extension MainViewController: UICollectionViewDataSource {
                     name: "",
                     amount: nil,
                     icon: "plus.circle.fill",
-                    color: "#4CAF50"
+                    color: "#14C94B"
                 )
             } else {
                 let income = viewModel.incomes[indexPath.item]
@@ -364,7 +364,7 @@ extension MainViewController: UICollectionViewDataSource {
                     name: "",
                     amount: nil,
                     icon: "plus.circle.fill",
-                    color: "#007AFF"
+                    color: "#580FF7"
                 )
             } else {
                 cell.configureForWallet(viewModel.wallets[indexPath.item])
@@ -375,7 +375,7 @@ extension MainViewController: UICollectionViewDataSource {
                     name: "",
                     amount: nil,
                     icon: "plus.circle.fill",
-                    color: "#FF6B6B"
+                    color: "#0FF7AE"
                 )
             } else {
                 cell.configureForCategory(viewModel.categories[indexPath.item])

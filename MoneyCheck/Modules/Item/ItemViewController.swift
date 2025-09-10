@@ -20,12 +20,12 @@ class ItemViewController: UIViewController {
 
     private lazy var iconsView = PagedCollectionView(
         title: "Иконка",
-        itemSize: CGSize(width: 60, height: 60)
+        itemSize: CGSize(width: 50, height: 50)
     )
 
     private lazy var colorsView = PagedCollectionView(
         title: "Цвет",
-        itemSize: CGSize(width: 50, height: 50)
+        itemSize: CGSize(width: 40, height: 40)
     )
 
     private lazy var saveButton: PrimaryButton = {
@@ -84,8 +84,19 @@ class ItemViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        iconsView.updatePages(itemsCount: viewModel.icons.count)
-        colorsView.updatePages(itemsCount: viewModel.colors.count)
+        iconsView.updatePages(itemsCount: viewModel.icons.count - 1)
+        colorsView.updatePages(itemsCount: viewModel.colors.count - 1)
+
+        // Скролл к выбранной иконке
+        if let index = viewModel.icons.firstIndex(of: viewModel.selectedIcon) {
+            let indexPath = IndexPath(item: index, section: 0)
+            iconsView.collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+        }
+        // Скролл к выбранному цвету
+        if let index = viewModel.colors.firstIndex(of: viewModel.selectedColor) {
+            let indexPath = IndexPath(item: index, section: 0)
+            colorsView.collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+        }
     }
 
     @objc private func deleteItem() {
@@ -145,7 +156,7 @@ class ItemViewController: UIViewController {
         colorsView.snp.makeConstraints { make in
             make.top.equalTo(iconsView.snp.bottom).offset(20)
             make.leading.trailing.equalToSuperview().inset(16)
-            make.height.equalTo(100)
+            make.height.equalTo(120)
         }
 
         saveButton.snp.makeConstraints { make in

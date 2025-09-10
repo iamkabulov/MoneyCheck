@@ -169,8 +169,8 @@ final class TransferBottomSheetViewController: UIViewController {
     
     private lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Отмена", for: .normal)
-        button.setTitleColor(UIColor(hex: "#FF3B30"), for: .normal)
+        button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        button.tintColor = .systemGray
         button.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             self.delegate?.transferBottomSheetDidCancel()
@@ -178,10 +178,9 @@ final class TransferBottomSheetViewController: UIViewController {
         return button
     }()
     
-    private lazy var okButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("OK", for: .normal)
-        button.setTitleColor(UIColor(hex: "#007AFF"), for: .normal)
+    private lazy var okButton: PrimaryButton = {
+        let button = PrimaryButton(type: .system)
+        button.setTitle("Сохранить", for: .normal)
         button.addAction(UIAction { [weak self] _ in
             guard let self = self,
                   let amountText = self.amountInput.text,
@@ -244,20 +243,21 @@ final class TransferBottomSheetViewController: UIViewController {
         containerView.addSubview(amountInput)
         containerView.addSubview(commentInput)
         containerView.addSubview(datePicker)
-        containerView.addSubview(buttonsStack)
+        containerView.addSubview(okButton)
+        containerView.addSubview(cancelButton)
 
         stackView.addArrangedSubview(fromIcon)
         stackView.addArrangedSubview(arrowIcon)
         stackView.addArrangedSubview(toIcon)
-        buttonsStack.addArrangedSubview(cancelButton)
-        buttonsStack.addArrangedSubview(okButton)
+//        buttonsStack.addArrangedSubview(cancelButton)
+//        buttonsStack.addArrangedSubview(okButton)
         
         containerView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
 
         titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(20)
+            make.top.equalTo(cancelButton.snp.bottom).inset(4)
             make.leading.trailing.equalToSuperview().inset(16)
         }
 
@@ -293,9 +293,14 @@ final class TransferBottomSheetViewController: UIViewController {
             make.height.equalTo(50)
         }
 
-        buttonsStack.snp.makeConstraints { make in
+        okButton.snp.makeConstraints { make in
             make.top.equalTo(datePicker.snp.bottom).offset(16)
             make.leading.trailing.equalToSuperview().inset(16)
+        }
+
+        cancelButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(16)
+            make.trailing.equalToSuperview().inset(16)
         }
     }
 }

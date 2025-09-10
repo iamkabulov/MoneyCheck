@@ -37,14 +37,16 @@ final class PagedCollectionView: UIView {
         titleLabel.text = title
         titleLabel.font = .systemFont(ofSize: 14, weight: .medium)
         titleLabel.textColor = .secondaryLabel
-        
+
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
         
         pageControl.currentPageIndicatorTintColor = .lightGray
         pageControl.pageIndicatorTintColor = .systemGray4
         pageControl.isUserInteractionEnabled = false
-        
+
+        self.backgroundColor = .secondarySystemBackground
+        self.layer.cornerRadius = 10
         addSubview(titleLabel)
         addSubview(collectionView)
         addSubview(pageControl)
@@ -52,13 +54,13 @@ final class PagedCollectionView: UIView {
     
     private func setupConstraints() {
         titleLabel.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
+            make.top.leading.trailing.equalToSuperview().inset(8)
         }
         
         collectionView.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(4)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(60) // настраивается извне
+            make.leading.trailing.equalToSuperview().inset(8)
+            make.height.equalToSuperview().multipliedBy(0.5)
         }
         
         pageControl.snp.makeConstraints { make in

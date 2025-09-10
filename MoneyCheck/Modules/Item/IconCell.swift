@@ -25,7 +25,7 @@ final class IconCell: UICollectionViewCell {
         contentView.addSubview(iconView)
         
         iconView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(12)
+            make.edges.equalToSuperview().inset(8)
         }
     }
     
