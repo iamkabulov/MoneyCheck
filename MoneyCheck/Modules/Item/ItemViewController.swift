@@ -124,14 +124,15 @@ class ItemViewController: UIViewController {
 
         viewModel.selectedColorPublisher
             .sink { [weak self] _ in
-                self?.colorsView.collectionView.reloadData()
                 self?.iconsView.collectionView.reloadData()
+                self?.colorsView.collectionView.reloadData()
             }
             .store(in: &cancellables)
     }
 
     private func setupUI() {
         view.backgroundColor = .systemBackground
+        nameField.addDoneButtonOnKeyboard()
         title = viewModel.type.title
 
         view.addSubview(nameField)
@@ -207,7 +208,7 @@ extension ItemViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == iconsView.collectionView {
             viewModel.selectedIcon = viewModel.icons[indexPath.item]
-        } else {
+        } else if collectionView == colorsView.collectionView {
             viewModel.selectedColor = viewModel.colors[indexPath.item]
         }
     }

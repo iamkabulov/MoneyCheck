@@ -35,6 +35,7 @@ final class EditTransactionViewController: UIViewController {
         textField.borderStyle = .roundedRect
         textField.backgroundColor = .secondarySystemGroupedBackground
         textField.textColor = .label
+        textField.autocorrectionType = .no
         textField.text = viewModel.transaction.comment
         return textField
     }()

@@ -148,11 +148,13 @@ final class TransferBottomSheetViewController: UIViewController {
         return textField
     }()
 
+    //TODO: - Сделать общий текстфил
     private lazy var commentInput: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Комментарий"
         textField.borderStyle = .roundedRect
         textField.backgroundColor = .secondarySystemGroupedBackground
+        textField.autocorrectionType = .no
         textField.textColor = .label
         return textField
     }()

@@ -113,6 +113,7 @@ final class CoreDataWalletRepository: WalletRepository {
             existingWallet.name = wallet.name
             existingWallet.type = wallet.type.rawValue
             existingWallet.icon = wallet.icon
+            existingWallet.color = wallet.color
             coreDataManager.updateWallet(existingWallet)
         }
         return Just(())

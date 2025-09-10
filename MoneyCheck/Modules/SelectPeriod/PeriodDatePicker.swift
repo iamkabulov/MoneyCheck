@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SnapKit
 
 struct PeriodSelection {
     var from: Date
@@ -76,12 +77,10 @@ final class CustomPeriodPickerView: UIView {
         stack.spacing = 12
         addSubview(stack)
 
-        NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: topAnchor),
-            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
+        stack.snp.makeConstraints { make in
+            make.top.equalTo(safeAreaLayoutGuide).inset(8)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
 
         onDone?()
     }

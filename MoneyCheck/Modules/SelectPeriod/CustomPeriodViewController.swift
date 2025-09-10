@@ -1,4 +1,5 @@
 import UIKit
+import SnapKit
 
 final class CustomPeriodViewController: UIViewController {
 
@@ -40,8 +41,7 @@ final class CustomPeriodViewController: UIViewController {
         view.addSubview(doneButton)
 
         periodPicker.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).inset(20)
-            make.leading.trailing.equalToSuperview().inset(20)
+            make.top.leading.trailing.equalToSuperview().inset(20)
         }
 
         doneButton.snp.makeConstraints { make in

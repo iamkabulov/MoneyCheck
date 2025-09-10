@@ -93,6 +93,7 @@ final class CoreDataIncomeRepository: IncomeRepository {
         let incomes = coreDataManager.fetchIncomes()
         if let existingIncome = incomes.first(where: { $0.id == income.id }) {
             existingIncome.name = income.name
+            existingIncome.type = income.type.rawValue
             existingIncome.icon = income.icon
             existingIncome.color = income.color
             coreDataManager.updateIncome(existingIncome)
