@@ -65,6 +65,7 @@ final class SectionHeaderView: UICollectionReusableView {
         }
 
         amountLabel.snp.makeConstraints { make in
+            make.leading.equalTo(snp.centerX)
             make.trailing.equalToSuperview()
             make.centerY.equalToSuperview()
         }

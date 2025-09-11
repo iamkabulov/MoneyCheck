@@ -1,5 +1,6 @@
 import UIKit
 import Combine
+import SnapKit
 
 final class TransactionsViewController: UIViewController {
     private let viewModel: TransactionsViewModel
@@ -147,6 +148,7 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
         }
         
         amountLabel.snp.makeConstraints { make in
+            make.leading.equalTo(dateLabel.snp.trailing).offset(8)
             make.trailing.equalToSuperview().inset(8)
             make.centerY.equalToSuperview()
         }

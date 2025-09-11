@@ -53,6 +53,10 @@ final class TextInput: UITextField {
 }
 
 extension TextInput: UITextFieldDelegate {
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        textField.layer.borderColor = UIColor(hex: "#63E668").cgColor
+    }
+    
     func textFieldDidBeginEditing(_ textField: UITextField) {
         textField.layer.borderColor = UIColor(hex: "#63E668").cgColor
     }

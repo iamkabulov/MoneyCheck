@@ -28,6 +28,7 @@ final class TransactionCell: UITableViewCell {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
@@ -41,6 +42,7 @@ final class TransactionCell: UITableViewCell {
     private let amountLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .semibold)
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
@@ -84,16 +86,19 @@ final class TransactionCell: UITableViewCell {
         
         titleLabel.snp.makeConstraints { make in
             make.leading.equalTo(iconContainerView.snp.trailing).offset(12)
+            make.trailing.equalTo(snp.centerX)
             make.top.equalToSuperview().offset(12)
         }
         
         commentLabel.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
+            make.trailing.equalTo(snp.centerX)
             make.top.equalTo(iconImageView.snp.centerY).offset(2)
         }
         
         amountLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-12)
+            make.leading.equalTo(snp.centerX)
             make.centerY.equalToSuperview()
         }
     }
@@ -140,6 +145,7 @@ final class TransactionCell: UITableViewCell {
             titleLabel.snp.remakeConstraints { make in
                 make.bottom.equalTo(iconImageView.snp.centerY).inset(2)
                 make.leading.equalTo(iconContainerView.snp.trailing).offset(12)
+                make.trailing.equalTo(snp.centerX)
             }
         } else {
             commentLabel.isHidden = true
@@ -147,6 +153,7 @@ final class TransactionCell: UITableViewCell {
             titleLabel.snp.remakeConstraints { make in
                 make.centerY.equalToSuperview()
                 make.leading.equalTo(iconContainerView.snp.trailing).offset(12)
+                make.trailing.equalTo(snp.centerX)
             }
 
         }
