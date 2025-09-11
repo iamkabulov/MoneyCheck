@@ -9,7 +9,6 @@ final class CustomPeriodViewController: UIViewController {
     private lazy var doneButton: PrimaryButton = {
         let button = PrimaryButton()
         button.setTitle("Готово", for: .normal)
-        button.setEnabled(false)
         button.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
         return button
     }()
@@ -62,7 +61,8 @@ final class CustomPeriodViewController: UIViewController {
     }
 
     private func validateSelection() {
-        if periodPicker.selection.from <= periodPicker.selection.to {
+        let calendar = Calendar.current
+        if calendar.compare(periodPicker.selection.from, to: periodPicker.selection.to, toGranularity: .day) != .orderedDescending {
             doneButton.setEnabled(true)
         } else {
             doneButton.setEnabled(false)
