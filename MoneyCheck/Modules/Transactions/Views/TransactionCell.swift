@@ -98,7 +98,7 @@ final class TransactionCell: UITableViewCell {
         
         amountLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-12)
-            make.leading.equalTo(snp.centerX)
+            make.leading.greaterThanOrEqualTo(snp.centerX)
             make.centerY.equalToSuperview()
         }
     }
