@@ -33,7 +33,6 @@ final class PrimaryButton: UIButton {
         layer.cornerRadius = 12
         layer.borderWidth = 1
         layer.borderColor = UIColor(hex: "#494949").cgColor
-//        backgroundColor = .systemGray3
         setTitleColor(.systemBackground, for: .normal)
         titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
         heightAnchor.constraint(equalToConstant: 40).isActive = true
@@ -68,8 +67,12 @@ final class PrimaryButton: UIButton {
 
     // MARK: - Public
     func setEnabled(_ isEnabled: Bool) {
+        if isEnabled {
+            setGradientBackground(colors: [UIColor(hex: "#000000"), UIColor(hex: "#3d3d3d")])
+        } else {
+            setGradientBackground(colors: [UIColor(hex: "#6c6e6c"), UIColor(hex: "#8f918f")])
+        }
         self.isEnabled = isEnabled
-        self.backgroundColor = isEnabled ? .black : .systemGray3
     }
 
     func setGradientBackground(colors: [UIColor], startPoint: CGPoint = CGPoint(x: 0.5, y: 0), endPoint: CGPoint = CGPoint(x: 0.5, y: 1)) {
