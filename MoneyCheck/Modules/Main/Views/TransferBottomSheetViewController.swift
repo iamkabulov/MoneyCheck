@@ -148,14 +148,11 @@ final class TransferBottomSheetViewController: UIViewController {
         return textField
     }()
 
+    //TODO: - Сделать валидацию обязательных полей (СУММА)
     //TODO: - Сделать общий текстфил
-    private lazy var commentInput: UITextField = {
-        let textField = UITextField()
+    private lazy var commentInput: TextInput = {
+        let textField = TextInput()
         textField.placeholder = "Комментарий"
-        textField.borderStyle = .roundedRect
-        textField.backgroundColor = .secondarySystemGroupedBackground
-        textField.autocorrectionType = .no
-        textField.textColor = .label
         return textField
     }()
 
@@ -183,17 +180,19 @@ final class TransferBottomSheetViewController: UIViewController {
     private lazy var okButton: PrimaryButton = {
         let button = PrimaryButton(type: .system)
         button.setTitle("Сохранить", for: .normal)
-        button.addAction(UIAction { [weak self] _ in
-            guard let self = self,
-                  let amountText = self.amountInput.text,
-                  let amount = Double(amountText.replacingOccurrences(of: ",", with: ".").replacingOccurrences(of: " ", with: "")),
-                  amount > 0 else {
-                return
-            }
-            self.delegate?.transferBottomSheet(transferType: transferType,didConfirmAmount: amount, date: date, comment: commentInput.text)
-        }, for: .touchDown)
+        button.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         return button
     }()
+
+    @objc private func saveButtonTapped() {
+        guard amountInput.validate({ !$0.isEmpty }),
+              let amountText = self.amountInput.text,
+              let amount = Double(amountText.replacingOccurrences(of: ",", with: ".").replacingOccurrences(of: " ", with: "")),
+              amount > 0 else {
+            return
+        }
+        self.delegate?.transferBottomSheet(transferType: transferType,didConfirmAmount: amount, date: date, comment: commentInput.text)
+    }
 
     // MARK: - Initialization
     init(transferType: TransferType) {

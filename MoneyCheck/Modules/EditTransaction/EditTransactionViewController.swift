@@ -29,13 +29,9 @@ final class EditTransactionViewController: UIViewController {
     }()
 
 
-    private lazy var commentInput: UITextField = {
-        let textField = UITextField()
+    private lazy var commentInput: TextInput = {
+        let textField = TextInput()
         textField.placeholder = "Комментарий"
-        textField.borderStyle = .roundedRect
-        textField.backgroundColor = .secondarySystemGroupedBackground
-        textField.textColor = .label
-        textField.autocorrectionType = .no
         textField.text = viewModel.transaction.comment
         return textField
     }()
@@ -116,6 +112,7 @@ final class EditTransactionViewController: UIViewController {
     }
     
     @objc private func saveButtonTapped() {
+        guard amountInput.validate({ !$0.isEmpty }) else { return }
         viewModel.saveTransaction(amountInput.text, date: selectedDate, comment: commentInput.text)
     }
 

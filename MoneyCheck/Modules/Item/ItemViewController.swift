@@ -8,13 +8,9 @@ class ItemViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - UI Components
-    private lazy var nameField: UITextField = {
-        let field = UITextField()
+    private lazy var nameField: TextInput = {
+        let field = TextInput()
         field.placeholder = "Название"
-        field.borderStyle = .roundedRect
-        field.backgroundColor = .systemBackground
-        field.autocorrectionType = .no
-        field.returnKeyType = .done
         return field
     }()
 
@@ -168,6 +164,7 @@ class ItemViewController: UIViewController {
 
     // MARK: - Actions
     @objc private func saveButtonTapped() {
+        guard nameField.validate({ !$0.isEmpty }) else { return }
         viewModel.saveItem()
     }
 }
