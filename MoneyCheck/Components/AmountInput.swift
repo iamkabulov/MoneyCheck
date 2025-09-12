@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class AmounInput: UITextField {
+final class AmountInput: UITextField {
 
     // Настройка форматтера (локаль, разделители, дробные цифры)
     let formatter: NumberFormatter = {
@@ -67,7 +67,7 @@ final class AmounInput: UITextField {
     }
 }
 
-extension AmounInput: UITextFieldDelegate {
+extension AmountInput: UITextFieldDelegate {
     // MARK: - Delegate
     func textField(_ textField: UITextField,
                    shouldChangeCharactersIn range: NSRange,
@@ -138,7 +138,7 @@ extension AmounInput: UITextFieldDelegate {
     }
 }
 
-private extension AmounInput {
+private extension AmountInput {
     // Убираем группирующие пробелы и non-breaking space
     func clean(_ str: String) -> String {
         str.replacingOccurrences(of: groupingSeparator, with: "")

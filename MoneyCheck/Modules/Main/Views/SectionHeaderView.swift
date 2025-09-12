@@ -12,11 +12,11 @@ final class SectionHeaderView: UICollectionReusableView {
         return label
     }()
     
-    private let amountLabel: UILabel = {
-        let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .body)
-        label.textColor = .label
-        label.textAlignment = .right
+    private let amountLabel: AmountLabel = {
+        let label = AmountLabel()
+//        label.font = .preferredFont(forTextStyle: .body)
+//        label.textColor = .label
+//        label.textAlignment = .right
         return label
     }()
 
@@ -40,12 +40,18 @@ final class SectionHeaderView: UICollectionReusableView {
     // MARK: - Configuration
     func configure(title: String, amount: Double, collapsed: Bool) {
         titleLabel.text = title
-        amountLabel.text = formatAmount(amount)
+        amountLabel.amountFormatter(amount)
 
         // Поворот стрелочки при изменении состояния
-        UIView.animate(withDuration: 0.25) {
-            self.arrowImageView.transform = collapsed ? CGAffineTransform(rotationAngle: -.pi/2) : .identity
-        }
+        let rotation = CABasicAnimation(keyPath: "transform.rotation")
+        rotation.fromValue = collapsed ? 0 : -Double.pi/2
+        rotation.toValue = collapsed ? -Double.pi/2 : 0
+        rotation.duration = 0.35
+        rotation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        rotation.fillMode = .forwards
+        rotation.isRemovedOnCompletion = false
+
+        arrowImageView.layer.add(rotation, forKey: "rotation")
     }
 
     // MARK: - Private Methods
@@ -71,16 +77,16 @@ final class SectionHeaderView: UICollectionReusableView {
         }
     }
     
-    private func formatAmount(_ amount: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = " "
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
-        
-        if let formattedAmount = formatter.string(from: NSNumber(value: amount)) {
-            return "\(formattedAmount) ₸"
-        }
-        return "0 ₸"
-    }
+//    private func formatAmount(_ amount: Double) -> String {
+//        let formatter = NumberFormatter()
+//        formatter.numberStyle = .decimal
+//        formatter.groupingSeparator = " "
+//        formatter.minimumFractionDigits = 0
+//        formatter.maximumFractionDigits = 2
+//        
+//        if let formattedAmount = formatter.string(from: NSNumber(value: amount)) {
+//            return "\(formattedAmount) ₸"
+//        }
+//        return "0 ₸"
+//    }
 } 

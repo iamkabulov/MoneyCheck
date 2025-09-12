@@ -158,7 +158,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Размер элемента: ширина = 1/5 от ширины строки, высота фиксированная
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0 / 5.0),
-            heightDimension: .absolute(95)
+            heightDimension: .absolute(110)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
@@ -166,7 +166,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Размер группы: вся ширина, высота = 90
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .absolute(95)
+            heightDimension: .absolute(110)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
@@ -209,7 +209,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Размер элемента: ширина = 1/5 от ширины строки, высота фиксированная
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0 / 5.0),
-            heightDimension: .absolute(95)
+            heightDimension: .absolute(110)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
@@ -217,7 +217,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Размер группы: вся ширина, высота = 90
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .absolute(95)
+            heightDimension: .absolute(110)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
@@ -261,7 +261,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Размер элемента: ширина = 1/5 от ширины строки, высота фиксированная
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0 / 5.0),
-            heightDimension: .absolute(95)
+            heightDimension: .absolute(110)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
@@ -269,7 +269,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
         // Размер группы: вся ширина, высота = 95
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .absolute(95)
+            heightDimension: .absolute(110)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 

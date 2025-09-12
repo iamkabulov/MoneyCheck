@@ -18,6 +18,22 @@
         }
       }
     },
+    "Edit transaction" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit transaction"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редактирование транзакции"
+          }
+        }
+      }
+    },
     "lastMonth" : {
       "extractionState" : "manual",
       "localizations" : {

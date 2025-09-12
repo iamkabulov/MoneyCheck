@@ -78,17 +78,9 @@ final class TransactionsViewController: UIViewController {
     }
     
     private func formatAmount(_ amount: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = " "
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
-        
-        if let formattedAmount = formatter.string(from: NSNumber(value: abs(amount))) {
-            let sign = amount >= 0 ? "+" : "-"
-            return "\(sign)\(formattedAmount) ₸"
-        }
-        return "0 ₸"
+        let formattedAmount = Double.amountFormatter(amount)
+        let sign = amount >= 0 ? "+" : "-"
+        return "\(sign)\(formattedAmount) ₸"
     }
 
     @objc func openEditItemViewController() {
@@ -126,7 +118,7 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
         dateLabel.font = .systemFont(ofSize: 17, weight: .semibold)
         dateLabel.text = formatDate(section.date)
         
-        let amountLabel = UILabel()
+        let amountLabel = AmountLabel()
         amountLabel.font = .systemFont(ofSize: 17, weight: .semibold)
         amountLabel.text = formatAmount(section.totalAmount)
         amountLabel.textAlignment = .right

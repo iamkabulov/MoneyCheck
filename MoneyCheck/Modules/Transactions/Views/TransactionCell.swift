@@ -39,8 +39,8 @@ final class TransactionCell: UITableViewCell {
         return label
     }()
     
-    private let amountLabel: UILabel = {
-        let label = UILabel()
+    private let amountLabel: AmountLabel = {
+        let label = AmountLabel()
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         label.lineBreakMode = .byTruncatingTail
         return label
@@ -114,14 +114,14 @@ final class TransactionCell: UITableViewCell {
                 iconContainerView.backgroundColor = UIColor(hex: transaction.sourceColor)
                 titleLabel.text = transaction.sourceName
                 amountLabel.textColor = .systemGreen
-                amountLabel.text = "+\(Double.amountFormatter(transaction.amount)) ₸"
+                amountLabel.text = "+\(Double.amountFormatter(transaction.amount))₸"
             } else {
                 // Исходящий перевод (мы отправители)
                 iconImageView.image = UIImage(systemName: transaction.destinationIcon)
                 iconContainerView.backgroundColor = UIColor(hex: transaction.destinationColor)
                 titleLabel.text = transaction.destinationName
                 amountLabel.textColor = .systemBlue
-                amountLabel.text = "-\(Double.amountFormatter(transaction.amount)) ₸"
+                amountLabel.text = "-\(Double.amountFormatter(transaction.amount))₸"
             }
             
         case .expense:
@@ -129,14 +129,14 @@ final class TransactionCell: UITableViewCell {
             iconContainerView.backgroundColor = UIColor(hex: transaction.destinationColor)
             titleLabel.text = transaction.destinationName
             amountLabel.textColor = .systemRed
-                amountLabel.text = "-\(Double.amountFormatter(transaction.amount)) ₸"
+                amountLabel.text = "-\(Double.amountFormatter(transaction.amount))₸"
 
         case .income:
             iconImageView.image = UIImage(systemName: transaction.sourceIcon)
             iconContainerView.backgroundColor = UIColor(hex: transaction.sourceColor)
             titleLabel.text = transaction.sourceName
             amountLabel.textColor = .systemGreen
-                amountLabel.text = "+\(Double.amountFormatter(transaction.amount)) ₸"
+                amountLabel.text = "+\(Double.amountFormatter(transaction.amount))₸"
         }
 
         if let comment = transaction.comment, comment.isEmpty == false {
@@ -167,7 +167,7 @@ extension Double {
         f.groupingSeparator = " " // можно взять из Locale, но явно задаём (formatter иметь можно и с локалью)
         f.decimalSeparator = Locale.current.decimalSeparator ?? ","
         f.maximumFractionDigits = 2 // визуально форматтер не будет трогать дробную часть в нашей реализации
-        guard let formattedString = f.string(from: NSNumber(value: amount)) else {
+        guard let formattedString = f.string(from: NSNumber(value: abs(amount))) else {
             return "0"
         }
         

@@ -37,8 +37,8 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    private let amountLabel: UILabel = {
-        let label = UILabel()
+    private let amountLabel: AmountLabel = {
+        let label = AmountLabel()
         label.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
         label.textColor = .label
         label.textAlignment = .center
@@ -77,11 +77,15 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
             amountLabel.isHidden = (amount == nil)
             
             iconContainerView.snp.remakeConstraints { make in
-                make.top.equalTo(nameLabel.snp.bottom).offset(4)
-                make.centerX.equalToSuperview()
+                make.centerX.centerY.equalToSuperview()
                 make.size.equalTo(48)
             }
-            
+
+            nameLabel.snp.remakeConstraints { make in
+                make.bottom.equalTo(iconContainerView.snp.top).offset(-4)
+                make.leading.trailing.equalToSuperview()
+            }
+
             if amount == nil {
                 amountLabel.snp.remakeConstraints { make in
                     make.height.equalTo(0)
@@ -96,7 +100,7 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         
         nameLabel.text = name
         if let amount = amount {
-            amountLabel.text = Double.amountFormatter(amount)
+            amountLabel.amountFormatter(amount)
         }
         iconImageView.image = UIImage(systemName: icon)
         iconContainerView.backgroundColor = UIColor(hex: color)
@@ -132,17 +136,21 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
             make.edges.equalToSuperview()
         }
 
-        nameLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().inset(4)
-            make.leading.trailing.equalToSuperview()
+        iconContainerView.snp.makeConstraints { make in
+            make.centerX.centerY.equalToSuperview()
         }
 
         iconImageView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(8)
         }
 
+        nameLabel.snp.makeConstraints { make in
+            make.bottom.equalTo(iconContainerView.snp.top).offset(-4)
+            make.leading.trailing.equalToSuperview()
+        }
+
         amountLabel.snp.makeConstraints { make in
-            make.bottom.equalToSuperview().inset(4)
+            make.top.equalTo(iconContainerView.snp.bottom).offset(4)
             make.leading.trailing.equalToSuperview()
         }
     }

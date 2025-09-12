@@ -142,8 +142,8 @@ final class TransferBottomSheetViewController: UIViewController {
         return label
     }()
     
-    private lazy var amountInput: AmounInput = {
-        let textField = AmounInput()
+    private lazy var amountInput: AmountInput = {
+        let textField = AmountInput()
         textField.placeholder = "Сумма"
         return textField
     }()

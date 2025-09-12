@@ -8,8 +8,8 @@ final class EditTransactionViewController: UIViewController {
     private var selectedDate: Date?
     private var cancellables = Set<AnyCancellable>()
 
-    private lazy var amountInput: AmounInput = {
-        let textField = AmounInput()
+    private lazy var amountInput: AmountInput = {
+        let textField = AmountInput()
         textField.placeholder = "Сумма"
         textField.text = Double.amountFormatter(viewModel.transaction.amount)
         return textField
@@ -92,8 +92,8 @@ final class EditTransactionViewController: UIViewController {
 
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        title = "Редактирование транзакции"
-        
+        title = String(localized: "Edit transaction")
+
         view.addSubview(stackView)
         view.addSubview(saveButton)
         stackView.snp.makeConstraints { make in
