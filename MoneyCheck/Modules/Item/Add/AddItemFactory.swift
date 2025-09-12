@@ -14,7 +14,19 @@ final class AddItemFactory {
     // MARK: - Root
     func makeAddItemModule(type: ItemType, navigationController: UINavigationController) -> UIViewController {
         let router = ItemRouter(navigationController: navigationController)
-        let viewModel = AddItemViewModel(type: type, useCase: ItemUseCase(), router: router)
+        let incomeRepository = CoreDataIncomeRepository()
+        let walletRepository = CoreDataWalletRepository()
+        let categoryRepository = CoreDataCategoryRepository()
+
+        let useCase = ItemUseCase(
+            walletRepository: walletRepository,
+            categoryRepository: categoryRepository,
+            incomeRepository: incomeRepository
+        )
+        let viewModel = AddItemViewModel(type: type,
+                                         useCase: useCase,
+                                         router: router
+        )
         let vc = ItemViewController(viewModel: viewModel)
         return vc
     }

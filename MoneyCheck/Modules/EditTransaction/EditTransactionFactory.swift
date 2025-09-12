@@ -14,11 +14,11 @@ final class EditTransactionFactory {
     // MARK: - Root
     func makeEditTransactionModule(_ transaction: TransactionModel, navigationController: UINavigationController) -> UIViewController {
         let router = EditTransactionRouter(navigationController: navigationController)
-        let viewModel = EditTransactionViewModel(
-            transaction: transaction,
-            useCase: TransactionsUseCase(),
-            router: router
-        )
+        let transactionRepository = CoreDataTransactionRepository()
+        let useCase = TransactionsUseCase(transactionRepository: transactionRepository)
+        let viewModel = EditTransactionViewModel(transaction: transaction,
+                                                 useCase: useCase,
+                                                 router: router)
 
         let vc = EditTransactionViewController(viewModel: viewModel)
         return vc

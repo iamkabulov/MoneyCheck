@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import CoreData
 
-protocol WalletRepository {
+protocol WalletRepositoryProtocol {
     func getWallets(period: PeriodType) -> AnyPublisher<[WalletModel], Error>
     func addWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error>
     func updateWallet(_ wallet: WalletModel) -> AnyPublisher<Void, Error>
@@ -11,7 +11,7 @@ protocol WalletRepository {
     func deleteWallet(by id: UUID) -> AnyPublisher<Void, Error>
 }
 
-final class CoreDataWalletRepository: WalletRepository {
+final class CoreDataWalletRepository: WalletRepositoryProtocol {
     private let coreDataManager = CoreDataManager.shared
 
     func getWallet(by id: UUID) -> AnyPublisher<WalletModel, Error> {

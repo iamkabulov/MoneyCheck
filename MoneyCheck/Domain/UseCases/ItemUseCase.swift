@@ -34,11 +34,19 @@ protocol ItemUseCaseProtocol {
 
 final class ItemUseCase {
 
-    private let walletRepository = CoreDataWalletRepository()
-    private let categoryRepository = CoreDataCategoryRepository()
-    private let incomeRepository = CoreDataIncomeRepository()
+    private let walletRepository: CoreDataWalletRepository
+    private let categoryRepository: CoreDataCategoryRepository
+    private let incomeRepository: CoreDataIncomeRepository
 
-    init() {}
+    init(
+        walletRepository: CoreDataWalletRepository,
+        categoryRepository: CoreDataCategoryRepository,
+        incomeRepository: CoreDataIncomeRepository
+    ) {
+        self.walletRepository = walletRepository
+        self.categoryRepository = categoryRepository
+        self.incomeRepository = incomeRepository
+    }
 
     deinit {
         print("--ItemUseCase deinit")

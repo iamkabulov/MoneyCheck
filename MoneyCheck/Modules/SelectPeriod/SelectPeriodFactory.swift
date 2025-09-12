@@ -14,7 +14,9 @@ final class SelectPeriodFactory {
     // MARK: - Root
     func makeSelectPeriodModule(navigationController: UINavigationController) -> UIViewController {
         let router = SelectPeriodRouter(navigationController: navigationController)
-        let viewModel = SelectPeriodViewModel(useCase: PeriodUseCase(), router: router)
+        let periodRepository = CoreDataPeriodRepository()
+        let useCase = PeriodUseCase(periodRepository: periodRepository)
+        let viewModel = SelectPeriodViewModel(useCase: useCase, router: router)
         let vc = SelectPeriodViewController(viewModel: viewModel)
         return vc
     }

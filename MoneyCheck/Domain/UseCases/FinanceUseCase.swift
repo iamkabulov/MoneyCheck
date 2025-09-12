@@ -4,14 +4,23 @@ import Combine
 typealias MainUseCaseProtocol = TransactionsUseCaseProtocol & PeriodUseCaseProtocol & ItemUseCaseProtocol
 
 final class MainUseCase: MainUseCaseProtocol {
+    private let walletRepository: WalletRepositoryProtocol
+    private let categoryRepository: CategoryRepositoryProtocol
+    private let incomeRepository: IncomeRepositoryProtocol
+    private let transactionRepository: TransactionRepositoryProtocol
+    private let periodRepository: PeriodRepositoryProtocol
 
-    private let walletRepository = CoreDataWalletRepository()
-    private let categoryRepository = CoreDataCategoryRepository()
-    private let incomeRepository = CoreDataIncomeRepository()
-    private let transactionRepository = CoreDataTransactionRepository()
-    private let periodRepository = CoreDataPeriodRepository()
-
-    init() {}
+    init(walletRepository: WalletRepositoryProtocol,
+         categoryRepository: CategoryRepositoryProtocol,
+         incomeRepository: IncomeRepositoryProtocol,
+         transactionRepository: TransactionRepositoryProtocol,
+         periodRepository: PeriodRepositoryProtocol) {
+        self.walletRepository = walletRepository
+        self.categoryRepository = categoryRepository
+        self.incomeRepository = incomeRepository
+        self.transactionRepository = transactionRepository
+        self.periodRepository = periodRepository
+    }
 
     deinit {
         print("---Deinit MainUseCase")
@@ -32,7 +41,6 @@ final class MainUseCase: MainUseCaseProtocol {
     func getTransactions(by id: UUID, period: PeriodType) -> AnyPublisher<[TransactionModel], Error> {
         return transactionRepository.getTransactions(by: id, period: period)
     }
-
     
     func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error> {
         return transactionRepository.addTransaction(transaction)

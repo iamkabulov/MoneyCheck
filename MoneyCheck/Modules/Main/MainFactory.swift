@@ -18,11 +18,21 @@ final class MainFactory {
     // MARK: - Root
     func makeMainModule() -> UINavigationController {
         let navigationController = UINavigationController()
-        let router = MainRouter(navigationController: navigationController)
-        let viewModel = MainViewModel(
-            useCase: MainUseCase(),
-            router: router
+        let walletRepository = CoreDataWalletRepository()
+        let categoryRepository = CoreDataCategoryRepository()
+        let incomeRepository = CoreDataIncomeRepository()
+        let transactionRepository = CoreDataTransactionRepository()
+        let periodRepository = CoreDataPeriodRepository()
+        let mainUseCase = MainUseCase(
+            walletRepository: walletRepository,
+            categoryRepository: categoryRepository,
+            incomeRepository: incomeRepository,
+            transactionRepository: transactionRepository,
+            periodRepository: periodRepository
         )
+        let router = MainRouter(navigationController: navigationController)
+        let viewModel = MainViewModel(useCase: mainUseCase,
+                                      router: router)
         let vc = MainViewController(viewModel: viewModel)
         navigationController.setViewControllers([vc], animated: false)
         return navigationController

@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import CoreData
 
-protocol CategoryRepository {
+protocol CategoryRepositoryProtocol {
     func getCategories(period: PeriodType) -> AnyPublisher<[CategoryModel], Error>
     func getCategory(by id: UUID) -> AnyPublisher<CategoryModel, Error>
     func addCategory(_ category: CategoryModel) -> AnyPublisher<Void, Error>
@@ -11,7 +11,7 @@ protocol CategoryRepository {
     func deleteCategory(by id: UUID) -> AnyPublisher<Void, Error>
 }
 
-final class CoreDataCategoryRepository: CategoryRepository {
+final class CoreDataCategoryRepository: CategoryRepositoryProtocol {
 
     private let coreDataManager = CoreDataManager.shared
 

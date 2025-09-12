@@ -2,14 +2,14 @@ import Foundation
 import CoreData
 import Combine
 
-protocol TransactionRepository {
+protocol TransactionRepositoryProtocol {
     func getTransactions(by id: UUID, period: PeriodType) -> AnyPublisher<[TransactionModel], Error>
     func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
     func updateTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
     func deleteTransaction(by id: UUID) -> AnyPublisher<Void, Error>
 }
 
-final class CoreDataTransactionRepository: TransactionRepository {
+final class CoreDataTransactionRepository: TransactionRepositoryProtocol {
     private let coreDataManager = CoreDataManager.shared
 
     func getTransactions(by id: UUID, period: PeriodType) -> AnyPublisher<[TransactionModel], Error> {

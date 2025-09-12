@@ -14,13 +14,13 @@ final class TransactionsFactory {
     // MARK: - Root
     func makeTransactionsModule(for entity: TransactionItem, period: PeriodType, navigationController: UINavigationController) -> UIViewController {
         let router = TransactionsRouter(navigationController: navigationController)
-        let viewModel = TransactionsViewModel(
-            useCase: TransactionsUseCase(),
-            itemId: entity.id,
-            itemType: entity.type,
-            router: router,
-            period: period
-        )
+        let transactionRepository = CoreDataTransactionRepository()
+        let useCase = TransactionsUseCase(transactionRepository: transactionRepository)
+        let viewModel = TransactionsViewModel(useCase: useCase,
+                                              itemId: entity.id,
+                                              itemType: entity.type,
+                                              router: router,
+                                              period: period)
         let vc = TransactionsViewController(viewModel: viewModel)
         return vc
     }

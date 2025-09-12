@@ -21,9 +21,11 @@ protocol TransactionsUseCaseProtocol {
 
 final class TransactionsUseCase {
 
-    private let transactionRepository = CoreDataTransactionRepository()
+    private let transactionRepository: CoreDataTransactionRepository
 
-    init() {}
+    init(transactionRepository: CoreDataTransactionRepository) {
+        self.transactionRepository = transactionRepository
+    }
 
     deinit {
         print("--EditTransactionUseCase deinit")

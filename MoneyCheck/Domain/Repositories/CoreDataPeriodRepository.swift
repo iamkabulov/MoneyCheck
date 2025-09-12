@@ -9,13 +9,13 @@ import Foundation
 import Combine
 import CoreData
 
-protocol PeriodRepository {
+protocol PeriodRepositoryProtocol {
     func savePeriod(_ value: PeriodType) -> AnyPublisher<Void, Error>
     func getPeriod() -> AnyPublisher<PeriodType, Error>
 }
 
 
-final class CoreDataPeriodRepository: PeriodRepository {
+final class CoreDataPeriodRepository: PeriodRepositoryProtocol {
 
     private let coreDataManager = CoreDataManager.shared
 

@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import CoreData
 
-protocol IncomeRepository {
+protocol IncomeRepositoryProtocol {
     func getIncomes(period: PeriodType) -> AnyPublisher<[IncomeModel], Error>
     func updateIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error>
     func addIncome(_ income: IncomeModel) -> AnyPublisher<Void, Error>
@@ -10,7 +10,7 @@ protocol IncomeRepository {
     func deleteIncome(by id: UUID) -> AnyPublisher<Void, Error>
 }
 
-final class CoreDataIncomeRepository: IncomeRepository {
+final class CoreDataIncomeRepository: IncomeRepositoryProtocol {
 
     private let coreDataManager = CoreDataManager.shared
     

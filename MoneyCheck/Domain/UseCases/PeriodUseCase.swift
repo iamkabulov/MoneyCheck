@@ -18,9 +18,11 @@ protocol PeriodSelectUseCaseProtocol {
 
 final class PeriodUseCase: PeriodUseCaseProtocol, PeriodSelectUseCaseProtocol {
 
-    private let periodRepository = CoreDataPeriodRepository()
+    private let periodRepository: CoreDataPeriodRepository
 
-    init() {}
+    init(periodRepository: CoreDataPeriodRepository) {
+        self.periodRepository = periodRepository
+    }
 
     deinit {
         print("--PeriodUseCase deinit")
