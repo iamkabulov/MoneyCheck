@@ -42,6 +42,7 @@ final class TransactionCell: UITableViewCell {
     private let amountLabel: AmountLabel = {
         let label = AmountLabel()
         label.font = .systemFont(ofSize: 16, weight: .semibold)
+        label.textAlignment = .right
         label.lineBreakMode = .byTruncatingTail
         return label
     }()
@@ -98,7 +99,7 @@ final class TransactionCell: UITableViewCell {
         
         amountLabel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-12)
-            make.leading.greaterThanOrEqualTo(snp.centerX)
+            make.leading.equalTo(snp.centerX)
             make.centerY.equalToSuperview()
         }
     }

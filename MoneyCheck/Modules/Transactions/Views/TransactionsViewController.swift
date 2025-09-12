@@ -5,7 +5,9 @@ import SnapKit
 final class TransactionsViewController: UIViewController {
     private let viewModel: TransactionsViewModel
     private var cancellables = Set<AnyCancellable>()
-    
+
+    private lazy var stats = PeriodStatsView()
+
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.backgroundColor = .systemBackground
@@ -49,9 +51,16 @@ final class TransactionsViewController: UIViewController {
 
     private func setupUI() {
         view.backgroundColor = .systemBackground
+        view.addSubview(stats)
         view.addSubview(tableView)
+        stats.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.equalToSuperview()
+        }
+
         tableView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.top.equalTo(stats.snp.bottom).offset(8)
+            make.leading.trailing.bottom.equalToSuperview()
         }
 
         editButton.title = "Править"
@@ -136,6 +145,7 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
         
         dateLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(8)
+            make.trailing.equalTo(headerView.snp.centerX)
             make.centerY.equalToSuperview()
         }
         
