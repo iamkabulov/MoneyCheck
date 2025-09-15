@@ -28,7 +28,7 @@ final class MainRouter: BaseRouter, MainRouterProtocol {
     func showSelectPeriod() {
         let vc = SelectPeriodFactory().makeSelectPeriodModule(navigationController: navigationController)
         vc.hidesBottomBarWhenPushed = true
-        self.push(vc, animated: true)
+        self.presentPanModal(vc)
     }
 
     func presentTransferBottomSheet(type: TransferType,

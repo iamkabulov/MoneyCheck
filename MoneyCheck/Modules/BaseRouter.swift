@@ -7,6 +7,7 @@
 
 
 import UIKit
+import PanModal
 
 protocol RouterProtocol: AnyObject {
     var navigationController: UINavigationController { get }
@@ -54,5 +55,9 @@ class BaseRouter: RouterProtocol {
         )
         alertController.addAction(UIAlertAction(title: "OK", style: .default))
         self.present(alertController, animated: true)
+    }
+
+    func presentPanModal(_ viewController: PanModalPresentable.LayoutType & UIViewController) {
+        navigationController.presentPanModal(viewController)
     }
 }

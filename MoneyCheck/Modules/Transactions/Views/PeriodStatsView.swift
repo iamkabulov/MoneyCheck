@@ -7,11 +7,15 @@
 import UIKit
 import SnapKit
 
+protocol PeriodStatsViewDelegate: AnyObject {
+    func periodButtonTapped()
+}
+
 
 final class PeriodStatsView: UIView {
 
     // MARK: - UI
-
+    weak var delegate: PeriodStatsViewDelegate?
     private let leftButton = UIButton(type: .system)
     private let rightButton = UIButton(type: .system)
     private let periodButton = UIButton(type: .system)
@@ -64,6 +68,7 @@ final class PeriodStatsView: UIView {
 
         periodButton.setTitle("сентябрь 2025", for: .normal)
         periodButton.titleLabel?.font = .boldSystemFont(ofSize: 18)
+        periodButton.addTarget(self, action: #selector(periodButtonTapped), for: .touchUpInside)
 
         let navStack = UIStackView(arrangedSubviews: [leftButton, periodButton, rightButton])
         navStack.axis = .horizontal
@@ -108,6 +113,10 @@ final class PeriodStatsView: UIView {
             make.bottom.equalToSuperview().inset(8)
             make.height.equalTo(100)
         }
+    }
+
+    @objc func periodButtonTapped() {
+        delegate?.periodButtonTapped()
     }
 }
 

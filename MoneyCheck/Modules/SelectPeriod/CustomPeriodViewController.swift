@@ -1,10 +1,28 @@
 import UIKit
+import PanModal
 import SnapKit
 
 final class CustomPeriodViewController: UIViewController {
 
     private let periodPicker = CustomPeriodPickerView()
     private let viewModel: SelectPeriodViewModel
+
+    private lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.textColor = .label
+        label.text = viewModel.screenTitle
+        return label
+    }()
+
+    private lazy var cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        button.tintColor = .systemGray
+        button.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
+        return button
+    }()
 
     private lazy var doneButton: PrimaryButton = {
         let button = PrimaryButton()
@@ -33,14 +51,26 @@ final class CustomPeriodViewController: UIViewController {
     }
 
     private func setupUI() {
-        title = "Выбор периода"
         view.backgroundColor = .systemBackground
 
+        view.addSubview(titleLabel)
+        view.addSubview(cancelButton)
         view.addSubview(periodPicker)
         view.addSubview(doneButton)
 
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).inset(20)
+            make.leading.trailing.equalToSuperview()
+        }
+
+        cancelButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(20)
+            make.centerY.equalTo(titleLabel)
+        }
+
         periodPicker.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview().inset(20)
+            make.top.equalTo(titleLabel.snp.bottom).offset(20)
+            make.leading.trailing.equalToSuperview().inset(20)
         }
 
         doneButton.snp.makeConstraints { make in
@@ -71,6 +101,24 @@ final class CustomPeriodViewController: UIViewController {
 
     @objc private func doneTapped() {
         self.validateSelection()
-        viewModel.saveCustomPeriod(.custom(periodPicker.selection.from, periodPicker.selection.to))
+        viewModel.saveCustomPeriod(self, .custom(periodPicker.selection.from, periodPicker.selection.to))
+    }
+
+    @objc private func cancelTapped() {
+        dismiss(animated: true)
+    }
+}
+
+extension CustomPeriodViewController: PanModalPresentable {
+    var panScrollable: UIScrollView? {
+        nil
+    }
+    
+    var longFormHeight: PanModalHeight {
+        return .maxHeightWithTopInset(200)
+    }
+
+    var showDragIndicator: Bool {
+        return false
     }
 }

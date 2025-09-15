@@ -1,8 +1,13 @@
 import UIKit
+import PanModal
 import Combine
 import SnapKit
 
-final class TransactionsViewController: UIViewController {
+final class TransactionsViewController: UIViewController, PeriodStatsViewDelegate {
+    func periodButtonTapped() {
+        self.viewModel.openSelectPeriod()
+    }
+
     private let viewModel: TransactionsViewModel
     private var cancellables = Set<AnyCancellable>()
 
@@ -57,6 +62,7 @@ final class TransactionsViewController: UIViewController {
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview()
         }
+        stats.delegate = self
 
         tableView.snp.makeConstraints { make in
             make.top.equalTo(stats.snp.bottom).offset(8)

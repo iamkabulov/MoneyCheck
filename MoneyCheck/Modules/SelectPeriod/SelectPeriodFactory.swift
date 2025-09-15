@@ -6,13 +6,14 @@
 //
 
 import UIKit
+import PanModal
 
 final class SelectPeriodFactory {
 
     init() { }
 
     // MARK: - Root
-    func makeSelectPeriodModule(navigationController: UINavigationController) -> UIViewController {
+    func makeSelectPeriodModule(navigationController: UINavigationController) -> UIViewController & PanModalPresentable {
         let router = SelectPeriodRouter(navigationController: navigationController)
         let periodRepository = CoreDataPeriodRepository()
         let useCase = PeriodUseCase(periodRepository: periodRepository)

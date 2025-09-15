@@ -6,12 +6,14 @@
 //
 
 import UIKit
+import PanModal
 
 protocol TransactionsRouterProtocol: AnyObject {
     func showTransactionEditView(_ transaction: TransactionModel)
     func showEditItemView(id: UUID, type: ItemType)
     func pop(animated: Bool)
     func showError(_ title: String?, message: String?)
+    func openSelectPeriod()
 }
 
 final class TransactionsRouter: BaseRouter {
@@ -33,5 +35,11 @@ extension TransactionsRouter: TransactionsRouterProtocol {
         let vc = EditItemFactory().makeEditItemModule(id: id, type: type, navigationController: navigationController)
         vc.hidesBottomBarWhenPushed = true
         self.push(vc, animated: true)
+    }
+
+    func openSelectPeriod() {
+        let vc = SelectPeriodFactory().makeSelectPeriodModule(navigationController: navigationController)
+        vc.hidesBottomBarWhenPushed = true
+        self.presentPanModal(vc)
     }
 }

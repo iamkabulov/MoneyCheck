@@ -8,17 +8,19 @@
 import UIKit
 import Combine
 import SnapKit
+import PanModal
 
 enum PeriodType: Equatable {
 
     static var allCases: [PeriodType] {
         return [
             .week,
-            .lastMonth,
+//            .lastMonth,
             .month,
             .wholeTime
         ]
     }
+
     case week
     case lastMonth
     case month
@@ -44,7 +46,7 @@ enum PeriodType: Equatable {
             case .lastMonth:
                 return String(localized: "lastMonth")
             case .month:
-                return Date().monthName
+                return String(localized: "month")
             case .custom:
                 return String(localized: "customPeriod")
             case .wholeTime:
@@ -70,11 +72,26 @@ enum PeriodType: Equatable {
     }
 }
 
-protocol SelectPeriodViewControllerProtocol: AnyObject {}
-
 final class SelectPeriodViewController: UIViewController {
     private let viewModel: SelectPeriodViewModel
     private var cancellables = Set<AnyCancellable>()
+
+    private lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.textColor = .label
+        label.text = viewModel.screenTitle
+        return label
+    }()
+
+    private lazy var cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        button.tintColor = .systemGray
+        button.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
+        return button
+    }()
 
     private lazy var stackView: UIStackView = {
         let stackView = UIStackView()
@@ -99,7 +116,7 @@ final class SelectPeriodViewController: UIViewController {
     required init?(coder: NSCoder) { fatalError() }
 
     deinit {
-        print("Select Period deinit")
+        print("Select Period VC deinit")
     }
 
     override func viewDidLoad() {
@@ -121,16 +138,31 @@ final class SelectPeriodViewController: UIViewController {
         viewModel.savePeriod(viewModel.selectedPeriod)
     }
 
+    @objc private func cancelTapped() {
+        dismiss(animated: true)
+    }
+
     private func setupUI() {
-        title = viewModel.screenTitle
         view.backgroundColor = .systemBackground
+        view.addSubview(titleLabel)
+        view.addSubview(cancelButton)
         view.addSubview(stackView)
         view.addSubview(applyButton)
 
-        stackView.snp.makeConstraints { make in
+        titleLabel.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).inset(20)
+            make.leading.trailing.equalToSuperview().inset(20)
+        }
+
+        cancelButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(20)
+            make.centerY.equalTo(titleLabel)
+        }
+
+        stackView.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(20)
             make.leading.trailing.equalToSuperview().inset(16)
-            make.height.equalTo((PeriodType.allCases.count + 1) * 80)
+            make.height.equalTo((PeriodType.allCases.count + 1) * 70)
         }
 
         applyButton.snp.makeConstraints { make in
@@ -148,14 +180,14 @@ final class SelectPeriodViewController: UIViewController {
             case .custom(let from, let to):
                 let button = RadioButton(period: .custom(from, to)) { [weak self] selected in
                     guard let self else { return }
-                    self.viewModel.customPeriodChose()
+                    self.viewModel.customPeriodChose(self)
                     self.viewModel.selectedPeriod = selected
                 }
                 stackView.addArrangedSubview(button)
             default:
                 let button = RadioButton(period: .custom(Date(), Date())) { [weak self] selected in
                     guard let self else { return }
-                    self.viewModel.customPeriodChose()
+                    self.viewModel.customPeriodChose(self)
                     self.viewModel.selectedPeriod = selected
                 }
                 stackView.addArrangedSubview(button)
@@ -205,5 +237,19 @@ extension PeriodType {
         default:
             return false
         }
+    }
+}
+
+extension SelectPeriodViewController: PanModalPresentable {
+    var panScrollable: UIScrollView? {
+        nil
+    }
+
+    var longFormHeight: PanModalHeight {
+        return .maxHeightWithTopInset(200)
+    }
+
+    var showDragIndicator: Bool {
+        return false
     }
 }

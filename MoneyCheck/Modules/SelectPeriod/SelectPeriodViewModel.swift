@@ -8,6 +8,7 @@
 
 import Foundation
 import Combine
+import UIKit
 
 final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol, PeriodSelectUseCaseProtocol> {
 
@@ -15,7 +16,7 @@ final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol, Per
     @Published var selectedPeriod: PeriodType
     let screenTitle = "Выберите период"
     private var cancellables = Set<AnyCancellable>()
-
+    var onOpenCustomPeriod: (() -> Void)?
 
     // MARK: - Initialization
     override init(
@@ -55,15 +56,15 @@ final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol, Per
                 }
             } receiveValue: { _ in
             }.store(in: &cancellables)
-        router.pop(animated: true)
+        router.dismiss(animated: true)
     }
 
-    func customPeriodChose() {
-        router.openCustomPeriodView(vm: self)
+    func customPeriodChose(_ vc: UIViewController) {
+        router.openCustomPeriodView(from: vc, vm: self)
     }
 
-    func saveCustomPeriod(_ period: PeriodType) {
+    func saveCustomPeriod(_ vc: UIViewController, _ period: PeriodType) {
         self.selectedPeriod = period
-        router.pop(animated: true)
+        vc.dismiss(animated: true)
     }
 }

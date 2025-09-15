@@ -97,4 +97,8 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Tra
     func showEditTransaction(for transaction: TransactionModel) {
         router.showTransactionEditView(transaction)
     }
+
+    func openSelectPeriod() {
+        router.openSelectPeriod()
+    }
 }
