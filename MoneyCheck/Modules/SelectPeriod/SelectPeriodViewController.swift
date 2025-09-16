@@ -17,7 +17,7 @@ enum PeriodType: Equatable {
             .week,
 //            .lastMonth,
             .month,
-            .wholeTime
+//            .wholeTime
         ]
     }
 
@@ -88,7 +88,7 @@ final class SelectPeriodViewController: UIViewController {
     private lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
-        button.tintColor = .systemGray
+        button.tintColor = .systemGray3
         button.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         return button
     }()
@@ -139,7 +139,7 @@ final class SelectPeriodViewController: UIViewController {
     }
 
     @objc private func cancelTapped() {
-        dismiss(animated: true)
+        viewModel.dismiss(self)
     }
 
     private func setupUI() {

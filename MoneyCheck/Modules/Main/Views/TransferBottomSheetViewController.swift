@@ -169,7 +169,7 @@ final class TransferBottomSheetViewController: UIViewController {
     private lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
-        button.tintColor = .systemGray
+        button.tintColor = .systemGray3
         button.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             self.delegate?.transferBottomSheetDidCancel()
@@ -256,7 +256,7 @@ final class TransferBottomSheetViewController: UIViewController {
         }
 
         titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(cancelButton.snp.bottom).inset(4)
+            make.top.equalToSuperview().inset(16)
             make.leading.trailing.equalToSuperview().inset(16)
         }
 
@@ -298,7 +298,7 @@ final class TransferBottomSheetViewController: UIViewController {
         }
 
         cancelButton.snp.makeConstraints { make in
-            make.top.equalToSuperview().inset(16)
+            make.centerY.equalTo(titleLabel.snp.centerY)
             make.trailing.equalToSuperview().inset(16)
         }
     }

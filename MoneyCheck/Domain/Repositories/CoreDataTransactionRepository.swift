@@ -100,4 +100,31 @@ final class CoreDataTransactionRepository: TransactionRepositoryProtocol {
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
     }
+
+    func getTransactionsForInterval(by id: UUID, start: Date, end: Date) -> AnyPublisher<[TransactionModel], Error> {
+        return Future { [weak self] promise in
+            guard let self = self else { return }
+
+            let transactions = self.coreDataManager.fetchTransactionsForInterval(by: id, startDate: start, endDate: end)
+
+            let models = transactions.map { transaction in
+                TransactionModel(
+                    id: transaction.id ?? UUID(),
+                    date: transaction.date ?? Date(),
+                    amount: transaction.amount,
+                    type: TransactionType(rawValue: transaction.type ?? "") ?? .transfer,
+                    sourceId: transaction.sourceId ?? UUID(),
+                    sourceName: transaction.sourceName ?? "",
+                    sourceIcon: transaction.sourceIcon ?? "",
+                    sourceColor: transaction.sourceColor ?? "",
+                    destinationId: transaction.destinationId ?? UUID(),
+                    destinationName: transaction.destinationName ?? "",
+                    destinationIcon: transaction.destinationIcon ?? "",
+                    destinationColor: transaction.destinationColor ?? "",
+                    comment: transaction.comment
+                )
+            }
+            promise(.success(models))
+        }.eraseToAnyPublisher()
+    }
 }

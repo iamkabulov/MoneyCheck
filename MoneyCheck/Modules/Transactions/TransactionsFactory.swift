@@ -15,7 +15,9 @@ final class TransactionsFactory {
     func makeTransactionsModule(for entity: TransactionItem, period: PeriodType, navigationController: UINavigationController) -> UIViewController {
         let router = TransactionsRouter(navigationController: navigationController)
         let transactionRepository = CoreDataTransactionRepository()
-        let useCase = TransactionsUseCase(transactionRepository: transactionRepository)
+        let periodRepository = CoreDataPeriodRepository()
+        let useCase = TransactionsUseCase(transactionRepository: transactionRepository,
+                                          periodRepository: periodRepository)
         let viewModel = TransactionsViewModel(useCase: useCase,
                                               itemId: entity.id,
                                               itemType: entity.type,

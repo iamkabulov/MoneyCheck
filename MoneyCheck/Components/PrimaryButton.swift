@@ -16,7 +16,7 @@ final class PrimaryButton: UIButton {
         super.init(frame: frame)
         configureUI()
         addActions()
-        setGradientBackground(colors: [UIColor(hex: "#000000"), UIColor(hex: "#3d3d3d")])
+        setGradientBackground(colors: [UIColor(hex: "#000000"), UIColor(hex: "#1e1e1e")])
     }
 
     required init?(coder: NSCoder) {
@@ -32,8 +32,8 @@ final class PrimaryButton: UIButton {
     private func configureUI() {
         layer.cornerRadius = 12
         layer.borderWidth = 1
-        layer.borderColor = UIColor(hex: "#494949").cgColor
-        setTitleColor(.systemBackground, for: .normal)
+        layer.borderColor = UIColor(hex: "#282828").cgColor
+        setTitleColor(.white, for: .normal)
         titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
         heightAnchor.constraint(equalToConstant: 40).isActive = true
         clipsToBounds = true
@@ -68,7 +68,7 @@ final class PrimaryButton: UIButton {
     // MARK: - Public
     func setEnabled(_ isEnabled: Bool) {
         if isEnabled {
-            setGradientBackground(colors: [UIColor(hex: "#000000"), UIColor(hex: "#3d3d3d")])
+            setGradientBackground(colors: [UIColor(hex: "#000000"), UIColor(hex: "#1e1e1e")])
         } else {
             setGradientBackground(colors: [UIColor(hex: "#6c6e6c"), UIColor(hex: "#8f918f")])
         }

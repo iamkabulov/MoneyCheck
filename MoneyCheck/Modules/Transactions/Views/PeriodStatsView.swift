@@ -9,6 +9,8 @@ import SnapKit
 
 protocol PeriodStatsViewDelegate: AnyObject {
     func periodButtonTapped()
+    func rightButtonTapped()
+    func leftButtonTapped()
 }
 
 
@@ -21,8 +23,8 @@ final class PeriodStatsView: UIView {
     private let periodButton = UIButton(type: .system)
 
     private let budgetLabel = UILabel()
-    private let expenseLabel = UILabel()
-    private let perDayLabel = UILabel()
+    private let expenseLabel = AmountLabel()
+    private let perDayLabel = AmountLabel()
 
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -41,10 +43,7 @@ final class PeriodStatsView: UIView {
     }()
 
     // MARK: - Data
-    private var months: [String] = [
-        "янв.", "фев.", "март", "апр.", "май", "июнь",
-        "июль", "авг.", "сент.", "окт.", "ноя.", "дек."
-    ]
+    private var months: [ChartBarData] = []
 
     private var values: [CGFloat] = [] // тут можно хранить расходы
 
@@ -64,7 +63,9 @@ final class PeriodStatsView: UIView {
 
         // Навигация
         leftButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
+        leftButton.addTarget(self, action: #selector(leftButtonTapped), for: .touchUpInside)
         rightButton.setImage(UIImage(systemName: "chevron.right"), for: .normal)
+        rightButton.addTarget(self, action: #selector(rightButtonTapped), for: .touchUpInside)
 
         periodButton.setTitle("сентябрь 2025", for: .normal)
         periodButton.titleLabel?.font = .boldSystemFont(ofSize: 18)
@@ -118,6 +119,28 @@ final class PeriodStatsView: UIView {
     @objc func periodButtonTapped() {
         delegate?.periodButtonTapped()
     }
+
+    @objc private func leftButtonTapped() {
+        delegate?.leftButtonTapped()
+    }
+
+    @objc private func rightButtonTapped() {
+        delegate?.rightButtonTapped()
+    }
+
+    func setTitle(_ title: String) {
+        periodButton.setTitle(title, for: .normal)
+    }
+
+    func configure(_ value: (Double, Double)) {
+        expenseLabel.amountFormatter(value.0)
+        perDayLabel.amountFormatter(value.1)
+    }
+
+    func reloadData(_ values: [ChartBarData]) {
+        self.months = values
+        collectionView.reloadData()
+    }
 }
 
 // MARK: - UICollectionView DataSource & Delegate
@@ -128,8 +151,8 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChartCell.identifier, for: indexPath) as! ChartCell
-        let value = values.indices.contains(indexPath.item) ? values[indexPath.item] : 0
-        cell.configure(month: months[indexPath.item], value: value)
+        let value = months[indexPath.row]
+        cell.configure(value)
         return cell
     }
 

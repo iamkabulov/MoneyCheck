@@ -21,6 +21,6 @@ final class AmountLabel: UILabel {
     }
 
     func amountFormatter(_ amount: Double) {
-        self.text = Double.amountFormatter(amount) + "₸"
+        self.text = Double.amountFormatter(amount) + " ₸"
     }
 }

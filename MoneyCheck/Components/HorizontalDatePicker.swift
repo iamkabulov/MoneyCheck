@@ -33,6 +33,7 @@ final class HorizontalDatePicker: UIView {
         cv.dataSource = self
         cv.delegate = self
         cv.register(DateCell.self, forCellWithReuseIdentifier: DateCell.reuseIdentifier)
+        cv.backgroundColor = .clear
         return cv
     }()
 

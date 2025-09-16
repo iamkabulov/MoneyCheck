@@ -19,7 +19,7 @@ final class CustomPeriodViewController: UIViewController {
     private lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
-        button.tintColor = .systemGray
+        button.tintColor = .systemGray3
         button.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         return button
     }()
@@ -105,7 +105,7 @@ final class CustomPeriodViewController: UIViewController {
     }
 
     @objc private func cancelTapped() {
-        dismiss(animated: true)
+        viewModel.dismiss(self)
     }
 }
 

@@ -14,9 +14,8 @@ final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol, Per
 
     // MARK: - Published properties
     @Published var selectedPeriod: PeriodType
-    let screenTitle = "Выберите период"
+    let screenTitle = String(localized: "Select period")
     private var cancellables = Set<AnyCancellable>()
-    var onOpenCustomPeriod: (() -> Void)?
 
     // MARK: - Initialization
     override init(
@@ -65,6 +64,10 @@ final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol, Per
 
     func saveCustomPeriod(_ vc: UIViewController, _ period: PeriodType) {
         self.selectedPeriod = period
+        vc.dismiss(animated: true)
+    }
+
+    func dismiss(_ vc: UIViewController) {
         vc.dismiss(animated: true)
     }
 }

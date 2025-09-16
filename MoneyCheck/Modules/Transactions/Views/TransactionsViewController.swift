@@ -3,11 +3,7 @@ import PanModal
 import Combine
 import SnapKit
 
-final class TransactionsViewController: UIViewController, PeriodStatsViewDelegate {
-    func periodButtonTapped() {
-        self.viewModel.openSelectPeriod()
-    }
-
+final class TransactionsViewController: UIViewController {
     private let viewModel: TransactionsViewModel
     private var cancellables = Set<AnyCancellable>()
 
@@ -40,7 +36,8 @@ final class TransactionsViewController: UIViewController, PeriodStatsViewDelegat
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.loadTransactions(by: viewModel.itemId, period: viewModel.period)
+        viewModel.loadPeriod()
+//        viewModel.loadTransactions(by: viewModel.itemId, period: viewModel.period)
     }
 
     override func viewDidLoad() {
@@ -81,6 +78,24 @@ final class TransactionsViewController: UIViewController, PeriodStatsViewDelegat
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.tableView.reloadData()
+            }
+            .store(in: &cancellables)
+        viewModel.$periodTitle
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] title in
+                self?.stats.setTitle(title)
+            }
+            .store(in: &cancellables)
+        viewModel.$stats
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] stats in
+                self?.stats.configure(stats)
+            }
+            .store(in: &cancellables)
+        viewModel.$barCharts
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] values in
+                self?.stats.reloadData(values)
             }
             .store(in: &cancellables)
     }
@@ -172,5 +187,19 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
         tableView.deselectRow(at: indexPath, animated: true)
         let transaction = viewModel.sections[indexPath.section].transactions[indexPath.row]
         viewModel.showEditTransaction(for: transaction)
+    }
+}
+
+extension TransactionsViewController: PeriodStatsViewDelegate {
+    func rightButtonTapped() {
+        self.viewModel.loadFurtherTransactions(forward: true)
+    }
+
+    func leftButtonTapped() {
+        self.viewModel.loadFurtherTransactions(forward: false)
+    }
+
+    func periodButtonTapped() {
+        self.viewModel.openSelectPeriod()
     }
 }

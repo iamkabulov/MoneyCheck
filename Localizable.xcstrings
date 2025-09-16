@@ -68,6 +68,16 @@
         }
       }
     },
+    "Select period" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите период"
+          }
+        }
+      }
+    },
     "week" : {
       "extractionState" : "manual",
       "localizations" : {

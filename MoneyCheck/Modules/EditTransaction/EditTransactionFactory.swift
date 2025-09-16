@@ -15,7 +15,9 @@ final class EditTransactionFactory {
     func makeEditTransactionModule(_ transaction: TransactionModel, navigationController: UINavigationController) -> UIViewController {
         let router = EditTransactionRouter(navigationController: navigationController)
         let transactionRepository = CoreDataTransactionRepository()
-        let useCase = TransactionsUseCase(transactionRepository: transactionRepository)
+        let periodRepository = CoreDataPeriodRepository()
+        let useCase = TransactionsUseCase(transactionRepository: transactionRepository,
+                                          periodRepository: periodRepository)
         let viewModel = EditTransactionViewModel(transaction: transaction,
                                                  useCase: useCase,
                                                  router: router)
