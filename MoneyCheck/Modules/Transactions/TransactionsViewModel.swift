@@ -273,62 +273,56 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     }
 
     //TODO: - Нужно подумать как сделать
-    private func generateChartData(for period: PeriodType, count: Int = 14) -> [ChartBarData] {
+    private func generateChartData(for period: PeriodType, count: Int = 100) -> [ChartBarData] {
         var result: [ChartBarData] = []
         let calendar = Calendar.current
         let now = Date()
+        var transactions: [TransactionModel] = []
+        useCase.getTransactions(by: itemId, period: .wholeTime)
+            .sink(receiveCompletion: { completion in
+                // обработка ошибок
+            }, receiveValue: { result in
+                transactions = result
+            })
+            .store(in: &cancellables)
 
-        for offset in stride(from: -count + 1, through: 0, by: 1) {
+        for offset in stride(from: -transactions.count + 1, through: 0, by: 1) {
             switch period {
                 case .week:
                     if let date = calendar.date(byAdding: .weekOfYear, value: offset, to: now),
                        let interval = calendar.dateInterval(of: .weekOfYear, for: date) {
-                        useCase.getTransactionsForInterval(by: itemId, start: interval.start, end: interval.end)
-                            .sink(receiveCompletion: { completion in
-                                // обработка ошибок
-                            }, receiveValue: { transactions in
-                                let total = transactions.reduce(0) { $0 + $1.amount }
+                            let total = transactions.reduce(0) { $0 + $1.amount }
 
-                                let formatter = DateFormatter()
-                                formatter.dateFormat = "d MMM"
-                                let title = formatter.string(from: interval.start)
+                            let formatter = DateFormatter()
+                            formatter.dateFormat = "d MMM"
+                            let title = formatter.string(from: interval.start)
 
-                                result.append(ChartBarData(title: title, total: total))
-                            })
-                            .store(in: &cancellables)
+                            result.append(ChartBarData(title: title, total: total))
                     }
 
                 case .month:
                     if let date = calendar.date(byAdding: .month, value: offset, to: now),
                        let interval = calendar.dateInterval(of: .month, for: date) {
-                        useCase.getTransactionsForInterval(by: itemId, start: interval.start, end: interval.end)
-                            .sink(receiveCompletion: { completion in
-                                // обработка ошибок
-                            }, receiveValue: { transactions in
-                                let filtered = transactions.filter { $0.date >= interval.start && $0.date < interval.end }
-                                let total = filtered.reduce(0) { $0 + $1.amount }
+                            let filtered = transactions.filter { $0.date >= interval.start && $0.date < interval.end }
+                            let total = filtered.reduce(0) { $0 + $1.amount }
 
-                                let monthSymbol = calendar.shortMonthSymbols[calendar.component(.month, from: date) - 1]
-                                result.append(ChartBarData(title: monthSymbol, total: total))
-                            })
-                            .store(in: &cancellables)
+                            let monthSymbol = calendar.shortMonthSymbols[calendar.component(.month, from: date) - 1]
+                            result.append(ChartBarData(title: monthSymbol, total: total))
                     }
 
                 case .custom(let start, let end):
-                    useCase.getTransactionsForInterval(by: itemId, start: start, end: end)
-                        .sink(receiveCompletion: { completion in
-                            // обработка ошибок
-                        }, receiveValue: { transactions in
-                            let filtered = transactions.filter { $0.date >= start && $0.date < end }
-                            let total = filtered.reduce(0) { $0 + $1.amount }
+                    let days = calendar.dateComponents([.day], from: start, to: end).day ?? 0
+                    if let newStart = calendar.date(byAdding: .day, value: offset, to: start),
+                       let newEnd = calendar.date(byAdding: .day, value: offset, to: end) {
+                        let filtered = transactions.filter { $0.date >= newStart && $0.date < newEnd }
+                        let total = filtered.reduce(0) { $0 + $1.amount }
 
-                            let formatter = DateFormatter()
-                            formatter.dateFormat = "d MMM"
-                            let title = formatter.string(from: start)
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "d MMM"
+                        let title = formatter.string(from: newStart)
 
-                            result.append(ChartBarData(title: title, total: total))
-                        })
-                        .store(in: &cancellables)
+                        result.append(ChartBarData(title: title, total: total))
+                    }
                 default:
                     break
             }
