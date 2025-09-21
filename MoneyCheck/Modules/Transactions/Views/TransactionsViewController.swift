@@ -86,16 +86,16 @@ final class TransactionsViewController: UIViewController {
                 self?.stats.setTitle(title)
             }
             .store(in: &cancellables)
-        viewModel.$stats
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] stats in
-                self?.stats.configure(stats)
-            }
-            .store(in: &cancellables)
         viewModel.$barCharts
             .receive(on: DispatchQueue.main)
             .sink { [weak self] values in
-                self?.stats.reloadData(values)
+                guard let self = self else { return }
+                self.stats
+                    .reloadData(
+                        values,
+                        date: self.viewModel.currentDate,
+                        period: self.viewModel.period
+                    )
             }
             .store(in: &cancellables)
     }
@@ -192,14 +192,19 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
 
 extension TransactionsViewController: PeriodStatsViewDelegate {
     func rightButtonTapped() {
-        self.viewModel.loadFurtherTransactions(forward: true)
+        self.viewModel.loadTransactions(forward: true)
     }
 
     func leftButtonTapped() {
-        self.viewModel.loadFurtherTransactions(forward: false)
+        self.viewModel.loadTransactions(forward: false)
     }
 
     func periodButtonTapped() {
         self.viewModel.openSelectPeriod()
+    }
+
+    func didSelectChart(date: Date) {
+        self.viewModel.currentDate = date
+        self.viewModel.loadTransactions()
     }
 }

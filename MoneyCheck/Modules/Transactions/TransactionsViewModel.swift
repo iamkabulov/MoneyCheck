@@ -2,8 +2,10 @@ import Foundation
 import Combine
 
 struct ChartBarData {
-    let title: String      // что показывать внизу (янв., 1 сент.)
-    let total: Double      // общая сумма расходов
+    let date: Date
+    let title: String
+    let total: Double
+    let average: Double
 }
 
 struct TransactionSection {
@@ -36,12 +38,16 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     let itemType: ItemType
     @Published var periodTitle: String = ""
     @Published private(set) var sections: [TransactionSection] = []
-    @Published private(set) var stats: (Double, Double) = (0, 0)
+//    @Published private(set) var stats: (Double, Double) = (0, 0)
     private var transactions: [TransactionModel] = []
     @Published private(set) var barCharts: [ChartBarData] = []
     private var cancellables = Set<AnyCancellable>()
     var period: PeriodType
-    private var currentDate: Date = Date()
+    var currentDate: Date {
+        didSet {
+            updatePeriodTitle()
+        }
+    }
     private let calendar = Calendar.current
 
     init(
@@ -54,6 +60,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
         self.itemId = itemId
         self.itemType = itemType
         self.period = period
+        self.currentDate = Date()
         super.init(useCase: useCase, router: router)
         updatePeriodTitle()
         let interval = makeDateInterval(for: period, basedOn: currentDate)
@@ -80,6 +87,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
             self.getTransactions(start: interval.start, end: interval.end)
         }
         .store(in: &cancellables)
+        barCharts = generateChartData(for: period)
     }
 
     //    func loadTransactions(by id: UUID, period: PeriodType) {
@@ -123,22 +131,26 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     //            .store(in: &cancellables)
     //    }
 
-    func loadFurtherTransactions(forward: Bool) {
-        let value = forward ? 1 : -1
+    func loadTransactions(forward: Bool? = nil) {
+        var value = 0
+        if let forward = forward {
+            value = forward ? 1 : -1
+        }
 
+        //TODO: - ТУТ БАГ, нужно поправить VALUE 0 не работает
         switch period {
             case .week:
                 guard let newDate = calendar.date(byAdding: .weekOfYear, value: value, to: currentDate) else { return }
                 currentDate = newDate
                 let interval = makeDateInterval(for: period, basedOn: currentDate)
-                updatePeriodTitle()
+//                updatePeriodTitle()
                 getTransactions(start: interval.start, end: interval.end)
 
             case .month:
                 guard let newDate = calendar.date(byAdding: .month, value: value, to: currentDate) else { return }
                 currentDate = newDate
                 let interval = makeDateInterval(for: period, basedOn: currentDate)
-                updatePeriodTitle()
+//                updatePeriodTitle()
                 getTransactions(start: interval.start, end: interval.end)
 
             case .custom(let startDate, let endDate):
@@ -148,11 +160,11 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                       let newEnd = calendar.date(byAdding: .day, value: value * (days + 1), to: endDate)
                 else { return }
 
-                let newPeriod = PeriodType.custom(newStart, newEnd)
+                guard let newPeriod = PeriodType.from(id: 3, from: newStart, to: newEnd) else { return }
                 self.period = newPeriod
                 // ставим currentDate в начало нового диапазона (можно в mid, если нужно)
                 self.currentDate = newStart
-                updatePeriodTitle(for: newPeriod)
+//                updatePeriodTitle()
                 getTransactions(start: newStart, end: newEnd)
                 return // важно: не выполнять общий код ниже
 
@@ -187,9 +199,6 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                 self?.sections = sections
             }
             .store(in: &cancellables)
-
-        calculateExpenses(start: start, end: end)
-        barCharts = generateChartData(for: period)
     }
 
     func showEditItemView(id: UUID, itemType: ItemType) {
@@ -263,17 +272,9 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
         }
     }
 
-    private func calculateExpenses(start: Date, end: Date) {
-        let total = transactions.reduce(0) { $0 + $1.amount }
-
-        let days = calendar.dateComponents([.day], from: start, to: end).day ?? 1
-        let average = total / Double(days)
-
-        self.stats = (total, average)
-    }
-
     //TODO: - Нужно подумать как сделать
-    private func generateChartData(for period: PeriodType, count: Int = 100) -> [ChartBarData] {
+    private func generateChartData(for period: PeriodType) -> [ChartBarData] {
+        //TODO: подумать как возвращать все ячейки до последней тразакции
         var result: [ChartBarData] = []
         let calendar = Calendar.current
         let now = Date()
@@ -291,13 +292,14 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                 case .week:
                     if let date = calendar.date(byAdding: .weekOfYear, value: offset, to: now),
                        let interval = calendar.dateInterval(of: .weekOfYear, for: date) {
-                            let total = transactions.reduce(0) { $0 + $1.amount }
+                            let filtered = transactions.filter { $0.date >= interval.start && $0.date < interval.end }
+                            let total = filtered.reduce(0) { $0 + $1.amount }
 
                             let formatter = DateFormatter()
                             formatter.dateFormat = "d MMM"
                             let title = formatter.string(from: interval.start)
-
-                            result.append(ChartBarData(title: title, total: total))
+                            let average = total / Double(7)
+                            result.append(ChartBarData(date: interval.start, title: title, total: total, average: average))
                     }
 
                 case .month:
@@ -306,23 +308,27 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                             let filtered = transactions.filter { $0.date >= interval.start && $0.date < interval.end }
                             let total = filtered.reduce(0) { $0 + $1.amount }
 
+                            let days = calendar.dateComponents([.day], from: interval.start, to: interval.end).day ?? 0
+                            let average = total / Double(days)
                             let monthSymbol = calendar.shortMonthSymbols[calendar.component(.month, from: date) - 1]
-                            result.append(ChartBarData(title: monthSymbol, total: total))
+                            result.append(ChartBarData(date: interval.start, title: monthSymbol, total: total, average: average))
                     }
 
                 case .custom(let start, let end):
+                    //TODO: подумать как возвращать все ячейки до последней тразакции
                     let days = calendar.dateComponents([.day], from: start, to: end).day ?? 0
-                    if let newStart = calendar.date(byAdding: .day, value: offset, to: start),
-                       let newEnd = calendar.date(byAdding: .day, value: offset, to: end) {
+                    if let newStart = calendar.date(byAdding: .day, value: offset * (days + 1), to: start),
+                       let newEnd = calendar.date(byAdding: .day, value: offset * (days + 1), to: end) {
                         let filtered = transactions.filter { $0.date >= newStart && $0.date < newEnd }
                         let total = filtered.reduce(0) { $0 + $1.amount }
 
                         let formatter = DateFormatter()
                         formatter.dateFormat = "d MMM"
                         let title = formatter.string(from: newStart)
-
-                        result.append(ChartBarData(title: title, total: total))
+                        let average = total / Double(days)
+                        result.append(ChartBarData(date: newStart, title: title, total: total, average: average))
                     }
+
                 default:
                     break
             }
