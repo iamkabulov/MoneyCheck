@@ -192,19 +192,19 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
 
 extension TransactionsViewController: PeriodStatsViewDelegate {
     func rightButtonTapped() {
-        self.viewModel.loadTransactions(forward: true)
+        self.viewModel.loadTransactions(forward: true, index: 1)
     }
 
     func leftButtonTapped() {
-        self.viewModel.loadTransactions(forward: false)
+        self.viewModel.loadTransactions(forward: false, index: -1)
     }
 
     func periodButtonTapped() {
         self.viewModel.openSelectPeriod()
     }
 
-    func didSelectChart(date: Date) {
+    func didSelectChart(date: Date, forward: Bool, index: Int) {
+        self.viewModel.loadTransactions(forward: forward, index: index)
         self.viewModel.currentDate = date
-        self.viewModel.loadTransactions()
     }
 }

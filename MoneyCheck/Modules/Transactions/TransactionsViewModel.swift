@@ -131,13 +131,8 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     //            .store(in: &cancellables)
     //    }
 
-    func loadTransactions(forward: Bool? = nil) {
-        var value = 0
-        if let forward = forward {
-            value = forward ? 1 : -1
-        }
-
-        //TODO: - ТУТ БАГ, нужно поправить VALUE 0 не работает
+    func loadTransactions(forward: Bool, index: Int) {
+        let value = forward ? 1 : -1
         switch period {
             case .week:
                 guard let newDate = calendar.date(byAdding: .weekOfYear, value: value, to: currentDate) else { return }
@@ -156,8 +151,8 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
             case .custom(let startDate, let endDate):
                 // сдвигаем кастомный диапазон на его длину (days + 1)
                 let days = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
-                guard let newStart = calendar.date(byAdding: .day, value: value * (days + 1), to: startDate),
-                      let newEnd = calendar.date(byAdding: .day, value: value * (days + 1), to: endDate)
+                guard let newStart = calendar.date(byAdding: .day, value: value * index * (days + 1), to: startDate),
+                      let newEnd = calendar.date(byAdding: .day, value: value * index * (days + 1), to: endDate)
                 else { return }
 
                 guard let newPeriod = PeriodType.from(id: 3, from: newStart, to: newEnd) else { return }
@@ -272,7 +267,6 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
         }
     }
 
-    //TODO: - Нужно подумать как сделать
     private func generateChartData(for period: PeriodType) -> [ChartBarData] {
         //TODO: подумать как возвращать все ячейки до последней тразакции
         var result: [ChartBarData] = []
@@ -287,6 +281,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
             })
             .store(in: &cancellables)
 
+        //TODO: - Подумай как сделать до последней транзакции
         for offset in stride(from: -transactions.count + 1, through: 0, by: 1) {
             switch period {
                 case .week:

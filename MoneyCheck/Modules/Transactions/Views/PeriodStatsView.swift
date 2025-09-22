@@ -11,7 +11,7 @@ protocol PeriodStatsViewDelegate: AnyObject {
     func periodButtonTapped()
     func rightButtonTapped()
     func leftButtonTapped()
-    func didSelectChart(date: Date)
+    func didSelectChart(date: Date, forward: Bool, index: Int)
 }
 
 
@@ -162,6 +162,7 @@ final class PeriodStatsView: UIView {
         if let index = indexOfCurrentPeriod(in: charts, currentDate: date, period: period) {
             scrollToPeriod(at: index)
             configure(index: index)
+            currentIndex = index
         }
     }
 }
@@ -182,8 +183,13 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         scrollToPeriod(at: indexPath.row)
         configure(index: indexPath.row)
+        if currentIndex > indexPath.row {
+            delegate?.didSelectChart(date: charts[indexPath.row].date, forward: false, index: currentIndex - indexPath.row)
+        } else {
+            delegate?.didSelectChart(date: charts[indexPath.row].date, forward: true, index: indexPath.row - currentIndex)
+        }
+
         currentIndex = indexPath.row
-        delegate?.didSelectChart(date: charts[indexPath.row].date)
     }
 
     func scrollToPeriod(at index: Int) {
