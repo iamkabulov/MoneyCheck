@@ -183,13 +183,15 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         scrollToPeriod(at: indexPath.row)
         configure(index: indexPath.row)
-        if currentIndex > indexPath.row {
-            delegate?.didSelectChart(date: charts[indexPath.row].date, forward: false, index: currentIndex - indexPath.row)
-        } else {
-            delegate?.didSelectChart(date: charts[indexPath.row].date, forward: true, index: indexPath.row - currentIndex)
-        }
-
-        currentIndex = indexPath.row
+        guard currentIndex != indexPath.row else { return }
+        let newIndex = indexPath.row
+        let isForward = newIndex > currentIndex
+        let steps = abs(newIndex - currentIndex)
+        delegate?.didSelectChart(date: charts[indexPath.row].date, forward: isForward, index: steps)
+        print("currentIndex: \(currentIndex)")
+        print("indexPath.row: \(indexPath.row)")
+        print("steps: \(steps)")
+        currentIndex = newIndex
     }
 
     func scrollToPeriod(at index: Int) {

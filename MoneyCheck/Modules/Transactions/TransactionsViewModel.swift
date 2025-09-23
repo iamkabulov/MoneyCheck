@@ -37,10 +37,10 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     let itemId: UUID
     let itemType: ItemType
     @Published var periodTitle: String = ""
-    @Published private(set) var sections: [TransactionSection] = []
-//    @Published private(set) var stats: (Double, Double) = (0, 0)
+    @Published var sections: [TransactionSection] = []
+    //    @Published private(set) var stats: (Double, Double) = (0, 0)
     private var transactions: [TransactionModel] = []
-    @Published private(set) var barCharts: [ChartBarData] = []
+    @Published var barCharts: [ChartBarData] = []
     private var cancellables = Set<AnyCancellable>()
     var period: PeriodType
     var currentDate: Date {
@@ -135,17 +135,17 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
         let value = forward ? 1 : -1
         switch period {
             case .week:
-                guard let newDate = calendar.date(byAdding: .weekOfYear, value: value, to: currentDate) else { return }
+                guard let newDate = calendar.date(byAdding: .weekOfYear, value: value * index, to: currentDate) else { return }
                 currentDate = newDate
                 let interval = makeDateInterval(for: period, basedOn: currentDate)
-//                updatePeriodTitle()
+                //                updatePeriodTitle()
                 getTransactions(start: interval.start, end: interval.end)
 
             case .month:
-                guard let newDate = calendar.date(byAdding: .month, value: value, to: currentDate) else { return }
+                guard let newDate = calendar.date(byAdding: .month, value: value * index, to: currentDate) else { return }
                 currentDate = newDate
                 let interval = makeDateInterval(for: period, basedOn: currentDate)
-//                updatePeriodTitle()
+                //                updatePeriodTitle()
                 getTransactions(start: interval.start, end: interval.end)
 
             case .custom(let startDate, let endDate):
@@ -159,7 +159,6 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                 self.period = newPeriod
                 // ставим currentDate в начало нового диапазона (можно в mid, если нужно)
                 self.currentDate = newStart
-//                updatePeriodTitle()
                 getTransactions(start: newStart, end: newEnd)
                 return // важно: не выполнять общий код ниже
 
@@ -175,6 +174,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                 guard let self = self else { return [] }
 
                 self.transactions = transactions
+                guard !transactions.isEmpty else { return [] } // если пусто — вернём []
 
                 let grouped = Dictionary(grouping: transactions) { transaction in
                     self.calendar.startOfDay(for: transaction.date)
@@ -256,79 +256,82 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                 return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
 
             default: return ""
-                //        case .lastMonth:
-                //            let currentMonth = calendar.dateInterval(of: .month, for: date)!
-                //            let lastMonthEnd = calendar.date(byAdding: .day, value: -1, to: currentMonth.start)!
-                //            formatter.dateFormat = "LLLL yyyy"
-                //            return formatter.string(from: lastMonthEnd).capitalized
-                //
-                //        case .wholeTime:
-                //            return "За всё время"
         }
     }
 
     private func generateChartData(for period: PeriodType) -> [ChartBarData] {
         //TODO: подумать как возвращать все ячейки до последней тразакции
         var result: [ChartBarData] = []
-        let calendar = Calendar.current
-        let now = Date()
-        var transactions: [TransactionModel] = []
         useCase.getTransactions(by: itemId, period: .wholeTime)
             .sink(receiveCompletion: { completion in
                 // обработка ошибок
-            }, receiveValue: { result in
-                transactions = result
-            })
-            .store(in: &cancellables)
+            }, receiveValue: { transactions in
+                let calendar = Calendar.current
 
-        //TODO: - Подумай как сделать до последней транзакции
-        for offset in stride(from: -transactions.count + 1, through: 0, by: 1) {
-            switch period {
-                case .week:
-                    if let date = calendar.date(byAdding: .weekOfYear, value: offset, to: now),
-                       let interval = calendar.dateInterval(of: .weekOfYear, for: date) {
-                            let filtered = transactions.filter { $0.date >= interval.start && $0.date < interval.end }
+                guard let minDate = transactions.map(\.date).min(),
+                      let maxDate = transactions.map(\.date).max() else { return }
+
+                switch period {
+                    case .week:
+                        if let start = calendar.dateInterval(of: .weekOfYear, for: minDate)?.start,
+                           let end = calendar.dateInterval(of: .weekOfYear, for: maxDate)?.end {
+                            var current = start
+                            while current < end {
+                                guard let interval = calendar.dateInterval(of: .weekOfYear, for: current) else { break }
+                                let filtered = transactions.filter { $0.date >= interval.start && $0.date < interval.end }
+                                let total = filtered.reduce(0) { $0 + $1.amount }
+
+                                let formatter = DateFormatter()
+                                formatter.dateFormat = "d MMM"
+                                let title = formatter.string(from: current)
+
+                                let average = total / Double(filtered.count)
+                                result.append(ChartBarData(date: interval.start, title: title, total: total, average: average))
+                                current = calendar.date(byAdding: .weekOfYear, value: 1, to: current) ?? interval.end
+                            }
+                        }
+
+                    case .month:
+                        if let start = calendar.dateInterval(of: .month, for: minDate)?.start,
+                           let end = calendar.dateInterval(of: .month, for: maxDate)?.end {
+                            var current = start
+                            while current < end {
+                                guard let interval = calendar.dateInterval(of: .month, for: current) else { break }
+                                let filtered = transactions.filter { $0.date >= interval.start && $0.date < interval.end }
+                                let total = filtered.reduce(0) { $0 + $1.amount }
+                                let monthSymbol = calendar.shortMonthSymbols[calendar.component(.month, from: current) - 1]
+                                let average = total / Double(filtered.count)
+                                result.append(ChartBarData(date: interval.start, title: monthSymbol, total: total, average: average))
+                                current = calendar.date(byAdding: .month, value: 1, to: current) ?? interval.end
+                            }
+                        }
+                    case .custom(let start, let end):
+                        guard let days = calendar.dateComponents([.day], from: start, to: end).day else { break }
+
+                        // Берём первый интервал от start
+                        var currentStart = minDate
+                        while currentStart <= maxDate {
+                            let currentEnd = calendar.date(byAdding: .day, value: days, to: currentStart) ?? end
+
+                            let filtered = transactions.filter { $0.date >= currentStart && $0.date < currentEnd }
                             let total = filtered.reduce(0) { $0 + $1.amount }
+                            let average = total / Double(filtered.count)
 
                             let formatter = DateFormatter()
                             formatter.dateFormat = "d MMM"
-                            let title = formatter.string(from: interval.start)
-                            let average = total / Double(7)
-                            result.append(ChartBarData(date: interval.start, title: title, total: total, average: average))
-                    }
+                            let title = formatter.string(from: currentStart)
 
-                case .month:
-                    if let date = calendar.date(byAdding: .month, value: offset, to: now),
-                       let interval = calendar.dateInterval(of: .month, for: date) {
-                            let filtered = transactions.filter { $0.date >= interval.start && $0.date < interval.end }
-                            let total = filtered.reduce(0) { $0 + $1.amount }
+                            result.append(ChartBarData(date: currentStart, title: title, total: total, average: average))
 
-                            let days = calendar.dateComponents([.day], from: interval.start, to: interval.end).day ?? 0
-                            let average = total / Double(days)
-                            let monthSymbol = calendar.shortMonthSymbols[calendar.component(.month, from: date) - 1]
-                            result.append(ChartBarData(date: interval.start, title: monthSymbol, total: total, average: average))
-                    }
+                            // двигаем дальше на длину диапазона
+                            currentStart = calendar.date(byAdding: .day, value: days + 1, to: currentStart) ?? currentEnd
+                        }
+                    default :
+                        break
+                }
+            })
+            .store(in: &cancellables)
 
-                case .custom(let start, let end):
-                    //TODO: подумать как возвращать все ячейки до последней тразакции
-                    let days = calendar.dateComponents([.day], from: start, to: end).day ?? 0
-                    if let newStart = calendar.date(byAdding: .day, value: offset * (days + 1), to: start),
-                       let newEnd = calendar.date(byAdding: .day, value: offset * (days + 1), to: end) {
-                        let filtered = transactions.filter { $0.date >= newStart && $0.date < newEnd }
-                        let total = filtered.reduce(0) { $0 + $1.amount }
-
-                        let formatter = DateFormatter()
-                        formatter.dateFormat = "d MMM"
-                        let title = formatter.string(from: newStart)
-                        let average = total / Double(days)
-                        result.append(ChartBarData(date: newStart, title: title, total: total, average: average))
-                    }
-
-                default:
-                    break
-            }
-        }
         return result
     }
-
 }

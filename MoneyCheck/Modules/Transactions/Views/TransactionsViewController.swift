@@ -76,7 +76,8 @@ final class TransactionsViewController: UIViewController {
     private func bindViewModel() {
         viewModel.$sections
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
+            .sink { [weak self] sections in
+                print("\(sections.count)")
                 self?.tableView.reloadData()
             }
             .store(in: &cancellables)
