@@ -141,6 +141,7 @@ final class PeriodStatsView: UIView {
         guard currentIndex > 0 else { return }
         currentIndex -= 1
         scrollToPeriod(at: currentIndex)
+        configure(index: currentIndex)
         delegate?.leftButtonTapped()
     }
 
@@ -148,6 +149,7 @@ final class PeriodStatsView: UIView {
         guard currentIndex < charts.count - 1 else { return }
         currentIndex += 1
         scrollToPeriod(at: currentIndex)
+        configure(index: currentIndex)
         delegate?.rightButtonTapped()
     }
 
@@ -188,9 +190,6 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
         let isForward = newIndex > currentIndex
         let steps = abs(newIndex - currentIndex)
         delegate?.didSelectChart(date: charts[indexPath.row].date, forward: isForward, index: steps)
-        print("currentIndex: \(currentIndex)")
-        print("indexPath.row: \(indexPath.row)")
-        print("steps: \(steps)")
         currentIndex = newIndex
     }
 

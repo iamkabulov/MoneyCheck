@@ -285,7 +285,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                                 formatter.dateFormat = "d MMM"
                                 let title = formatter.string(from: current)
 
-                                let average = total / Double(filtered.count)
+                                let average = total / 7.0
                                 result.append(ChartBarData(date: interval.start, title: title, total: total, average: average))
                                 current = calendar.date(byAdding: .weekOfYear, value: 1, to: current) ?? interval.end
                             }
@@ -299,8 +299,9 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                                 guard let interval = calendar.dateInterval(of: .month, for: current) else { break }
                                 let filtered = transactions.filter { $0.date >= interval.start && $0.date < interval.end }
                                 let total = filtered.reduce(0) { $0 + $1.amount }
+                                let days = calendar.dateComponents([.day], from: interval.start, to: interval.end).day ?? 1
                                 let monthSymbol = calendar.shortMonthSymbols[calendar.component(.month, from: current) - 1]
-                                let average = total / Double(filtered.count)
+                                let average = total / Double(days)
                                 result.append(ChartBarData(date: interval.start, title: monthSymbol, total: total, average: average))
                                 current = calendar.date(byAdding: .month, value: 1, to: current) ?? interval.end
                             }
@@ -315,7 +316,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
 
                             let filtered = transactions.filter { $0.date >= currentStart && $0.date < currentEnd }
                             let total = filtered.reduce(0) { $0 + $1.amount }
-                            let average = total / Double(filtered.count)
+                            let average = total / Double(max(days, 2))
 
                             let formatter = DateFormatter()
                             formatter.dateFormat = "d MMM"
