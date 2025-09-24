@@ -95,47 +95,6 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
         barCharts = generateChartData(for: period)
     }
 
-    //    func loadTransactions(by id: UUID, period: PeriodType) {
-    //        useCase.getTransactions(by: id, period: period)
-    //            .map { [weak self] transactions -> [TransactionSection] in
-    //                guard let self = self else { return [] }
-    ////                let transactions = transactions.filter { transaction in
-    ////                    switch period {
-    ////                        case .custom(let startDate, let endDate):
-    ////                            return transaction.date >= startDate && transaction.date <= endDate
-    ////                        default:
-    ////                            break
-    ////                    }
-    ////                    return false
-    ////                }
-    //                self.transactions = transactions
-    //                // Группируем транзакции по дням
-    //                let calendar = Calendar.current
-    //                let grouped = Dictionary(grouping: transactions) { transaction in
-    //                    calendar.startOfDay(for: transaction.date)
-    //                }
-    //
-    //                // Сортируем дни по убыванию
-    //                let sortedDays = grouped.keys.sorted(by: >)
-    //
-    //                // Создаем секции
-    //                return sortedDays.map { date in
-    //                    let sectionTransactions = grouped[date]?.sorted(by: { $0.date > $1.date }) ?? []
-    //                    return TransactionSection(date: date, transactions: sectionTransactions, itemId: self.itemId)
-    //                }
-    //            }
-    //            .sink { completion in
-    //                switch completion {
-    //                    case .finished: break
-    //                    case .failure(let error):
-    //                        self.router.showError("Error", message: error.localizedDescription)
-    //                }
-    //            } receiveValue: { [weak self] sections in
-    //                self?.sections = sections
-    //            }
-    //            .store(in: &cancellables)
-    //    }
-
     func loadTransactions(startDate: Date, endDate: Date) {
         switch period {
             case .week:
@@ -296,61 +255,62 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                             }
                         }
                     case .custom(let start, let end):
-                        // Длина периода в днях (включительно)
-                        let days = (calendar.dateComponents([.day], from: start, to: end).day ?? 0) + 1
+                        // span = длина блока в днях (включительно)
+                        let spanDays = (calendar.dateComponents([.day], from: start, to: end).day ?? 0)
+                        let span = spanDays + 1
+
+                        // Нормализуем все крайние даты в начало дня — это убирает проблемы с часами/таймзонами
+                        let normMin = calendar.startOfDay(for: minDate)
+                        let normMax = calendar.startOfDay(for: maxDate)
+                        let normStart = calendar.startOfDay(for: start)
+                        // normStartEnd = конец основного интервала (inclusive)
+                        guard let normStartEnd = calendar.date(byAdding: .day, value: span - 1, to: normStart) else { break }
 
                         let formatter = DateFormatter()
                         formatter.dateFormat = "d MMM"
 
                         func makeData(from: Date, to: Date) -> ChartBarData {
-                            let filtered = transactions.filter { $0.date >= from && $0.date <= to }
+                            // используем полузакрытый интервал [from, to+1day) для фильтрации — чтобы избежать пересечений
+                            let nextTo = calendar.date(byAdding: .day, value: 1, to: to)!
+                            let filtered = transactions.filter { $0.date >= from && $0.date < nextTo }
                             let total = filtered.reduce(0) { $0 + $1.amount }
-                            let average = total / Double(max(days, 1))
+                            let average = total / Double(max(span, 1))
                             let title = formatter.string(from: from)
                             return ChartBarData(startDate: from, endDate: to, title: title, total: total, average: average)
                         }
 
-                        // 🔹 1. Левая часть (minDate → start-1)
-                        if minDate < start {
-                            let leftEnd = calendar.date(byAdding: .day, value: -1, to: start) ?? start
-                            result.append(makeData(from: minDate, to: leftEnd))
+                        // 1) Добавляем основной выбранный период (точно once)
+                        result.append(makeData(from: normStart, to: normStartEnd))
+
+                        // 2) Идём влево от основного интервала: start - span, start - 2*span, ...
+                        var left = calendar.date(byAdding: .day, value: -span, to: normStart)!
+                        while left >= normMin {
+                            let leftEnd = calendar.date(byAdding: .day, value: span - 1, to: left)!
+                            result.insert(makeData(from: left, to: leftEnd), at: 0)
+                            left = calendar.date(byAdding: .day, value: -span, to: left)!
+                        }
+                        // если после цикла normMin остался не в покрытии — добиваем хвост слева
+                        if let firstStart = result.first?.startDate, firstStart > normMin {
+                            let normMin = calendar.date(byAdding: .day, value: -span, to: firstStart)!
+                            let leftTailEnd = calendar.date(byAdding: .day, value: -1, to: firstStart)!
+                            result.insert(makeData(from: normMin, to: leftTailEnd), at: 0)
                         }
 
-                        // 🔹 2. Основные шаги назад от start
-                        var backwardStart = start
-                        while backwardStart >= minDate {
-                            let backwardEnd = calendar.date(byAdding: .day, value: days - 1, to: backwardStart) ?? backwardStart
-                            result.insert(makeData(from: backwardStart, to: backwardEnd), at: 0)
-                            backwardStart = calendar.date(byAdding: .day, value: -days, to: backwardStart) ?? minDate
+                        // 3) Идём вправо от основного интервала: end+1 .. end+span, ...
+                        var right = calendar.date(byAdding: .day, value: span, to: normStart)!
+                        var lastEnd = normStartEnd
+                        while right <= normMax {
+                            let rightEnd = calendar.date(byAdding: .day, value: span - 1, to: right)!
+                            result.append(makeData(from: right, to: rightEnd))
+                            lastEnd = rightEnd
+                            right = calendar.date(byAdding: .day, value: span, to: right)!
+                        }
+                        // если после цикла normMax остался не в покрытии — добиваем хвост справа
+                        if lastEnd < normMax {
+                            let rightTailStart = calendar.date(byAdding: .day, value: 1, to: lastEnd)!
+                            result.append(makeData(from: rightTailStart, to: normMax))
                         }
 
-                        // 🔹 EXTRA: добавить чарт *перед minDate*
-                        if let extraLeftStart = calendar.date(byAdding: .day, value: -days + 1, to: minDate) {
-                            let extraLeftEnd = calendar.date(byAdding: .day, value: days - 1, to: extraLeftStart) ?? extraLeftStart
-                            result.insert(makeData(from: extraLeftStart, to: extraLeftEnd), at: 0)
-                        }
-
-                        // 🔹 3. Основные шаги вперёд от start
-                        var forwardStart = start
-                        var lastForwardEnd: Date = end
-                        while forwardStart <= maxDate {
-                            let forwardEnd = calendar.date(byAdding: .day, value: days - 1, to: forwardStart) ?? forwardStart
-                            result.append(makeData(from: forwardStart, to: forwardEnd))
-                            lastForwardEnd = forwardEnd
-                            forwardStart = calendar.date(byAdding: .day, value: days, to: forwardStart) ?? maxDate
-                        }
-
-                        // 🔹 4. Правая часть (lastForwardEnd+1 → maxDate)
-                        if lastForwardEnd < maxDate {
-                            let rightStart = calendar.date(byAdding: .day, value: 1, to: lastForwardEnd) ?? lastForwardEnd
-                            result.append(makeData(from: rightStart, to: maxDate))
-                        }
-
-                        // 🔹 EXTRA: добавить чарт *после maxDate*
-                        if let extraRightStart = calendar.date(byAdding: .day, value: days - 1, to: maxDate) {
-                            let extraRightEnd = calendar.date(byAdding: .day, value: days - 1, to: extraRightStart) ?? extraRightStart
-                            result.append(makeData(from: extraRightStart, to: extraRightEnd))
-                        }
 
 
                     default :
