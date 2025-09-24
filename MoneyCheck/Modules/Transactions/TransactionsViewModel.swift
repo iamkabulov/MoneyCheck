@@ -2,7 +2,8 @@ import Foundation
 import Combine
 
 struct ChartBarData {
-    let date: Date
+    let startDate: Date
+    let endDate: Date
     let title: String
     let total: Double
     let average: Double
@@ -60,9 +61,13 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
         self.itemId = itemId
         self.itemType = itemType
         self.period = period
-        self.currentDate = Date()
+        self.currentDate = switch period {
+            case .month: Date()
+            case .week: Date()
+            case .custom(let startDate, _): startDate
+            default: Date()
+        }
         super.init(useCase: useCase, router: router)
-        updatePeriodTitle()
         let interval = makeDateInterval(for: period, basedOn: currentDate)
         getTransactions(start: interval.start, end: interval.end)
     }
@@ -82,8 +87,8 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
             guard let self = self else { return }
             self.period = loadedPeriod
             // обновляем заголовок и перезагружаем данные под новый период
-            self.updatePeriodTitle()
             let interval = self.makeDateInterval(for: self.period, basedOn: self.currentDate)
+            self.currentDate = interval.start
             self.getTransactions(start: interval.start, end: interval.end)
         }
         .store(in: &cancellables)
@@ -131,40 +136,26 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     //            .store(in: &cancellables)
     //    }
 
-    func loadTransactions(forward: Bool, index: Int) {
-        let value = forward ? 1 : -1
+    func loadTransactions(startDate: Date, endDate: Date) {
         switch period {
             case .week:
-                guard let newDate = calendar.date(byAdding: .weekOfYear, value: value * index, to: currentDate) else { return }
-                currentDate = newDate
-                let interval = makeDateInterval(for: period, basedOn: currentDate)
-                //                updatePeriodTitle()
-                getTransactions(start: interval.start, end: interval.end)
+                self.currentDate = startDate
+                getTransactions(start: startDate, end: endDate)
 
             case .month:
-                guard let newDate = calendar.date(byAdding: .month, value: value * index, to: currentDate) else { return }
-                currentDate = newDate
-                let interval = makeDateInterval(for: period, basedOn: currentDate)
-                //                updatePeriodTitle()
-                getTransactions(start: interval.start, end: interval.end)
+                self.currentDate = startDate
+                getTransactions(start: startDate, end: endDate)
 
-            case .custom(let startDate, let endDate):
-                // сдвигаем кастомный диапазон на его длину (days + 1)
-                let days = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
-                guard let newStart = calendar.date(byAdding: .day, value: value * index * (days + 1), to: startDate),
-                      let newEnd = calendar.date(byAdding: .day, value: value * index * (days + 1), to: endDate)
-                else { return }
-
-                guard let newPeriod = PeriodType.from(id: 3, from: newStart, to: newEnd) else { return }
+            case .custom:
+                guard let newPeriod = PeriodType.from(id: 3, from: startDate, to: endDate) else {
+                    return
+                }
                 self.period = newPeriod
-                // ставим currentDate в начало нового диапазона (можно в mid, если нужно)
-                self.currentDate = newStart
-                getTransactions(start: newStart, end: newEnd)
+                self.currentDate = startDate
+                getTransactions(start: startDate, end: endDate)
                 return // важно: не выполнять общий код ниже
 
-            case .lastMonth, .wholeTime:
-                // если перелистывать не имеет смысла — игнорируем
-                return
+            case .lastMonth, .wholeTime: return
         }
     }
 
@@ -260,14 +251,12 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     }
 
     private func generateChartData(for period: PeriodType) -> [ChartBarData] {
-        //TODO: подумать как возвращать все ячейки до последней тразакции
         var result: [ChartBarData] = []
         useCase.getTransactions(by: itemId, period: .wholeTime)
             .sink(receiveCompletion: { completion in
                 // обработка ошибок
             }, receiveValue: { transactions in
                 let calendar = Calendar.current
-
                 guard let minDate = transactions.map(\.date).min(),
                       let maxDate = transactions.map(\.date).max() else { return }
 
@@ -286,7 +275,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                                 let title = formatter.string(from: current)
 
                                 let average = total / 7.0
-                                result.append(ChartBarData(date: interval.start, title: title, total: total, average: average))
+                                result.append(ChartBarData(startDate: interval.start, endDate: interval.end, title: title, total: total, average: average))
                                 current = calendar.date(byAdding: .weekOfYear, value: 1, to: current) ?? interval.end
                             }
                         }
@@ -302,31 +291,68 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                                 let days = calendar.dateComponents([.day], from: interval.start, to: interval.end).day ?? 1
                                 let monthSymbol = calendar.shortMonthSymbols[calendar.component(.month, from: current) - 1]
                                 let average = total / Double(days)
-                                result.append(ChartBarData(date: interval.start, title: monthSymbol, total: total, average: average))
+                                result.append(ChartBarData(startDate: interval.start, endDate: interval.end, title: monthSymbol, total: total, average: average))
                                 current = calendar.date(byAdding: .month, value: 1, to: current) ?? interval.end
                             }
                         }
                     case .custom(let start, let end):
-                        guard let days = calendar.dateComponents([.day], from: start, to: end).day else { break }
+                        // Длина периода в днях (включительно)
+                        let days = (calendar.dateComponents([.day], from: start, to: end).day ?? 0) + 1
 
-                        // Берём первый интервал от start
-                        var currentStart = minDate
-                        while currentStart <= maxDate {
-                            let currentEnd = calendar.date(byAdding: .day, value: days, to: currentStart) ?? end
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "d MMM"
 
-                            let filtered = transactions.filter { $0.date >= currentStart && $0.date < currentEnd }
+                        func makeData(from: Date, to: Date) -> ChartBarData {
+                            let filtered = transactions.filter { $0.date >= from && $0.date <= to }
                             let total = filtered.reduce(0) { $0 + $1.amount }
-                            let average = total / Double(max(days, 2))
-
-                            let formatter = DateFormatter()
-                            formatter.dateFormat = "d MMM"
-                            let title = formatter.string(from: currentStart)
-
-                            result.append(ChartBarData(date: currentStart, title: title, total: total, average: average))
-
-                            // двигаем дальше на длину диапазона
-                            currentStart = calendar.date(byAdding: .day, value: days + 1, to: currentStart) ?? currentEnd
+                            let average = total / Double(max(days, 1))
+                            let title = formatter.string(from: from)
+                            return ChartBarData(startDate: from, endDate: to, title: title, total: total, average: average)
                         }
+
+                        // 🔹 1. Левая часть (minDate → start-1)
+                        if minDate < start {
+                            let leftEnd = calendar.date(byAdding: .day, value: -1, to: start) ?? start
+                            result.append(makeData(from: minDate, to: leftEnd))
+                        }
+
+                        // 🔹 2. Основные шаги назад от start
+                        var backwardStart = start
+                        while backwardStart >= minDate {
+                            let backwardEnd = calendar.date(byAdding: .day, value: days - 1, to: backwardStart) ?? backwardStart
+                            result.insert(makeData(from: backwardStart, to: backwardEnd), at: 0)
+                            backwardStart = calendar.date(byAdding: .day, value: -days, to: backwardStart) ?? minDate
+                        }
+
+                        // 🔹 EXTRA: добавить чарт *перед minDate*
+                        if let extraLeftStart = calendar.date(byAdding: .day, value: -days + 1, to: minDate) {
+                            let extraLeftEnd = calendar.date(byAdding: .day, value: days - 1, to: extraLeftStart) ?? extraLeftStart
+                            result.insert(makeData(from: extraLeftStart, to: extraLeftEnd), at: 0)
+                        }
+
+                        // 🔹 3. Основные шаги вперёд от start
+                        var forwardStart = start
+                        var lastForwardEnd: Date = end
+                        while forwardStart <= maxDate {
+                            let forwardEnd = calendar.date(byAdding: .day, value: days - 1, to: forwardStart) ?? forwardStart
+                            result.append(makeData(from: forwardStart, to: forwardEnd))
+                            lastForwardEnd = forwardEnd
+                            forwardStart = calendar.date(byAdding: .day, value: days, to: forwardStart) ?? maxDate
+                        }
+
+                        // 🔹 4. Правая часть (lastForwardEnd+1 → maxDate)
+                        if lastForwardEnd < maxDate {
+                            let rightStart = calendar.date(byAdding: .day, value: 1, to: lastForwardEnd) ?? lastForwardEnd
+                            result.append(makeData(from: rightStart, to: maxDate))
+                        }
+
+                        // 🔹 EXTRA: добавить чарт *после maxDate*
+                        if let extraRightStart = calendar.date(byAdding: .day, value: days - 1, to: maxDate) {
+                            let extraRightEnd = calendar.date(byAdding: .day, value: days - 1, to: extraRightStart) ?? extraRightStart
+                            result.append(makeData(from: extraRightStart, to: extraRightEnd))
+                        }
+
+
                     default :
                         break
                 }

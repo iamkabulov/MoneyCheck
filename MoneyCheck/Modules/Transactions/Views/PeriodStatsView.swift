@@ -9,9 +9,9 @@ import SnapKit
 
 protocol PeriodStatsViewDelegate: AnyObject {
     func periodButtonTapped()
-    func rightButtonTapped()
-    func leftButtonTapped()
-    func didSelectChart(date: Date, forward: Bool, index: Int)
+    func rightButtonTapped(startDate: Date, endDate: Date)
+    func leftButtonTapped(startDate: Date, endDate: Date)
+    func didSelectChart(startDate: Date, endDate: Date)
 }
 
 
@@ -142,7 +142,7 @@ final class PeriodStatsView: UIView {
         currentIndex -= 1
         scrollToPeriod(at: currentIndex)
         configure(index: currentIndex)
-        delegate?.leftButtonTapped()
+        delegate?.leftButtonTapped(startDate: charts[currentIndex].startDate, endDate: charts[currentIndex].endDate)
     }
 
     @objc private func rightButtonTapped() {
@@ -150,18 +150,18 @@ final class PeriodStatsView: UIView {
         currentIndex += 1
         scrollToPeriod(at: currentIndex)
         configure(index: currentIndex)
-        delegate?.rightButtonTapped()
+        delegate?.rightButtonTapped(startDate: charts[currentIndex].startDate, endDate: charts[currentIndex].endDate)
     }
 
     func setTitle(_ title: String) {
         periodButton.setTitle(title, for: .normal)
     }
 
-    func reloadData(_ values: [ChartBarData], date: Date, period: PeriodType) {
+    func reloadData(_ values: [ChartBarData], date: Date) {
         self.charts = values
         collectionView.reloadData()
 
-        if let index = indexOfCurrentPeriod(in: charts, currentDate: date, period: period) {
+        if let index = indexOfCurrentPeriod(in: charts, currentDate: date) {
             scrollToPeriod(at: index)
             configure(index: index)
             currentIndex = index
@@ -185,12 +185,7 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         scrollToPeriod(at: indexPath.row)
         configure(index: indexPath.row)
-        guard currentIndex != indexPath.row else { return }
-        let newIndex = indexPath.row
-        let isForward = newIndex > currentIndex
-        let steps = abs(newIndex - currentIndex)
-        delegate?.didSelectChart(date: charts[indexPath.row].date, forward: isForward, index: steps)
-        currentIndex = newIndex
+        delegate?.didSelectChart(startDate: charts[indexPath.row].startDate, endDate: charts[indexPath.row].endDate)
     }
 
     func scrollToPeriod(at index: Int) {
@@ -207,25 +202,9 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
         perDayAmount.amountFormatter(charts[index].average)
     }
 
-    func indexOfCurrentPeriod(in charts: [ChartBarData], currentDate: Date, period: PeriodType) -> Int? {
-        switch period {
-        case .week:
-            return charts.firstIndex { chart in
-                Calendar.current.isDate(chart.date, equalTo: currentDate, toGranularity: .weekOfYear)
-            }
-
-        case .month:
-            return charts.firstIndex { chart in
-                Calendar.current.isDate(chart.date, equalTo: currentDate, toGranularity: .month)
-            }
-
-        case .custom(let start, _):
-            return charts.firstIndex { chart in
-                Calendar.current.isDate(chart.date, equalTo: start, toGranularity: .day)
-            }
-
-        default:
-            return nil
+    func indexOfCurrentPeriod(in charts: [ChartBarData], currentDate: Date) -> Int? {
+        return charts.firstIndex { chart in
+            return currentDate >= chart.startDate && currentDate <= chart.endDate
         }
     }
 }

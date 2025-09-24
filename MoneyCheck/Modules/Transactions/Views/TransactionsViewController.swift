@@ -91,12 +91,7 @@ final class TransactionsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] values in
                 guard let self = self else { return }
-                self.stats
-                    .reloadData(
-                        values,
-                        date: self.viewModel.currentDate,
-                        period: self.viewModel.period
-                    )
+                self.stats.reloadData(values, date: self.viewModel.currentDate)
             }
             .store(in: &cancellables)
     }
@@ -192,20 +187,20 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
 }
 
 extension TransactionsViewController: PeriodStatsViewDelegate {
-    func rightButtonTapped() {
-        self.viewModel.loadTransactions(forward: true, index: 1)
+    func rightButtonTapped(startDate: Date, endDate: Date) {
+        self.viewModel.loadTransactions(startDate: startDate, endDate: endDate)
     }
 
-    func leftButtonTapped() {
-        self.viewModel.loadTransactions(forward: false, index: -1)
+    func leftButtonTapped(startDate: Date, endDate: Date) {
+        self.viewModel.loadTransactions(startDate: startDate, endDate: endDate)
     }
 
     func periodButtonTapped() {
         self.viewModel.openSelectPeriod()
     }
 
-    func didSelectChart(date: Date, forward: Bool, index: Int) {
-        self.viewModel.loadTransactions(forward: forward, index: index)
-        self.viewModel.currentDate = date
+    func didSelectChart(startDate: Date, endDate: Date) {
+        self.viewModel.loadTransactions(startDate: startDate, endDate: endDate)
+        self.viewModel.currentDate = startDate
     }
 }
