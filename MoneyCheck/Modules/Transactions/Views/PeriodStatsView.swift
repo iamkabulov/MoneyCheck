@@ -35,7 +35,7 @@ final class PeriodStatsView: UIView {
         layout.scrollDirection = .horizontal
         layout.minimumLineSpacing = 8
         layout.minimumInteritemSpacing = 8
-        layout.itemSize = CGSize(width: 50, height: 80)
+        layout.itemSize = CGSize(width: 50, height: 100)
 
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
