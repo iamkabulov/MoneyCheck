@@ -25,10 +25,13 @@ final class PeriodStatsView: UIView {
 
     private let budgetLabel = UILabel()
     private let budgetAmount = UILabel()
+    private let editButton = AmountLabel()
     private let expenseLabel = AmountLabel()
     private let expenseAmount = AmountLabel()
+    private let expensePercentage = AmountLabel()
     private let perDayLabel = AmountLabel()
     private let perDayAmount = AmountLabel()
+    private let perDayPercentage = AmountLabel()
 
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -92,10 +95,13 @@ final class PeriodStatsView: UIView {
         expenseLabel.text = "Расходы"
         expenseLabel.textAlignment = .center
         expenseAmount.textAlignment = .center
+        expensePercentage.textAlignment = .center
+        expensePercentage.textColor = .systemGreen
 
         perDayLabel.text = "В день"
         perDayLabel.textAlignment = .center
         perDayAmount.textAlignment = .center
+        perDayPercentage.textAlignment = .center
 
         let statsStack = UIStackView(arrangedSubviews: [budgetAmount, expenseAmount, perDayAmount])
         statsStack.axis = .horizontal
@@ -107,6 +113,11 @@ final class PeriodStatsView: UIView {
         labelStack.distribution = .fillEqually
         addSubview(labelStack)
 
+        let persentageStack = UIStackView(arrangedSubviews: [editButton, expensePercentage, perDayPercentage])
+        persentageStack.axis = .horizontal
+        persentageStack.distribution = .fillEqually
+        addSubview(persentageStack)
+
         addSubview(collectionView)
 
         // Layout (SnapKit)
@@ -116,17 +127,22 @@ final class PeriodStatsView: UIView {
         }
 
         labelStack.snp.makeConstraints { make in
-            make.top.equalTo(navStack.snp.bottom).offset(12)
+            make.top.equalTo(navStack.snp.bottom).offset(4)
             make.leading.trailing.equalToSuperview().inset(16)
         }
 
         statsStack.snp.makeConstraints { make in
-            make.top.equalTo(labelStack.snp.bottom).offset(12)
+            make.top.equalTo(labelStack.snp.bottom).offset(4)
+            make.leading.trailing.equalToSuperview().inset(16)
+        }
+
+        persentageStack.snp.makeConstraints { make in
+            make.top.equalTo(statsStack.snp.bottom).offset(4)
             make.leading.trailing.equalToSuperview().inset(16)
         }
 
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(statsStack.snp.bottom).offset(16)
+            make.top.equalTo(persentageStack.snp.bottom).offset(4)
             make.leading.trailing.equalToSuperview()
             make.bottom.equalToSuperview().inset(8)
             make.height.equalTo(100)
@@ -163,7 +179,7 @@ final class PeriodStatsView: UIView {
 
         if let index = indexOfCurrentPeriod(in: charts, currentDate: date) {
             scrollToPeriod(at: index)
-            configure(index: index)
+            configure(index: index + 1)
             currentIndex = index
         }
     }
@@ -201,6 +217,11 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     func configure(index: Int) {
         expenseAmount.amountFormatter(charts[index].total)
         perDayAmount.amountFormatter(charts[index].average)
+        if let percentage = charts[index].percentage {
+            expensePercentage.text = String(format: "%.1f", percentage) + "%"
+        }
+        perDayPercentage.text = "-"
+
     }
 
     func indexOfCurrentPeriod(in charts: [ChartBarData], currentDate: Date) -> Int? {
