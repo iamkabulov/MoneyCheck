@@ -9,9 +9,9 @@ import SnapKit
 
 protocol PeriodStatsViewDelegate: AnyObject {
     func periodButtonTapped()
-    func rightButtonTapped(startDate: Date, endDate: Date)
-    func leftButtonTapped(startDate: Date, endDate: Date)
-    func didSelectChart(startDate: Date, endDate: Date)
+    func rightButtonTapped(startDate: Date)
+    func leftButtonTapped(startDate: Date)
+    func didSelectChart(startDate: Date)
 }
 
 
@@ -142,7 +142,7 @@ final class PeriodStatsView: UIView {
         currentIndex -= 1
         scrollToPeriod(at: currentIndex)
         configure(index: currentIndex)
-        delegate?.leftButtonTapped(startDate: charts[currentIndex].startDate, endDate: charts[currentIndex].endDate)
+        delegate?.leftButtonTapped(startDate: charts[currentIndex].startDate)
     }
 
     @objc private func rightButtonTapped() {
@@ -150,7 +150,7 @@ final class PeriodStatsView: UIView {
         currentIndex += 1
         scrollToPeriod(at: currentIndex)
         configure(index: currentIndex)
-        delegate?.rightButtonTapped(startDate: charts[currentIndex].startDate, endDate: charts[currentIndex].endDate)
+        delegate?.rightButtonTapped(startDate: charts[currentIndex].startDate)
     }
 
     func setTitle(_ title: String) {
@@ -185,7 +185,8 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         scrollToPeriod(at: indexPath.row)
         configure(index: indexPath.row)
-        delegate?.didSelectChart(startDate: charts[indexPath.row].startDate, endDate: charts[indexPath.row].endDate)
+        currentIndex = indexPath.row
+        delegate?.didSelectChart(startDate: charts[indexPath.row].startDate)
     }
 
     func scrollToPeriod(at index: Int) {
