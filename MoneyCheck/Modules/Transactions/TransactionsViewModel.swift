@@ -96,8 +96,8 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
         barCharts = generateChartData(for: period)
     }
 
-    func loadTransactions() {
-        let interval = self.makeDateInterval(for: self.period, basedOn: self.currentDate)
+    func loadTransactions(endDate: Date?) {
+        let interval = self.makeDateInterval(for: self.period, basedOn: self.currentDate, endDate: endDate)
 
         switch period {
         case .week:
@@ -170,7 +170,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
         router.openSelectPeriod()
     }
 
-    private func makeDateInterval(for period: PeriodType, basedOn date: Date) -> (start: Date, end: Date) {
+    private func makeDateInterval(for period: PeriodType, basedOn date: Date, endDate: Date? = nil) -> (start: Date, end: Date) {
         switch period {
             case .week:
                 guard let start = calendar.dateInterval(of: .weekOfYear, for: date)?.start,
@@ -185,8 +185,9 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                 }
                 return (start, end)
 
-            case .custom(let startDate, let endDate):
-                return (startDate, endDate)
+            case .custom(let from, let to):
+                guard let endDate = endDate else { return (from, to) }
+                return (currentDate, endDate)
 
             case .wholeTime, .lastMonth: return (Date(), Date())
         }
@@ -258,7 +259,9 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                         let title = formatter.string(from: current)
 
                         let average = total / 7.0
-                        result.append(ChartBarData(startDate: interval.start, endDate: interval.end, title: title, total: total, average: average, percentage: previousTotal > 0 && total > 0 ? (total / previousTotal) * 100 : nil))
+                        let percentage = calculatePercentage(previousTotal: previousTotal, total: total)
+
+                        result.append(ChartBarData(startDate: interval.start, endDate: interval.end, title: title, total: total, average: average, percentage: percentage))
 
                         previousTotal = total
                         current = calendar.date(byAdding: .weekOfYear, value: 1, to: current) ?? interval.end
@@ -279,7 +282,8 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                         let monthSymbol = calendar.shortMonthSymbols[calendar.component(.month, from: current) - 1]
                         let average = total / Double(days)
 
-                        result.append(ChartBarData(startDate: interval.start, endDate: interval.end, title: monthSymbol, total: total, average: average, percentage: previousTotal > 0 && total > 0 ? (total / previousTotal) * 100 : nil))
+                        var percentage = calculatePercentage(previousTotal: previousTotal, total: total)
+                        result.append(ChartBarData(startDate: interval.start, endDate: interval.end, title: monthSymbol, total: total, average: average, percentage: percentage))
                         previousTotal = total
                         current = calendar.date(byAdding: .month, value: 1, to: current) ?? interval.end
                     }
@@ -307,7 +311,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                     let average = total / Double(max(span, 1))
                     let title = formatter.string(from: from)
 
-                    result = ChartBarData(startDate: from, endDate: to, title: title, total: total, average: average, percentage: previousTotal > 0 && total > 0 ? (total / previousTotal) * 100 : nil)
+                    result = ChartBarData(startDate: from, endDate: to, title: title, total: total, average: average, percentage: nil)
                     previousTotal = total
 
                     return result
@@ -351,7 +355,34 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
             default :
                 break
         }
-        
-        return result
+
+        previousTotal = 0
+        return result.map { value in
+            let percentage = calculatePercentage(previousTotal: previousTotal, total: value.total)
+            previousTotal = value.total
+
+            return ChartBarData(
+                startDate: value.startDate,
+                endDate: value.endDate,
+                title: value.title,
+                total: value.total,
+                average: value.average,
+                percentage: percentage
+            )
+        }
+    }
+
+    private func calculatePercentage(previousTotal: Double, total: Double) -> Double? {
+        if previousTotal == 0 {
+            return nil
+        }
+        if total == 0 {
+            return nil
+        }
+        if previousTotal > total && total > 0 {
+            return -((previousTotal / total) * 100 - 100)
+        } else {
+            return (total / previousTotal) * 100 - 100
+        }
     }
 }

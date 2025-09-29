@@ -11,7 +11,7 @@ protocol PeriodStatsViewDelegate: AnyObject {
     func periodButtonTapped()
     func rightButtonTapped(startDate: Date)
     func leftButtonTapped(startDate: Date)
-    func didSelectChart(startDate: Date)
+    func didSelectChart(startDate: Date, endDate: Date)
 }
 
 
@@ -202,7 +202,8 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
         scrollToPeriod(at: indexPath.row)
         configure(index: indexPath.row)
         currentIndex = indexPath.row
-        delegate?.didSelectChart(startDate: charts[indexPath.row].startDate)
+        delegate?.didSelectChart(startDate: charts[indexPath.row].startDate,
+                                 endDate: charts[indexPath.row].endDate)
     }
 
     func scrollToPeriod(at index: Int) {
@@ -218,7 +219,16 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
         expenseAmount.amountFormatter(charts[index].total)
         perDayAmount.amountFormatter(charts[index].average)
         if let percentage = charts[index].percentage {
-            expensePercentage.text = String(format: "%.1f", percentage) + "%"
+            if percentage > 0 {
+                expensePercentage.text = "+" + String(format: "%.1f", percentage) + "%"
+                expensePercentage.textColor = .systemGreen
+            } else {
+                expensePercentage.text = String(format: "%.1f", percentage) + "%"
+                expensePercentage.textColor = .systemRed
+            }
+
+        } else {
+            expensePercentage.text = nil
         }
         perDayPercentage.text = "-"
 
