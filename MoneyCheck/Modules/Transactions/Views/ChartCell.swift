@@ -46,7 +46,7 @@ final class ChartCell: UICollectionViewCell {
         barView.layer.cornerRadius = 4
         barView.clipsToBounds = true
 
-        barViewFilled.backgroundColor = .systemGreen
+        barViewFilled.backgroundColor = .systemGray
         barViewFilled.layer.cornerRadius = 4
         barViewFilled.clipsToBounds = true
 
@@ -95,6 +95,11 @@ final class ChartCell: UICollectionViewCell {
             UIView.animate(withDuration: 0.22) {
                 self.layoutIfNeeded()
             }
+        }
+        if isSelected {
+            barViewFilled.backgroundColor = .systemGreen
+        } else {
+            barViewFilled.backgroundColor = .systemGray
         }
     }
 

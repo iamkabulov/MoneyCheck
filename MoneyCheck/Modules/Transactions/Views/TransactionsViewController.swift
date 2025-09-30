@@ -187,14 +187,14 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
 }
 
 extension TransactionsViewController: PeriodStatsViewDelegate {
-    func rightButtonTapped(startDate: Date) {
+    func rightButtonTapped(startDate: Date, endDate: Date?) {
         self.viewModel.currentDate = startDate
-        self.viewModel.loadTransactions(endDate: nil)
+        self.viewModel.loadTransactions(endDate: endDate)
     }
 
-    func leftButtonTapped(startDate: Date) {
+    func leftButtonTapped(startDate: Date, endDate: Date?) {
         self.viewModel.currentDate = startDate
-        self.viewModel.loadTransactions(endDate: nil)
+        self.viewModel.loadTransactions(endDate: endDate)
     }
 
     func periodButtonTapped() {

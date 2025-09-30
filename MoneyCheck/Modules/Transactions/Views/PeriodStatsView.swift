@@ -9,8 +9,8 @@ import SnapKit
 
 protocol PeriodStatsViewDelegate: AnyObject {
     func periodButtonTapped()
-    func rightButtonTapped(startDate: Date)
-    func leftButtonTapped(startDate: Date)
+    func rightButtonTapped(startDate: Date, endDate: Date?)
+    func leftButtonTapped(startDate: Date, endDate: Date?)
     func didSelectChart(startDate: Date, endDate: Date)
 }
 
@@ -103,18 +103,18 @@ final class PeriodStatsView: UIView {
         perDayAmount.textAlignment = .center
         perDayPercentage.textAlignment = .center
 
-        let statsStack = UIStackView(arrangedSubviews: [budgetAmount, expenseAmount, perDayAmount])
-        statsStack.axis = .horizontal
+        let statsStack = UIStackView(arrangedSubviews: [budgetAmount, budgetLabel, editButton])
+        statsStack.axis = .vertical
         statsStack.distribution = .fillEqually
         addSubview(statsStack)
 
-        let labelStack = UIStackView(arrangedSubviews: [budgetLabel, expenseLabel, perDayLabel])
-        labelStack.axis = .horizontal
+        let labelStack = UIStackView(arrangedSubviews: [expenseAmount, expenseLabel, expensePercentage])
+        labelStack.axis = .vertical
         labelStack.distribution = .fillEqually
         addSubview(labelStack)
 
-        let persentageStack = UIStackView(arrangedSubviews: [editButton, expensePercentage, perDayPercentage])
-        persentageStack.axis = .horizontal
+        let persentageStack = UIStackView(arrangedSubviews: [perDayAmount, perDayLabel, perDayPercentage])
+        persentageStack.axis = .vertical
         persentageStack.distribution = .fillEqually
         addSubview(persentageStack)
 
@@ -127,18 +127,18 @@ final class PeriodStatsView: UIView {
         }
 
         labelStack.snp.makeConstraints { make in
-            make.top.equalTo(navStack.snp.bottom).offset(4)
-            make.leading.trailing.equalToSuperview().inset(16)
+            make.top.equalTo(navStack.snp.bottom).offset(8)
+            make.centerX.equalToSuperview()
         }
 
         statsStack.snp.makeConstraints { make in
-            make.top.equalTo(labelStack.snp.bottom).offset(4)
-            make.leading.trailing.equalToSuperview().inset(16)
+            make.top.equalTo(navStack.snp.bottom).offset(8)
+            make.leading.equalTo(navStack.snp.leading)
         }
 
         persentageStack.snp.makeConstraints { make in
-            make.top.equalTo(statsStack.snp.bottom).offset(4)
-            make.leading.trailing.equalToSuperview().inset(16)
+            make.top.equalTo(navStack.snp.bottom).offset(8)
+            make.trailing.equalToSuperview().inset(16)
         }
 
         collectionView.snp.makeConstraints { make in
@@ -155,18 +155,21 @@ final class PeriodStatsView: UIView {
 
     @objc private func leftButtonTapped() {
         guard currentIndex > 0 else { return }
+
+        collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false //TODO: - Подумать
         currentIndex -= 1
         scrollToPeriod(at: currentIndex)
         configure(index: currentIndex)
-        delegate?.leftButtonTapped(startDate: charts[currentIndex].startDate)
+        delegate?.leftButtonTapped(startDate: charts[currentIndex].startDate, endDate: charts[currentIndex].endDate)
     }
 
     @objc private func rightButtonTapped() {
         guard currentIndex < charts.count - 1 else { return }
+        collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false //TODO: - Подумать
         currentIndex += 1
         scrollToPeriod(at: currentIndex)
         configure(index: currentIndex)
-        delegate?.rightButtonTapped(startDate: charts[currentIndex].startDate)
+        delegate?.rightButtonTapped(startDate: charts[currentIndex].startDate, endDate: charts[currentIndex].endDate)
     }
 
     func setTitle(_ title: String) {
@@ -179,7 +182,7 @@ final class PeriodStatsView: UIView {
 
         if let index = indexOfCurrentPeriod(in: charts, currentDate: date) {
             scrollToPeriod(at: index)
-            configure(index: index + 1)
+            configure(index: index)
             currentIndex = index
         }
     }
@@ -199,6 +202,7 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false //TODO: - Подумать
         scrollToPeriod(at: indexPath.row)
         configure(index: indexPath.row)
         currentIndex = indexPath.row
@@ -207,12 +211,14 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     }
 
     func scrollToPeriod(at index: Int) {
+
         guard index < charts.count else { return }
         collectionView.scrollToItem(
             at: IndexPath(item: index, section: 0),
             at: .right,   // можно .left или .right
             animated: true
         )
+        collectionView.cellForItem(at: IndexPath(row: index, section: 0))?.isSelected = true //TODO: - Подумать
     }
 
     func configure(index: Int) {
@@ -221,20 +227,28 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
         if let percentage = charts[index].percentage {
             if percentage > 0 {
                 expensePercentage.text = "+" + String(format: "%.1f", percentage) + "%"
-                expensePercentage.textColor = .systemGreen
+                expensePercentage.textColor = .systemRed
+
+                let result = charts[index].average * percentage / 100
+                perDayPercentage.textColor = .systemRed
+                perDayPercentage.amountFormatter(result, sign: "+")
             } else {
                 expensePercentage.text = String(format: "%.1f", percentage) + "%"
-                expensePercentage.textColor = .systemRed
+                expensePercentage.textColor = .systemGreen
+
+                let result = charts[index].average * percentage / 100
+                perDayPercentage.textColor = .systemGreen
+                perDayPercentage.amountFormatter(result, sign: "-")
             }
 
         } else {
             expensePercentage.text = nil
+            perDayPercentage.text = nil
         }
-        perDayPercentage.text = "-"
 
     }
 
-    func indexOfCurrentPeriod(in charts: [ChartBarData], currentDate: Date) -> Int? {
+    func indexOfCurrentPeriod(in charts: [ChartBarData], currentDate: Date) -> Int? {//TODO: - Почему-то для недели не очень хорошо работает
         return charts.firstIndex { chart in
             return currentDate >= chart.startDate && currentDate <= chart.endDate
         }

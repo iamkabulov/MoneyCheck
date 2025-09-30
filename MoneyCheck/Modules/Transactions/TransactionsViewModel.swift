@@ -282,7 +282,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                         let monthSymbol = calendar.shortMonthSymbols[calendar.component(.month, from: current) - 1]
                         let average = total / Double(days)
 
-                        var percentage = calculatePercentage(previousTotal: previousTotal, total: total)
+                        let percentage = calculatePercentage(previousTotal: previousTotal, total: total)
                         result.append(ChartBarData(startDate: interval.start, endDate: interval.end, title: monthSymbol, total: total, average: average, percentage: percentage))
                         previousTotal = total
                         current = calendar.date(byAdding: .month, value: 1, to: current) ?? interval.end

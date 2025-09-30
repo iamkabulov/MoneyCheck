@@ -20,7 +20,8 @@ final class AmountLabel: UILabel {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func amountFormatter(_ amount: Double) {
-        self.text = Double.amountFormatter(amount) + " ₸"
+    func amountFormatter(_ amount: Double, sign: String? = nil) {
+        guard let sign else { return self.text = Double.amountFormatter(amount) + " ₸" }
+        self.text = sign + Double.amountFormatter(amount) + " ₸"
     }
 }
