@@ -23,9 +23,9 @@ final class PeriodStatsView: UIView {
     private let rightButton = UIButton(type: .system)
     private let periodButton = UIButton(type: .system)
 
-    private let budgetLabel = UILabel()
-    private let budgetAmount = UILabel()
-    private let editButton = AmountLabel()
+    private let budgetLabel = AmountLabel()
+    private let budgetAmount = AmountLabel()
+    private let editButton = UIButton(type: .system)
     private let expenseLabel = AmountLabel()
     private let expenseAmount = AmountLabel()
     private let expensePercentage = AmountLabel()
@@ -91,6 +91,7 @@ final class PeriodStatsView: UIView {
         budgetLabel.textAlignment = .center
         budgetAmount.text = "0 ₸"
         budgetAmount.textAlignment = .center
+        editButton.setTitle("Edit", for: .normal)
 
         expenseLabel.text = "Расходы"
         expenseLabel.textAlignment = .center
@@ -103,19 +104,19 @@ final class PeriodStatsView: UIView {
         perDayAmount.textAlignment = .center
         perDayPercentage.textAlignment = .center
 
-        let statsStack = UIStackView(arrangedSubviews: [budgetAmount, budgetLabel, editButton])
+        let statsStack = UIStackView(arrangedSubviews: [budgetLabel, budgetAmount, editButton])
         statsStack.axis = .vertical
-        statsStack.distribution = .fillEqually
+        statsStack.distribution = .equalSpacing
         addSubview(statsStack)
 
-        let labelStack = UIStackView(arrangedSubviews: [expenseAmount, expenseLabel, expensePercentage])
+        let labelStack = UIStackView(arrangedSubviews: [expenseLabel, expenseAmount, expensePercentage])
         labelStack.axis = .vertical
-        labelStack.distribution = .fillEqually
+        labelStack.distribution = .equalSpacing
         addSubview(labelStack)
 
-        let persentageStack = UIStackView(arrangedSubviews: [perDayAmount, perDayLabel, perDayPercentage])
+        let persentageStack = UIStackView(arrangedSubviews: [perDayLabel, perDayAmount, perDayPercentage])
         persentageStack.axis = .vertical
-        persentageStack.distribution = .fillEqually
+        persentageStack.distribution = .equalSpacing
         addSubview(persentageStack)
 
         addSubview(collectionView)
@@ -133,16 +134,20 @@ final class PeriodStatsView: UIView {
 
         statsStack.snp.makeConstraints { make in
             make.top.equalTo(navStack.snp.bottom).offset(8)
-            make.leading.equalTo(navStack.snp.leading)
+            make.leading.equalTo(navStack.snp.leading).inset(16)
+        }
+
+        editButton.snp.makeConstraints { make in
+            make.height.equalTo(20)
         }
 
         persentageStack.snp.makeConstraints { make in
             make.top.equalTo(navStack.snp.bottom).offset(8)
-            make.trailing.equalToSuperview().inset(16)
+            make.trailing.equalTo(navStack.snp.trailing).inset(16)
         }
 
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(persentageStack.snp.bottom).offset(4)
+            make.top.equalTo(statsStack.snp.bottom).offset(4)
             make.leading.trailing.equalToSuperview()
             make.bottom.equalToSuperview().inset(8)
             make.height.equalTo(100)
@@ -155,8 +160,7 @@ final class PeriodStatsView: UIView {
 
     @objc private func leftButtonTapped() {
         guard currentIndex > 0 else { return }
-
-        collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false //TODO: - Подумать
+        collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false
         currentIndex -= 1
         scrollToPeriod(at: currentIndex)
         configure(index: currentIndex)
@@ -165,7 +169,7 @@ final class PeriodStatsView: UIView {
 
     @objc private func rightButtonTapped() {
         guard currentIndex < charts.count - 1 else { return }
-        collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false //TODO: - Подумать
+        collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false
         currentIndex += 1
         scrollToPeriod(at: currentIndex)
         configure(index: currentIndex)
@@ -181,9 +185,10 @@ final class PeriodStatsView: UIView {
         collectionView.reloadData()
 
         if let index = indexOfCurrentPeriod(in: charts, currentDate: date) {
-            scrollToPeriod(at: index)
             configure(index: index)
+            scrollToPeriod(at: index)
             currentIndex = index
+            collectionView.selectItem(at: IndexPath(row: index, section: 0), animated: false, scrollPosition: [])
         }
     }
 }
@@ -202,7 +207,7 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false //TODO: - Подумать
+        collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false
         scrollToPeriod(at: indexPath.row)
         configure(index: indexPath.row)
         currentIndex = indexPath.row
@@ -218,7 +223,6 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
             at: .right,   // можно .left или .right
             animated: true
         )
-        collectionView.cellForItem(at: IndexPath(row: index, section: 0))?.isSelected = true //TODO: - Подумать
     }
 
     func configure(index: Int) {
@@ -246,9 +250,12 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
             perDayPercentage.text = nil
         }
 
+        if let cell = collectionView.cellForItem(at: IndexPath(row: index, section: 0)) {
+            cell.isSelected = true
+        }
     }
 
-    func indexOfCurrentPeriod(in charts: [ChartBarData], currentDate: Date) -> Int? {//TODO: - Почему-то для недели не очень хорошо работает
+    func indexOfCurrentPeriod(in charts: [ChartBarData], currentDate: Date) -> Int? {
         return charts.firstIndex { chart in
             return currentDate == chart.startDate && currentDate <= chart.endDate
         }

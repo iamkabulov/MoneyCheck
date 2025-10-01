@@ -18,6 +18,16 @@ final class ChartCell: UICollectionViewCell {
     private var currentK: Double?
     private var barHeightConstraint: Constraint?
 
+    override var isSelected: Bool {
+        didSet {
+            if self.isSelected {
+                barViewFilled.backgroundColor = .systemGreen
+            } else {
+                barViewFilled.backgroundColor = .systemGray
+            }
+        }
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -95,11 +105,6 @@ final class ChartCell: UICollectionViewCell {
             UIView.animate(withDuration: 0.22) {
                 self.layoutIfNeeded()
             }
-        }
-        if isSelected {
-            barViewFilled.backgroundColor = .systemGreen
-        } else {
-            barViewFilled.backgroundColor = .systemGray
         }
     }
 
