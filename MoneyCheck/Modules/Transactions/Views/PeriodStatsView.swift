@@ -250,7 +250,7 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
 
     func indexOfCurrentPeriod(in charts: [ChartBarData], currentDate: Date) -> Int? {//TODO: - Почему-то для недели не очень хорошо работает
         return charts.firstIndex { chart in
-            return currentDate >= chart.startDate && currentDate <= chart.endDate
+            return currentDate == chart.startDate && currentDate <= chart.endDate
         }
     }
 }
