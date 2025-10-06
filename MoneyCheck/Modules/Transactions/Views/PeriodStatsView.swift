@@ -233,14 +233,14 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
                 expensePercentage.text = "+" + String(format: "%.1f", percentage) + "%"
                 expensePercentage.textColor = .systemRed
 
-                let result = charts[index].average * percentage / 100
+                let result = charts[index].average - charts[index - 1].average
                 perDayPercentage.textColor = .systemRed
                 perDayPercentage.amountFormatter(result, sign: "+")
             } else {
                 expensePercentage.text = String(format: "%.1f", percentage) + "%"
                 expensePercentage.textColor = .systemGreen
 
-                let result = charts[index].average * percentage / 100
+                let result = charts[index].average - charts[index - 1].average
                 perDayPercentage.textColor = .systemGreen
                 perDayPercentage.amountFormatter(result, sign: "-")
             }
