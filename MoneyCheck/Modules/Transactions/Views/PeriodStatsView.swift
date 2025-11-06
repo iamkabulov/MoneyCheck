@@ -229,22 +229,41 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
         expenseAmount.amountFormatter(charts[index].total)
         perDayAmount.amountFormatter(charts[index].average)
         if let percentage = charts[index].percentage {
-            if percentage > 0 {
-                expensePercentage.text = "+" + String(format: "%.1f", percentage) + "%"
-                expensePercentage.textColor = .systemRed
+            switch charts[index].itemType {
+                case .income:
+                    if percentage > 0 {
+                        expenseLabel.text = "Доход"
+                        expensePercentage.text = "+" + String(format: "%.1f", percentage) + "%"
+                        expensePercentage.textColor = .systemGreen
 
-                let result = charts[index].average - charts[index - 1].average
-                perDayPercentage.textColor = .systemRed
-                perDayPercentage.amountFormatter(result, sign: "+")
-            } else {
-                expensePercentage.text = String(format: "%.1f", percentage) + "%"
-                expensePercentage.textColor = .systemGreen
+                        let result = charts[index].average - charts[index - 1].average
+                        perDayPercentage.textColor = .systemGreen
+                        perDayPercentage.amountFormatter(result, sign: "+")
+                    } else {
+                        expensePercentage.text = String(format: "%.1f", percentage) + "%"
+                        expensePercentage.textColor = .systemRed
 
-                let result = charts[index].average - charts[index - 1].average
-                perDayPercentage.textColor = .systemGreen
-                perDayPercentage.amountFormatter(result, sign: "-")
+                        let result = charts[index].average - charts[index - 1].average
+                        perDayPercentage.textColor = .systemRed
+                        perDayPercentage.amountFormatter(result, sign: "-")
+                    }
+                case .category, .wallet:
+                    if percentage > 0 {
+                        expensePercentage.text = "+" + String(format: "%.1f", percentage) + "%"
+                        expensePercentage.textColor = .systemRed
+
+                        let result = charts[index].average - charts[index - 1].average
+                        perDayPercentage.textColor = .systemRed
+                        perDayPercentage.amountFormatter(result, sign: "+")
+                    } else {
+                        expensePercentage.text = String(format: "%.1f", percentage) + "%"
+                        expensePercentage.textColor = .systemGreen
+
+                        let result = charts[index].average - charts[index - 1].average
+                        perDayPercentage.textColor = .systemGreen
+                        perDayPercentage.amountFormatter(result, sign: "-")
+                    }
             }
-
         } else {
             expensePercentage.text = nil
             perDayPercentage.text = nil

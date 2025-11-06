@@ -2,6 +2,7 @@ import Foundation
 import Combine
 
 struct ChartBarData {
+    let itemType: ItemType
     let startDate: Date
     let endDate: Date
     let title: String
@@ -38,6 +39,7 @@ typealias UseCase = TransactionsIntervalUserCaseProtocol & TransactionsUseCasePr
 final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, UseCase> {
     let itemId: UUID
     let itemType: ItemType
+    let transactionType: TransactionType
     @Published var periodTitle: String = ""
     @Published var sections: [TransactionSection] = []
     //    @Published private(set) var stats: (Double, Double) = (0, 0)
@@ -67,6 +69,12 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
             case .week: Date()
             case .custom(let startDate, _): startDate
             default: Date()
+        }
+        switch itemType {
+            case .income:
+                self.transactionType = .income
+            case .wallet, .category:
+                self.transactionType = .expense
         }
         super.init(useCase: useCase, router: router)
         let interval = makeDateInterval(for: period, basedOn: currentDate)
@@ -251,7 +259,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                     var current = start
                     while current < end {
                         guard let interval = calendar.dateInterval(of: .weekOfYear, for: current) else { break }
-                        let filtered = transactions.filter { $0.type == .expense && $0.date >= interval.start && $0.date < interval.end }
+                        let filtered = transactions.filter { $0.type == self.transactionType && $0.date >= interval.start && $0.date < interval.end }
                         let total = filtered.reduce(0) { $0 + $1.amount }
 
                         let formatter = DateFormatter()
@@ -261,7 +269,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                         let average = total / 7.0
                         let percentage = calculatePercentage(previousTotal: previousTotal, total: total)
 
-                        result.append(ChartBarData(startDate: interval.start, endDate: interval.end, title: title, total: total, average: average, percentage: percentage))
+                        result.append(ChartBarData(itemType: self.itemType, startDate: interval.start, endDate: interval.end, title: title, total: total, average: average, percentage: percentage))
 
                         previousTotal = total
                         current = calendar.date(byAdding: .weekOfYear, value: 1, to: current) ?? interval.end
@@ -276,14 +284,14 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                         guard let interval = calendar.dateInterval(of: .month, for: current) else {
                             break
                         }
-                        let filtered = transactions.filter { $0.type == .expense && $0.date >= interval.start && $0.date < interval.end }
+                        let filtered = transactions.filter { $0.type == self.transactionType && $0.date >= interval.start && $0.date < interval.end }
                         let total = filtered.reduce(0) { $0 + $1.amount }
                         let days = calendar.dateComponents([.day], from: interval.start, to: interval.end).day ?? 1
                         let monthSymbol = calendar.shortMonthSymbols[calendar.component(.month, from: current) - 1]
                         let average = total / Double(days)
 
                         let percentage = calculatePercentage(previousTotal: previousTotal, total: total)
-                        result.append(ChartBarData(startDate: interval.start, endDate: interval.end, title: monthSymbol, total: total, average: average, percentage: percentage))
+                        result.append(ChartBarData(itemType: self.itemType, startDate: interval.start, endDate: interval.end, title: monthSymbol, total: total, average: average, percentage: percentage))
                         previousTotal = total
                         current = calendar.date(byAdding: .month, value: 1, to: current) ?? interval.end
                     }
@@ -306,12 +314,12 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                 func makeData(from: Date, to: Date) -> ChartBarData {
                     var result: ChartBarData
                     let nextTo = calendar.date(byAdding: .day, value: 1, to: to)!
-                    let filtered = transactions.filter { $0.type == .expense && $0.date >= from && $0.date < nextTo }
+                    let filtered = transactions.filter { $0.type == self.transactionType && $0.date >= from && $0.date < nextTo }
                     let total = filtered.reduce(0) { $0 + $1.amount }
                     let average = total / Double(max(span, 1))
                     let title = formatter.string(from: from)
 
-                    result = ChartBarData(startDate: from, endDate: to, title: title, total: total, average: average, percentage: nil)
+                    result = ChartBarData(itemType: self.itemType, startDate: from, endDate: to, title: title, total: total, average: average, percentage: nil)
                     previousTotal = total
 
                     return result
@@ -362,6 +370,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
             previousTotal = value.total
 
             return ChartBarData(
+                itemType: self.itemType,
                 startDate: value.startDate,
                 endDate: value.endDate,
                 title: value.title,
