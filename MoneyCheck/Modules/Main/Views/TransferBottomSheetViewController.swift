@@ -185,7 +185,9 @@ final class TransferBottomSheetViewController: UIViewController {
     }()
 
     @objc private func saveButtonTapped() {
-        guard amountInput.validate({ !$0.isEmpty }),
+        guard amountInput.validate({ text in
+            !text.isEmpty
+        }, message: String(localized: "Amount can't be empty")),
               let amountText = self.amountInput.text,
               let amount = Double(amountText.replacingOccurrences(of: ",", with: ".").replacingOccurrences(of: " ", with: "")),
               amount > 0 else {
@@ -281,7 +283,7 @@ final class TransferBottomSheetViewController: UIViewController {
 
         commentInput.addDoneButtonOnKeyboard()
         commentInput.snp.makeConstraints { make in
-            make.top.equalTo(amountInput.snp.bottom).offset(16)
+            make.top.equalTo(amountInput.snp.bottom).offset(24)
             make.leading.trailing.equalToSuperview().inset(16)
         }
 

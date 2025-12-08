@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Amount can't be empty" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сумма не может быть пустым"
+          }
+        }
+      }
+    },
     "customPeriod" : {
       "extractionState" : "manual",
       "localizations" : {

@@ -24,7 +24,7 @@ final class EditTransactionViewController: UIViewController {
             ]
         )
         stack.axis = .vertical
-        stack.spacing = 16
+        stack.spacing = 24
         return stack
     }()
 
@@ -112,7 +112,9 @@ final class EditTransactionViewController: UIViewController {
     }
     
     @objc private func saveButtonTapped() {
-        guard amountInput.validate({ !$0.isEmpty }) else { return }
+        guard amountInput.validate({ text in
+            !text.isEmpty
+        }, message: String(localized:"Amount can't be empty")) else { return }
         viewModel.saveTransaction(amountInput.text, date: selectedDate, comment: commentInput.text)
     }
 

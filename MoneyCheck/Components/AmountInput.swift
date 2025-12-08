@@ -24,6 +24,15 @@ final class AmountInput: UITextField {
     private var decimalSeparator: String { formatter.decimalSeparator ?? "," }
     private var groupingSeparator: String { formatter.groupingSeparator ?? " " }
 
+    private let errorLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .systemRed
+        label.font = .systemFont(ofSize: 12)
+        label.numberOfLines = 0
+        label.isHidden = true
+        return label
+    }()
+
     private let textInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
 
     override init(frame: CGRect) {
@@ -35,10 +44,25 @@ final class AmountInput: UITextField {
         textColor = .label
         autocorrectionType = .no
         delegate = self
+        clipsToBounds = false
+        addSubview(errorLabel)
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        let labelWidth = bounds.width
+        let labelSize = errorLabel.sizeThatFits(CGSize(width: labelWidth, height: CGFloat.greatestFiniteMagnitude))
+        errorLabel.frame = CGRect(
+            x: 0,
+            y: bounds.height + 2, // небольшой отступ
+            width: labelWidth,
+            height: labelSize.height
+        )
     }
 
     // обычный текст
@@ -56,14 +80,25 @@ final class AmountInput: UITextField {
         return bounds.inset(by: textInset)
     }
 
-    func validate(_ rule: (String) -> Bool) -> Bool {
+    func validate(_ rule: (String) -> Bool, message: String?) -> Bool {
         let isValid = rule(self.text ?? "")
 
         UIView.animate(withDuration: 0.5) {
             self.layer.borderColor = isValid ? UIColor.systemGray5.cgColor : UIColor.systemRed.cgColor
         }
 
+        showError(isValid ? nil : message)
+
         return isValid
+    }
+
+    func showError(_ text: String?) {
+        DispatchQueue.main.async {
+            self.errorLabel.text = text
+            self.errorLabel.isHidden = text == nil
+            self.setNeedsLayout()
+            self.layoutIfNeeded()
+        }
     }
 }
 
@@ -127,14 +162,17 @@ extension AmountInput: UITextFieldDelegate {
 
     func textFieldDidChangeSelection(_ textField: UITextField) {
         textField.layer.borderColor = UIColor(hex: "#63E668").cgColor
+        self.showError(nil)
     }
 
     func textFieldDidBeginEditing(_ textField: UITextField) {
         textField.layer.borderColor = UIColor(hex: "#63E668").cgColor
+        self.showError(nil)
     }
 
     func textFieldDidEndEditing(_ textField: UITextField) {
         textField.layer.borderColor = UIColor.systemGray5.cgColor
+        self.showError(nil)
     }
 }
 
