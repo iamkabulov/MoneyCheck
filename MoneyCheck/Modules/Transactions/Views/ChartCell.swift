@@ -52,11 +52,11 @@ final class ChartCell: UICollectionViewCell {
         barView.addSubview(barViewFilled)
 
         // внешний вид
-        barView.backgroundColor = .lightGray
+        barView.backgroundColor = .systemGray3
         barView.layer.cornerRadius = 4
         barView.clipsToBounds = true
 
-        barViewFilled.backgroundColor = .systemGray
+        barViewFilled.backgroundColor = .secondaryLabel
         barViewFilled.layer.cornerRadius = 4
         barViewFilled.clipsToBounds = true
 

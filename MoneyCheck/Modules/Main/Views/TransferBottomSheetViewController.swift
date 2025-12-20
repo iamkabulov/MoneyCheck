@@ -100,7 +100,7 @@ final class TransferBottomSheetViewController: UIViewController {
     // MARK: - UI Components
     private let containerView: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .clear
         view.layer.cornerRadius = 16
         view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         view.clipsToBounds = true
@@ -114,6 +114,10 @@ final class TransferBottomSheetViewController: UIViewController {
         stackView.spacing = 20
         return stackView
     }()
+
+    private let blur = UIVisualEffectView(
+        effect: UIBlurEffect(style: .systemThickMaterial)
+    )
 
     private lazy var fromIcon = CircleIconView(
         image: transferType.fromIcon,
@@ -239,7 +243,10 @@ final class TransferBottomSheetViewController: UIViewController {
         self.sheetPresentationController?.prefersGrabberVisible = false
         titleLabel.text = transferType.title
 
-        
+        blur.frame = view.bounds
+        blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+        view.addSubview(blur)
         view.addSubview(containerView)
         containerView.addSubview(stackView)
         containerView.addSubview(titleLabel)

@@ -21,6 +21,12 @@ final class TransactionsViewController: UIViewController {
 
     private let editButton = UIBarButtonItem()
 
+    private lazy var emptyView: EmptyView = {
+        let view = EmptyView()
+        view.isHidden = true
+        return view
+    }()
+
     init(viewModel: TransactionsViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -36,7 +42,7 @@ final class TransactionsViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.loadPeriod()
+        viewModel.loadPeriod() //TODO: - если это убрать период после выбора не будет обновляться, если убрать работать будет без бага кастомный тип и не будет при возврате назад сбрасывать период на первый. Подумать!
 //        viewModel.loadTransactions(by: viewModel.itemId, period: viewModel.period)
     }
 
@@ -55,6 +61,7 @@ final class TransactionsViewController: UIViewController {
         view.backgroundColor = .systemBackground
         view.addSubview(stats)
         view.addSubview(tableView)
+        view.addSubview(emptyView)
         stats.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview()
@@ -66,11 +73,18 @@ final class TransactionsViewController: UIViewController {
             make.leading.trailing.bottom.equalToSuperview()
         }
 
+        emptyView.snp.makeConstraints { make in
+            make.centerX.equalTo(tableView.snp.centerX)
+            make.centerY.equalTo(tableView.snp.centerY)
+        }
+
         editButton.title = "Править"
         self.editButton.target = self
         self.editButton.action = #selector(openEditItemViewController)
         self.navigationItem.rightBarButtonItem = editButton
         self.navigationItem.rightBarButtonItem?.tintColor = .label
+
+
     }
     
     private func bindViewModel() {
@@ -112,10 +126,15 @@ final class TransactionsViewController: UIViewController {
     @objc func openEditItemViewController() {
         self.viewModel.showEditItemView(id: viewModel.itemId, itemType: viewModel.itemType)
     }
+
+    private func showEmptyView(_ value: Bool) {
+        emptyView.isHidden = value
+    }
 }
 
 extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate {
     func numberOfSections(in tableView: UITableView) -> Int {
+        viewModel.sections.count == 0 ? showEmptyView(false) : showEmptyView(true)
         return viewModel.sections.count
     }
     
@@ -124,7 +143,7 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TransactionCell", for: indexPath) as! TransactionCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "TransactionCell", for: indexPath) as? TransactionCell else { return UITableViewCell() }
         let transaction = viewModel.sections[indexPath.section].transactions[indexPath.row]
         cell.configure(with: transaction, currentWalletId: viewModel.itemId)
         return cell
