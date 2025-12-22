@@ -189,6 +189,11 @@ final class PeriodStatsView: UIView {
             scrollToPeriod(at: index)
             currentIndex = index
             collectionView.selectItem(at: IndexPath(row: index, section: 0), animated: false, scrollPosition: [])
+        } else {
+            configure(index: charts.count - 1)
+            scrollToPeriod(at: charts.count - 1)
+            currentIndex = charts.count - 1
+            collectionView.selectItem(at: IndexPath(row: charts.count - 1, section: 0), animated: false, scrollPosition: [])
         }
     }
 }
@@ -226,6 +231,7 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     }
 
     func configure(index: Int) {
+        guard index >= 0 else { return }
         expenseAmount.amountFormatter(charts[index].total)
         perDayAmount.amountFormatter(charts[index].average)
         if let percentage = charts[index].percentage {

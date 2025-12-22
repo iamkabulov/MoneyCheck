@@ -100,7 +100,13 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         
         nameLabel.text = name
         if let amount = amount {
-            amountLabel.amountFormatter(amount)
+            if amount >= 0 {
+                amountLabel.amountFormatter(amount)
+                amountLabel.textColor = .label
+            } else {
+                amountLabel.amountFormatter(amount, sign: "-")
+                amountLabel.textColor = .systemRed
+            }
         }
         iconImageView.image = UIImage(systemName: icon)
         iconContainerView.backgroundColor = UIColor(hex: color)

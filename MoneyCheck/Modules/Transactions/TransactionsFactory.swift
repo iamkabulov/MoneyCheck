@@ -22,7 +22,7 @@ final class TransactionsFactory {
                                               itemId: entity.id,
                                               itemType: entity.type,
                                               router: router,
-                                              period: period)
+                                              periodStore: PeriodStore.shared)
         let vc = TransactionsViewController(viewModel: viewModel)
         return vc
     }

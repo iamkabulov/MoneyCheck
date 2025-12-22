@@ -11,6 +11,7 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
     @Published private(set) var error: Error?
     @Published private(set) var isLoading = false
     @Published private(set) var selectedPeriod: PeriodType = .month
+    private let period = PeriodStore.shared
 
     // MARK: - Calculated properties
     var totalBalance: Double {
@@ -27,24 +28,31 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
 
     override init(useCase: MainUseCaseProtocol, router: MainRouter) {
         super.init(useCase: useCase, router: router)
+        bindPeriod()
+        bindDataChanges()
+    }
+
+    private func bindDataChanges() {
+        useCase.dataDidChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.loadData()
+            }
+            .store(in: &cancellables)
+    }
+
+    private func bindPeriod() {
+        period.$period
+            .removeDuplicates()
+            .sink { [weak self] period in
+                guard let self else { return }
+                self.selectedPeriod = period
+                self.loadData()
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Public methods
-    func loadPeriod() {
-        useCase.getPeriod()
-            .sink { [weak self] completion in
-                if case .failure(let error) = completion {
-                    self?.error = error
-                    print("Error loading data: \(error)")
-                }
-            } receiveValue: { period in
-                self.selectedPeriod = period
-                print("MainViewModel: Loaded period: \(period)")
-            }
-            .store(in: &cancellables)
-
-    }
-
     func loadData() {
         isLoading = true
         Publishers.CombineLatest3(

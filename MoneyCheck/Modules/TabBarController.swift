@@ -19,9 +19,9 @@ final class TabBarController: UITabBarController {
     private func setupTabs() {
         let mainNav = MainFactory.shared.makeMainModule()
         addModule(mainNav, title: "Главная", image: "house", selectedImage: "house.fill")
+        addModule(UIViewController(), title: "Аналитика", image: "chart.bar", selectedImage: "chart.bar.fill")
         addModule(UIViewController(), title: "Кошелек", image: "cloud", selectedImage: "cloud.fill")
         addModule(UIViewController(), title: "Настройки", image: "gearshape", selectedImage: "gearshape.fill")
-        addModule(UIViewController(), title: "Аналитика", image: "chart.bar", selectedImage: "chart.bar.fill")
     }
 
     private func addModule(_ module: UIViewController, title: String, image: String, selectedImage: String) {

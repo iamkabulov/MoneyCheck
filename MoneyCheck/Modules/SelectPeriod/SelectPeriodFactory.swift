@@ -17,7 +17,12 @@ final class SelectPeriodFactory {
         let router = SelectPeriodRouter(navigationController: navigationController)
         let periodRepository = CoreDataPeriodRepository()
         let useCase = PeriodUseCase(periodRepository: periodRepository)
-        let viewModel = SelectPeriodViewModel(useCase: useCase, router: router)
+        let periodStore = PeriodStore.shared
+        let viewModel = SelectPeriodViewModel(
+            useCase: useCase,
+            router: router,
+            periodStore: periodStore
+        )
         let vc = SelectPeriodViewController(viewModel: viewModel)
         return vc
     }

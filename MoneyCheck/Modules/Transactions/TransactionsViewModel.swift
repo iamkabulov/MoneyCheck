@@ -46,7 +46,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     private var transactions: [TransactionModel] = []
     @Published var barCharts: [ChartBarData] = []
     private var cancellables = Set<AnyCancellable>()
-    var period: PeriodType
+    private let period: PeriodStore
     var currentDate: Date {
         didSet {
             updatePeriodTitle()
@@ -59,12 +59,12 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
         itemId: UUID,
         itemType: ItemType,
         router: TransactionsRouterProtocol,
-        period: PeriodType
+        periodStore: PeriodStore
     ) {
         self.itemId = itemId
         self.itemType = itemType
-        self.period = period
-        self.currentDate = switch period {
+        self.period = periodStore
+        self.currentDate = switch periodStore.period {
             case .month: Date()
             case .week: Date()
             case .custom(let startDate, _): startDate
@@ -77,42 +77,71 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                 self.transactionType = .expense
         }
         super.init(useCase: useCase, router: router)
-        let interval = makeDateInterval(for: period, basedOn: currentDate)
+        let interval = makeDateInterval(for: periodStore.period, basedOn: currentDate)
         getTransactions(start: interval.start, end: interval.end)
+        bindPeriod()
     }
 
     deinit {
         print("Deinit TransactionsViewModel")
     }
 
-    func loadPeriod() {
-        useCase.getPeriod()
-            .sink { completion in
-                if case .failure(let error) = completion {
-                    print("Error loading data: \(error)")
-                }
+    private func bindPeriod() {
+        period.$period
+            .removeDuplicates()
+            .sink { [weak self] period in
+                guard let self else { return }
+
+                let interval = self.makeDateInterval(
+                    for: period,
+                    basedOn: self.currentDate
+                )
+
+                self.currentDate = interval.start
+                self.updatePeriodTitle(for: period)
+                self.getTransactions(
+                    start: interval.start,
+                    end: interval.end
+                )
+
+                self.barCharts = self.generateChartData(for: period)
             }
-        receiveValue: { [weak self] loadedPeriod in
-            guard let self = self else { return }
-            self.period = loadedPeriod
-            // обновляем заголовок и перезагружаем данные под новый период
-            let interval = self.makeDateInterval(for: self.period, basedOn: self.currentDate)
-            self.currentDate = interval.start
-            self.getTransactions(start: interval.start, end: interval.end)
-        }
-        .store(in: &cancellables)
-        barCharts = generateChartData(for: period)
+            .store(in: &cancellables)
     }
 
-    func loadTransactions(endDate: Date?) {
-        let interval = self.makeDateInterval(for: self.period, basedOn: self.currentDate, endDate: endDate)
 
-        switch period {
+//    func loadPeriod() {
+//        useCase.getPeriod()
+//            .sink { completion in
+//                if case .failure(let error) = completion {
+//                    print("Error loading data: \(error)")
+//                }
+//            }
+//        receiveValue: { [weak self] loadedPeriod in
+//            guard let self = self else { return }
+//            self.period = loadedPeriod
+//            // обновляем заголовок и перезагружаем данные под новый период
+//            let interval = self.makeDateInterval(for: self.period, basedOn: self.currentDate)
+//            self.currentDate = interval.start
+//            self.getTransactions(start: interval.start, end: interval.end)
+//        }
+//        .store(in: &cancellables)
+//        barCharts = generateChartData(for: period)
+//    }
+
+    func loadTransactions(endDate: Date?) {
+        let interval = self.makeDateInterval(
+            for: self.period.period,
+            basedOn: self.currentDate,
+            endDate: endDate
+        )
+
+        switch period.period {
         case .week:
             guard let newPeriod = PeriodType.from(id: 0, from: interval.start, to: interval.end) else {
                 return
             }
-            self.period = newPeriod
+            self.period.period = newPeriod
             self.currentDate = interval.start
             getTransactions(start: interval.start, end: interval.end)
 
@@ -120,7 +149,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
             guard let newPeriod = PeriodType.from(id: 2, from: interval.start, to: interval.end) else {
                 return
             }
-            self.period = newPeriod
+            self.period.period = newPeriod
             self.currentDate = interval.start
             getTransactions(start: interval.start, end: interval.end)
 
@@ -128,7 +157,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
             guard let newPeriod = PeriodType.from(id: 3, from: interval.start, to: interval.end) else {
                 return
             }
-            self.period = newPeriod
+            self.period.period = newPeriod
             self.currentDate = interval.start
             getTransactions(start: interval.start, end: interval.end)
             return // важно: не выполнять общий код ниже
@@ -161,7 +190,9 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
                     self?.router.showError("Error", message: error.localizedDescription)
                 }
             } receiveValue: { [weak self] sections in
-                self?.sections = sections
+                guard let self = self else { return }
+                self.sections = sections
+//                self.currentDate = start  ставим сюда после того, как данные пришли
             }
             .store(in: &cancellables)
     }
@@ -202,7 +233,10 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     }
 
     private func updatePeriodTitle(for customPeriod: PeriodType? = nil) {
-        let title = makePeriodTitle(for: customPeriod ?? period, basedOn: currentDate)
+        let title = makePeriodTitle(
+            for: customPeriod ?? period.period,
+            basedOn: currentDate
+        )
         self.periodTitle = title
     }
 

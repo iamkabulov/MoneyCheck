@@ -15,46 +15,35 @@ final class SelectPeriodViewModel: BaseViewModel<SelectPeriodRouterProtocol, Per
     // MARK: - Published properties
     @Published var selectedPeriod: PeriodType
     let screenTitle = String(localized: "Select period")
+
+    private let periodStore: PeriodStore
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
-    override init(
+    init(
         useCase: PeriodSelectUseCaseProtocol,
-        router: SelectPeriodRouterProtocol
+        router: SelectPeriodRouterProtocol,
+        periodStore: PeriodStore
     ) {
-        self.selectedPeriod = .month
+        self.periodStore = periodStore
+        self.selectedPeriod = periodStore.period
         super.init(useCase: useCase, router: router)
-        self.getPeriod()
+        bind()
     }
 
     deinit {
         print("Select Period ViewModel deinit")
     }
 
-    func getPeriod() {
-        useCase.getPeriod()
-            .sink { completion in
-                switch completion {
-                    case .finished: break
-                    case .failure(_):
-                        print("Error")
-                }
-            } receiveValue: { value in
-                self.selectedPeriod = value
-            }.store(in: &cancellables)
+    private func bind() {
+        periodStore.$period
+            .removeDuplicates()
+            .assign(to: &$selectedPeriod)
     }
 
+
     func savePeriod(_ period: PeriodType) {
-        useCase
-            .savePeriod(period: period)
-            .sink { completion in
-                switch completion {
-                    case .finished: break
-                    case .failure(_):
-                        print("Error")
-                }
-            } receiveValue: { _ in
-            }.store(in: &cancellables)
+        periodStore.update(period)
         router.dismiss(animated: true)
     }
 

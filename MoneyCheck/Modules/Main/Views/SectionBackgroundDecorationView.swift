@@ -5,8 +5,7 @@ final class SectionBackgroundDecorationView: UICollectionReusableView {
     private let blurView: UIVisualEffectView = {
         let blurEffect = UIBlurEffect(style: .systemUltraThinMaterial)
         let view = UIVisualEffectView(effect: blurEffect)
-        view.clipsToBounds = true
-        view.layer.cornerRadius = 16
+
         return view
     }()
 
@@ -20,10 +19,8 @@ final class SectionBackgroundDecorationView: UICollectionReusableView {
     }
 
     private func setup() {
-        addSubview(blurView)
-
-        blurView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
+        self.backgroundColor = .systemGray6
+        self.clipsToBounds = true
+        self.layer.cornerRadius = 16
     }
 }

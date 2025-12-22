@@ -4,6 +4,12 @@ import Combine
 typealias MainUseCaseProtocol = TransactionsUseCaseProtocol & PeriodUseCaseProtocol & ItemUseCaseProtocol
 
 final class MainUseCase: MainUseCaseProtocol {
+
+    private let dataChangeCenter = DataChangeCenter.shared
+    var dataDidChange: AnyPublisher<Void, Never> {
+        dataChangeCenter.dataDidChange
+    }
+
     private let walletRepository: WalletRepositoryProtocol
     private let categoryRepository: CategoryRepositoryProtocol
     private let incomeRepository: IncomeRepositoryProtocol
@@ -23,7 +29,7 @@ final class MainUseCase: MainUseCaseProtocol {
     }
 
     deinit {
-        print("---Deinit MainUseCase")
+        print("---Deinit MainUseCase------")
     }
 
     func getWallets(period: PeriodType) -> AnyPublisher<[WalletModel], Error> {

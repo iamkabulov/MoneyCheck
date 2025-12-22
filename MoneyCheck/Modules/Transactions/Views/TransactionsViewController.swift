@@ -30,6 +30,7 @@ final class TransactionsViewController: UIViewController {
     init(viewModel: TransactionsViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
+        bindViewModel()
     }
     
     required init?(coder: NSCoder) {
@@ -42,14 +43,11 @@ final class TransactionsViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.loadPeriod() //TODO: - если это убрать период после выбора не будет обновляться, если убрать работать будет без бага кастомный тип и не будет при возврате назад сбрасывать период на первый. Подумать!
-//        viewModel.loadTransactions(by: viewModel.itemId, period: viewModel.period)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        bindViewModel()
         title = "Transactions"
     }
 

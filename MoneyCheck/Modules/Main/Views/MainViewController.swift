@@ -59,20 +59,15 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 
     // MARK: - Lifecycle
     override func viewWillAppear(_ animated: Bool) {
-        viewModel.loadPeriod()
-        viewModel.loadData()
-        
-        periodButton.title = switch viewModel.selectedPeriod {
-            case .custom(let from, let to): "\(from.periodName) - \(to.periodName)"
-            default: viewModel.selectedPeriod.displayTitle
-        }
+//        viewModel.loadPeriod()
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupBindings()
+
         viewModel.loadData()
+        setupBindings()
     }
 
     // MARK: - Private methods
@@ -104,8 +99,12 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     private func setupBindings() {
         viewModel.$selectedPeriod
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
+            .sink { [weak self] selectedPeriod in
                 self?.collectionView.reloadData()
+                self?.periodButton.title = switch selectedPeriod {
+                    case .custom(let from, let to): "\(from.periodName) - \(to.periodName)"
+                    default: selectedPeriod.displayTitle
+                }
             }
             .store(in: &cancellables)
         viewModel.$wallets
