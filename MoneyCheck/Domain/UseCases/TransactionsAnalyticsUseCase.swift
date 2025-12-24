@@ -1,11 +1,23 @@
+//
+//  TransactionsUseCaseProtocol.swift
+//  MoneyCheck
+//
+//  Created by Нурсултан Кабулов on 23.12.2025.
+//
+
+
 import Foundation
 import Combine
 
-typealias MainUseCaseProtocol = TransactionsUseCaseProtocol & PeriodUseCaseProtocol & ItemUseCaseProtocol
+protocol TransactionsAnalyticsUseCaseProtocol {
+    var dataDidChange: AnyPublisher<Void, Never> { get }
+    func getWallets(period: PeriodType) -> AnyPublisher<[WalletModel], Error>
+    func getCategories(period: PeriodType) -> AnyPublisher<[CategoryModel], Error>
+    func getIncomes(period: PeriodType) -> AnyPublisher<[IncomeModel], Error>
+}
 
-final class MainUseCase: MainUseCaseProtocol {
+final class TransactionsAnalyticsUseCase: TransactionsAnalyticsUseCaseProtocol {
 
-    private let dataChangeCenter = DataChangeCenter.shared
     var dataDidChange: AnyPublisher<Void, Never> {
         dataChangeCenter.dataDidChange
     }
@@ -15,6 +27,7 @@ final class MainUseCase: MainUseCaseProtocol {
     private let incomeRepository: IncomeRepositoryProtocol
     private let transactionRepository: TransactionRepositoryProtocol
     private let periodRepository: PeriodRepositoryProtocol
+    private let dataChangeCenter = DataChangeCenter.shared
 
     init(walletRepository: WalletRepositoryProtocol,
          categoryRepository: CategoryRepositoryProtocol,
@@ -29,7 +42,7 @@ final class MainUseCase: MainUseCaseProtocol {
     }
 
     deinit {
-        print("---Deinit MainUseCase------")
+        print("---Deinit TransactionsAnalyticsUseCase------")
     }
 
     func getWallets(period: PeriodType) -> AnyPublisher<[WalletModel], Error> {
@@ -46,14 +59,6 @@ final class MainUseCase: MainUseCaseProtocol {
 
     func getTransactions(by id: UUID, period: PeriodType) -> AnyPublisher<[TransactionModel], Error> {
         return transactionRepository.getTransactions(by: id, period: period)
-    }
-    
-    func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error> {
-        return transactionRepository.addTransaction(transaction)
-            .handleEvents(receiveOutput: { [weak self] _ in
-                self?.dataChangeCenter.notify()
-            })
-            .eraseToAnyPublisher()
     }
 
     func getPeriod() -> AnyPublisher<PeriodType, Error> {

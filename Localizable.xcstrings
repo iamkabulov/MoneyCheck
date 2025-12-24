@@ -1,6 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ - %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ - %2$lld"
+          }
+        }
+      }
+    },
+    "%lld ₸" : {
+
+    },
+    "%lld%%" : {
+
+    },
     "Amount can't be empty" : {
       "localizations" : {
         "ru" : {
@@ -87,6 +103,9 @@
           }
         }
       }
+    },
+    "Value" : {
+
     },
     "week" : {
       "extractionState" : "manual",

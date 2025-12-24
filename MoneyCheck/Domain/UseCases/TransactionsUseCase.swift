@@ -9,11 +9,13 @@ import Foundation
 import Combine
 
 protocol EditTransactionUseCaseProtocol {
+    var dataDidChange: AnyPublisher<Void, Never> { get }
     func updateTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
     func deleteTransaction(by id: UUID) -> AnyPublisher<Void, Error>
 }
 
 protocol TransactionsUseCaseProtocol {
+    var dataDidChange: AnyPublisher<Void, Never> { get }
     func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error>
     func getTransactions(by id: UUID, period: PeriodType) -> AnyPublisher<[TransactionModel], Error>
 }
@@ -26,6 +28,11 @@ protocol TransactionsIntervalUserCaseProtocol {
 
 final class TransactionsUseCase {
 
+    var dataDidChange: AnyPublisher<Void, Never> {
+        dataChangeCenter.dataDidChange
+    }
+
+    private let dataChangeCenter = DataChangeCenter.shared
     private let transactionRepository: CoreDataTransactionRepository
     private let periodRepository: CoreDataPeriodRepository
 
@@ -42,6 +49,10 @@ final class TransactionsUseCase {
 extension TransactionsUseCase: TransactionsUseCaseProtocol {
     func addTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error> {
         return transactionRepository.addTransaction(transaction)
+            .handleEvents(receiveOutput: { [weak self] _ in
+                self?.dataChangeCenter.notify()
+            })
+            .eraseToAnyPublisher()
     }
 
     func getTransactions(by id: UUID, period: PeriodType) -> AnyPublisher<[TransactionModel], Error> {
@@ -52,10 +63,18 @@ extension TransactionsUseCase: TransactionsUseCaseProtocol {
 extension TransactionsUseCase: EditTransactionUseCaseProtocol {
     func deleteTransaction(by id: UUID) -> AnyPublisher<Void, Error> {
          return transactionRepository.deleteTransaction(by: id)
+            .handleEvents(receiveOutput: { [weak self] _ in
+                self?.dataChangeCenter.notify()
+            })
+            .eraseToAnyPublisher()
     }
 
     func updateTransaction(_ transaction: TransactionModel) -> AnyPublisher<Void, Error> {
         return transactionRepository.updateTransaction(transaction)
+            .handleEvents(receiveOutput: { [weak self] _ in
+                self?.dataChangeCenter.notify()
+            })
+            .eraseToAnyPublisher()
     }
 }
 
