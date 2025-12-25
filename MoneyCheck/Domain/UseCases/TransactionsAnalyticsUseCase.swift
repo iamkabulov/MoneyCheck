@@ -14,6 +14,7 @@ protocol TransactionsAnalyticsUseCaseProtocol {
     func getWallets(period: PeriodType) -> AnyPublisher<[WalletModel], Error>
     func getCategories(period: PeriodType) -> AnyPublisher<[CategoryModel], Error>
     func getIncomes(period: PeriodType) -> AnyPublisher<[IncomeModel], Error>
+    func getTransactionsForInterval(type: TransactionType, start: Date, end: Date) -> AnyPublisher<[TransactionModel], Error>
 }
 
 final class TransactionsAnalyticsUseCase: TransactionsAnalyticsUseCaseProtocol {
@@ -63,5 +64,9 @@ final class TransactionsAnalyticsUseCase: TransactionsAnalyticsUseCaseProtocol {
 
     func getPeriod() -> AnyPublisher<PeriodType, Error> {
         return periodRepository.getPeriod()
+    }
+
+    func getTransactionsForInterval(type: TransactionType, start: Date, end: Date) -> AnyPublisher<[TransactionModel], any Error> {
+        return transactionRepository.getTransactionsForInterval(type: type, start: start, end: end)
     }
 }

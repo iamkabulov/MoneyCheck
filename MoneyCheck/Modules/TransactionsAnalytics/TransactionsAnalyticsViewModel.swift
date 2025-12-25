@@ -14,6 +14,15 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
 //    @Published var transaction: TransactionModel
     @Published var selectedCategoryIds: Set<UUID> = []
     @Published var chartDonutItems: [DonutChartItem] = []
+    @Published var sections: [TransactionSection] = []
+    private var transactions: [TransactionModel] = []
+    let type: TransactionType = .expense
+    private let calendar = Calendar.current
+    var currentDate: Date {
+        didSet {
+//            updatePeriodTitle()
+        }
+    }
 
     @Published private(set) var wallets: [WalletModel] = []
     @Published private(set) var incomes: [IncomeModel] = []
@@ -28,6 +37,12 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
         useCase: TransactionsAnalyticsUseCaseProtocol,
         router: TransactionsAnalyticsRouterProtocol
     ) {
+        self.currentDate = switch period.period {
+            case .month: Date()
+            case .week: Date()
+            case .custom(let startDate, _): startDate
+            default: Date()
+        }
         super.init(useCase: useCase, router: router)
         self.bindPeriod()
         self.bindDataChanges()
@@ -44,6 +59,11 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
                 guard let self else { return }
                 self.selectedPeriod = period
                 self.loadDonutChartModel()
+                let interval = makeDateInterval(
+                    for: selectedPeriod,
+                    basedOn: currentDate
+                )
+                self.getTransactions(start: interval.start, end: interval.end)
             }
             .store(in: &cancellables)
     }
@@ -52,7 +72,13 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
         useCase.dataDidChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
-                self?.loadDonutChartModel()
+                guard let self = self else { return }
+                self.loadDonutChartModel()
+                let interval = makeDateInterval(
+                    for: selectedPeriod,
+                    basedOn: currentDate
+                )
+                self.getTransactions(start: interval.start, end: interval.end)
             }
             .store(in: &cancellables)
     }
@@ -86,7 +112,100 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
                 }
             }
             .store(in: &cancellables)
+    }
 
+    private func getTransactions(start: Date, end: Date) {
+        useCase.getTransactionsForInterval(type: type, start: start, end: end)
+            .map { [weak self] transactions -> [TransactionSection] in
+                guard let self = self else { return [] }
+
+                self.transactions = transactions
+                guard !transactions.isEmpty else { return [] } // если пусто — вернём []
+
+                let grouped = Dictionary(grouping: transactions) { transaction in
+                    self.calendar.startOfDay(for: transaction.date)
+                }
+                let sortedDays = grouped.keys.sorted(by: >)
+
+                return sortedDays.map { date in
+                    let sectionTransactions = grouped[date]?.sorted(by: { $0.date > $1.date }) ?? []
+                    return TransactionSection(
+                        date: date,
+                        transactions: sectionTransactions,
+                        itemId: UUID())
+                }
+            }
+            .sink { [weak self] completion in
+                if case let .failure(error) = completion {
+                    self?.router.showError("Error", message: error.localizedDescription)
+                }
+            } receiveValue: { [weak self] sections in
+                guard let self = self else { return }
+                self.sections = sections
+//                self.currentDate = start  ставим сюда после того, как данные пришли
+            }
+            .store(in: &cancellables)
+    }
+
+//    func loadTransactions(endDate: Date?) {
+//        let interval = self.makeDateInterval(
+//            for: self.period.period,
+//            basedOn: self.currentDate,
+//            endDate: endDate
+//        )
+//
+//        switch period.period {
+//        case .week:
+//            guard let newPeriod = PeriodType.from(id: 0, from: interval.start, to: interval.end) else {
+//                return
+//            }
+//            self.period.period = newPeriod
+//            self.currentDate = interval.start
+//            getTransactions(start: interval.start, end: interval.end)
+//
+//        case .month:
+//            guard let newPeriod = PeriodType.from(id: 2, from: interval.start, to: interval.end) else {
+//                return
+//            }
+//            self.period.period = newPeriod
+//            self.currentDate = interval.start
+//            getTransactions(start: interval.start, end: interval.end)
+//
+//        case .custom:
+//            guard let newPeriod = PeriodType.from(id: 3, from: interval.start, to: interval.end) else {
+//                return
+//            }
+//            self.period.period = newPeriod
+//            self.currentDate = interval.start
+//            getTransactions(start: interval.start, end: interval.end)
+//            return // важно: не выполнять общий код ниже
+//
+//        case .lastMonth, .wholeTime:
+//            return
+//        }
+//    }
+
+    private func makeDateInterval(for period: PeriodType, basedOn date: Date, endDate: Date? = nil) -> (start: Date, end: Date) {
+        switch period {
+            case .week:
+                guard let start = calendar.dateInterval(of: .weekOfYear, for: date)?.start,
+                      let end = calendar.date(byAdding: .day, value: 6, to: start) else { return (Date(), Date()) }
+                return (start, end)
+
+            case .month:
+                guard let start = calendar.dateInterval(of: .month, for: date)?.start,
+                      let range = calendar.range(of: .day, in: .month, for: date),
+                      let end = calendar.date(byAdding: .day, value: range.count - 1, to: start) else {
+                    return (Date(), Date())
+                }
+                return (start, end)
+
+            case .custom(let from, let to):
+                guard let endDate = endDate else { return (from, to) }
+                return (currentDate, endDate)
+
+            case .wholeTime, .lastMonth: return (Date(), Date())
+        }
     }
 
 //    func loadData() {
@@ -183,10 +302,59 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
         if self.selectedCategoryIds.isEmpty {
             self.selectedCategoryIds = Set(self.chartDonutItems.map(\.id))
         }
+        self.sections = includedTransactions(itemIds: self.selectedCategoryIds)
     }
 
 
     func isSelected(_ item: DonutChartItem) -> Bool {
         selectedCategoryIds.contains(item.id)
+    }
+
+    func includedTransactions(itemIds: Set<UUID>) -> [TransactionSection] {
+        var transactions = [TransactionModel]()
+        for itemId in itemIds {
+            transactions += self.transactions.filter {
+                $0.destinationId == itemId
+            }
+        }
+
+        guard !transactions.isEmpty else { return [] } // если пусто — вернём []
+
+        let grouped = Dictionary(grouping: transactions) { transaction in
+            self.calendar.startOfDay(for: transaction.date)
+        }
+        let sortedDays = grouped.keys.sorted(by: >)
+
+        return sortedDays.map { date in
+            let sectionTransactions = grouped[date]?.sorted(by: { $0.date > $1.date }) ?? []
+            return TransactionSection(
+                date: date,
+                transactions: sectionTransactions,
+                itemId: UUID())
+        }
+    }
+
+    func excludedTransactions(itemIds: Set<UUID>) -> [TransactionSection] {
+        var transactions = [TransactionModel]()
+        for itemId in itemIds {
+            transactions += self.transactions.filter {
+                $0.destinationId != itemId
+            }
+        }
+
+        guard !transactions.isEmpty else { return [] } // если пусто — вернём []
+
+        let grouped = Dictionary(grouping: transactions) { transaction in
+            self.calendar.startOfDay(for: transaction.date)
+        }
+        let sortedDays = grouped.keys.sorted(by: >)
+
+        return sortedDays.map { date in
+            let sectionTransactions = grouped[date]?.sorted(by: { $0.date > $1.date }) ?? []
+            return TransactionSection(
+                date: date,
+                transactions: sectionTransactions,
+                itemId: UUID())
+        }
     }
 }

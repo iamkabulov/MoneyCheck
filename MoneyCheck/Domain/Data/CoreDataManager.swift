@@ -435,6 +435,28 @@ final class CoreDataManager {
             return []
         }
     }
+
+    func fetchTransactionsForInterval(type: TransactionType, startDate: Date, endDate: Date) -> [Transaction] {
+        let request: NSFetchRequest<Transaction> = Transaction.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone.current// 00:00:00 локально для to
+        let start = calendar.startOfDay(for: startDate)
+        let end = calendar.endOfDay(for: endDate)
+        request.predicate = NSPredicate(
+            format: "(type == %@) AND (date >= %@ AND date < %@)",
+            type.rawValue,
+            start as CVarArg,
+            end as CVarArg)
+
+        do {
+            let transactions = try context.fetch(request)
+            return transactions
+        } catch {
+            print("❌ CoreDataManager: Error fetching transactions for interval: \(error)")
+            return []
+        }
+    }
 }
 
 extension Calendar {
