@@ -37,7 +37,7 @@ struct DonutChartView: View {
                     SectorMark(
                         angle: .value("Value", item.value),
                         innerRadius: .ratio(0.6),
-                        angularInset: 1
+                        angularInset: 0
                     )
                     .accessibilityLabel(item.title)
                     .foregroundStyle(item.color)
@@ -63,13 +63,13 @@ struct DonutChartView: View {
                         .foregroundStyle(.black)
                 }
             }
-            .frame(height: 200)
+            .frame(height: 180)
             .padding(.top, 8)
         }
         // Легенда
         LazyVGrid(
             columns: [
-                GridItem(.adaptive(minimum: 140), spacing: 8)
+                GridItem(.adaptive(minimum: 110), spacing: 8)
             ],
             alignment: .center,
             spacing: 8
@@ -86,11 +86,11 @@ struct DonutChartView: View {
                             .fill(item.color)
                             .frame(width: 8, height: 8)
 
-                        Text("\(item.title) - \(Int(item.value))")
-                            .font(.caption2)
+                        Text("\(item.title)")
+                            .font(.caption)
                     }
                     .padding(.horizontal, 4)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 2)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
                             .fill(

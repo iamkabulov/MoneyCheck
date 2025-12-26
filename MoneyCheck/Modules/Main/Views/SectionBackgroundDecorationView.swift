@@ -2,13 +2,6 @@ import UIKit
 import SnapKit
 
 final class SectionBackgroundDecorationView: UICollectionReusableView {
-    private let blurView: UIVisualEffectView = {
-        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterial)
-        let view = UIVisualEffectView(effect: blurEffect)
-
-        return view
-    }()
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()

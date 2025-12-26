@@ -7,6 +7,7 @@ final class TransactionsAnalyticsViewController: UIViewController {
 
     private lazy var hostingController = UIHostingController(rootView: donutView)
     @Published var items: [DonutChartItem] = []
+
     private let viewModel: TransactionsAnalyticsViewModel
     private var cancellables = Set<AnyCancellable>()
     private lazy var donutView = DonutChartView(
@@ -17,7 +18,7 @@ final class TransactionsAnalyticsViewController: UIViewController {
     )
 
     private lazy var tableView: UITableView = {
-        let tableView = UITableView(frame: .zero, style: .insetGrouped)
+        let tableView = UITableView(frame: .zero, style: .plain)
         tableView.backgroundColor = .systemBackground
         tableView.separatorStyle = .none
         tableView.register(TransactionCell.self, forCellReuseIdentifier: TransactionCell.reuseIdentifier)
@@ -60,25 +61,37 @@ final class TransactionsAnalyticsViewController: UIViewController {
 
     private func setupUI() {
         view.backgroundColor = .systemBackground
+
         tableView.showsVerticalScrollIndicator = false
+        tableView.register(TransactionCell.self, forCellReuseIdentifier: TransactionCell.reuseIdentifier)
+        tableView.dataSource = self
+        tableView.delegate = self
+
+        // Оборачиваем SwiftUI view в hostingController
+        let hostingController = UIHostingController(rootView: donutView)
         addChild(hostingController)
-        view.addSubview(hostingController.view)
-        view.addSubview(tableView)
         hostingController.didMove(toParent: self)
 
-        // 5️⃣ Autolayout
+        // Минимальная высота для рендера
+        hostingController.view.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 1)
+        tableView.tableHeaderView = hostingController.view
 
-        hostingController.view.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
-            make.leading.trailing.equalToSuperview().inset(16)
-        }
+        // Форсируем layout и пересчитываем размер
+        hostingController.view.setNeedsLayout()
+        hostingController.view.layoutIfNeeded()
 
+        let targetSize = hostingController.sizeThatFits(in: CGSize(width: view.bounds.width, height: UIView.layoutFittingCompressedSize.height))
+
+        // Устанавливаем frame с нужной высотой
+        hostingController.view.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: targetSize.height)
+        tableView.tableHeaderView = hostingController.view
+
+        view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
-            make.top.equalTo(hostingController.view.snp.bottom).offset(16)
-            make.leading.trailing.bottom.equalTo(view.safeAreaLayoutGuide)
+            make.edges.equalTo(view.safeAreaLayoutGuide)
         }
-
     }
+
 
     private func handleLegendTap(_ item: DonutChartItem) {
         print("Tapped legend:", item.title)
@@ -122,12 +135,12 @@ extension TransactionsAnalyticsViewController: UITableViewDataSource, UITableVie
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80
+        return 60
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let headerView = UIView()
-        headerView.backgroundColor = .clear
+        headerView.backgroundColor = .systemBackground
 
         let section = viewModel.sections[section]
 

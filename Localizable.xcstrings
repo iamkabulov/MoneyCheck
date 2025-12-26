@@ -1,21 +1,14 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@ - %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ - %2$lld"
-          }
-        }
-      }
+    "%@" : {
+      "shouldTranslate" : false
     },
     "%lld ₸" : {
-
+      "shouldTranslate" : false
     },
     "%lld%%" : {
-
+      "shouldTranslate" : false
     },
     "Amount can't be empty" : {
       "localizations" : {
@@ -105,7 +98,7 @@
       }
     },
     "Value" : {
-
+      "shouldTranslate" : false
     },
     "week" : {
       "extractionState" : "manual",
