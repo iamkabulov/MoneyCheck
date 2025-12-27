@@ -12,6 +12,7 @@ import SwiftUICore
 
 final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsRouterProtocol, TransactionsAnalyticsUseCaseProtocol>, ObservableObject {
 //    @Published var transaction: TransactionModel
+    @Published var periodTitle: String = ""
     @Published var selectedCategoryIds: Set<UUID> = []
     @Published var chartDonutItems: [DonutChartItem] = []
     @Published var sections: [TransactionSection] = []
@@ -52,7 +53,7 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
         print("Deinit TransactionsAnalyticsViewModel")
     }
 
-    private func bindPeriod() {
+    func bindPeriod() {
         period.$period
             .removeDuplicates()
             .sink { [weak self] period in
@@ -356,5 +357,9 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
                 transactions: sectionTransactions,
                 itemId: UUID())
         }
+    }
+
+    func showSelectPeriod() {
+        router.openSelectPeriod()
     }
 }

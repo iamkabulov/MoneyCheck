@@ -15,8 +15,9 @@ final class TransactionsAnalyticsFactory {
     private init() { }
 
     // MARK: - Root
-    func makeTransactionsAnalyticsModule() -> UIViewController {
-        let router = TransactionsAnalyticsRouter(navigationController: UINavigationController())
+    func makeTransactionsAnalyticsModule() -> UINavigationController {
+        let nav = UINavigationController()
+        let router = TransactionsAnalyticsRouter(navigationController: nav)
         let walletRepository = CoreDataWalletRepository()
         let categoryRepository = CoreDataCategoryRepository()
         let incomeRepository = CoreDataIncomeRepository()
@@ -33,6 +34,7 @@ final class TransactionsAnalyticsFactory {
                                                        router: router)
 
         let vc = TransactionsAnalyticsViewController(viewModel: viewModel)
-        return vc
+        nav.setViewControllers( [vc], animated: false)
+        return nav
     }
 }

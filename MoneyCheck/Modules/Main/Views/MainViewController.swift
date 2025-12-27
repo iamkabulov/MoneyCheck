@@ -73,7 +73,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
     // MARK: - Private methods
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        title = "Финансы"
+        title = String(localized: "finance")
 //        navigationController?.navigationBar.prefersLargeTitles = true
 //        navigationItem.largeTitleDisplayMode = .automatic
 //        collectionView.isScrollEnabled = false

@@ -20,6 +20,22 @@
         }
       }
     },
+    "analytics" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analytics"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аналитика"
+          }
+        }
+      }
+    },
     "customPeriod" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -49,6 +65,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Редактирование транзакции"
+          }
+        }
+      }
+    },
+    "finance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finance"
           }
         }
       }

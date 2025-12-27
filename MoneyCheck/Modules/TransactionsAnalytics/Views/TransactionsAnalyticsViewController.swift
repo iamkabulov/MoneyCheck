@@ -5,6 +5,8 @@ import SwiftUI
 
 final class TransactionsAnalyticsViewController: UIViewController {
 
+    private let periodButton = UIBarButtonItem()
+
     private lazy var hostingController = UIHostingController(rootView: donutView)
     @Published var items: [DonutChartItem] = []
 
@@ -36,7 +38,12 @@ final class TransactionsAnalyticsViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.viewModel.bindPeriod()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -57,10 +64,27 @@ final class TransactionsAnalyticsViewController: UIViewController {
                     self?.tableView.reloadData()
                 }
                 .store(in: &cancellables)
+        viewModel.$selectedPeriod
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] selectedPeriod in
+                self?.periodButton.title = switch selectedPeriod {
+                    case .custom(let from, let to): "\(from.periodName) - \(to.periodName)"
+                    default: selectedPeriod.displayTitle
+                }
+                self?.tableView.reloadData()
+            }
+            .store(in: &cancellables)
     }
 
     private func setupUI() {
+        title = String(localized: "analytics")
         view.backgroundColor = .systemBackground
+
+        periodButton.title = viewModel.selectedPeriod.displayTitle
+        periodButton.target = self
+        periodButton.action = #selector(handlePeriodButtonTapped)
+        self.navigationItem.rightBarButtonItem = periodButton
+        self.navigationItem.rightBarButtonItem?.tintColor = .label
 
         tableView.showsVerticalScrollIndicator = false
         tableView.register(TransactionCell.self, forCellReuseIdentifier: TransactionCell.reuseIdentifier)
@@ -88,8 +112,13 @@ final class TransactionsAnalyticsViewController: UIViewController {
 
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(view.safeAreaLayoutGuide).inset(4)
+            make.leading.trailing.bottom.equalTo(view.safeAreaLayoutGuide)
         }
+    }
+
+    @objc private func handlePeriodButtonTapped() {
+        viewModel.showSelectPeriod()
     }
 
 

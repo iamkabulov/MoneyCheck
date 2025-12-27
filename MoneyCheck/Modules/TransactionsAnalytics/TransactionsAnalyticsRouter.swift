@@ -7,6 +7,7 @@
 
 protocol TransactionsAnalyticsRouterProtocol: AnyObject {
     func showError(_ title: String?, message: String?)
+    func openSelectPeriod()
 }
 
 
@@ -17,4 +18,9 @@ final class TransactionsAnalyticsRouter: BaseRouter {
 }
 
 extension TransactionsAnalyticsRouter: TransactionsAnalyticsRouterProtocol {
+    func openSelectPeriod() {
+        let vc = SelectPeriodFactory().makeSelectPeriodModule(navigationController: navigationController)
+        vc.hidesBottomBarWhenPushed = true
+        self.presentPanModal(vc)
+    }
 }

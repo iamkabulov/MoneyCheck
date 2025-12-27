@@ -39,7 +39,6 @@ struct DonutChartView: View {
                         innerRadius: .ratio(0.6),
                         angularInset: 0
                     )
-                    .accessibilityLabel(item.title)
                     .foregroundStyle(item.color)
                     .annotation(
                         position: .overlay,
@@ -60,7 +59,7 @@ struct DonutChartView: View {
                 VStack(spacing: 4) {
                     Text("\(Int(total)) ₸")
                         .font(.body)
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.primary)
                 }
             }
             .frame(height: 180)
