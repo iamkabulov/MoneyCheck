@@ -76,6 +76,12 @@
             "state" : "translated",
             "value" : "Finance"
           }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Финансы"
+          }
         }
       }
     },
