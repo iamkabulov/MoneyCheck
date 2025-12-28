@@ -187,6 +187,7 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
     private func makeDateInterval(for period: PeriodType, basedOn date: Date, endDate: Date? = nil) -> (start: Date, end: Date) {
         switch period {
             case .week:
+                //TODO: - ИСПРАВИТЬ чтобы всегда была текущая неделя, а не неделя начало месяца
                 guard let start = calendar.dateInterval(of: .weekOfYear, for: date)?.start,
                       let end = calendar.date(byAdding: .day, value: 6, to: start) else { return (Date(), Date()) }
                 return (start, end)
