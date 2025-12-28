@@ -4,6 +4,8 @@ import SnapKit
 
 final class CustomPeriodViewController: UIViewController {
 
+    private let contentView = UIView()
+
     private let periodPicker = CustomPeriodPickerView()
     private let viewModel: SelectPeriodViewModel
 
@@ -52,31 +54,40 @@ final class CustomPeriodViewController: UIViewController {
 
     private func setupUI() {
         view.backgroundColor = .systemBackground
+        view.addSubview(contentView)
 
-        view.addSubview(titleLabel)
-        view.addSubview(cancelButton)
-        view.addSubview(periodPicker)
-        view.addSubview(doneButton)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(cancelButton)
+        contentView.addSubview(periodPicker)
+        contentView.addSubview(doneButton)
 
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).inset(20)
-            make.leading.trailing.equalToSuperview()
+
+        contentView.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+            $0.bottom.equalToSuperview().inset(16)
         }
 
-        cancelButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.centerY.equalTo(titleLabel)
+        titleLabel.snp.makeConstraints {
+            $0.top.equalToSuperview().inset(16)
+            $0.leading.trailing.equalToSuperview()
         }
 
-        periodPicker.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(20)
-            make.leading.trailing.equalToSuperview().inset(20)
+        cancelButton.snp.makeConstraints {
+            $0.trailing.equalToSuperview().inset(16)
+            $0.centerY.equalTo(titleLabel)
         }
 
-        doneButton.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(20)
-            make.bottom.equalToSuperview().inset(50)
+        periodPicker.snp.makeConstraints {
+            $0.top.equalTo(titleLabel.snp.bottom).offset(16)
+            $0.leading.trailing.equalToSuperview().inset(20)
         }
+
+        doneButton.snp.makeConstraints {
+            $0.top.equalTo(periodPicker.snp.bottom).offset(16)
+            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.bottom.equalToSuperview().inset(20)
+        }
+
 
         periodPicker.onDone = { [weak self] in
             self?.validateSelection()
@@ -89,6 +100,29 @@ final class CustomPeriodViewController: UIViewController {
                 periodPicker.selection = PeriodSelection(from: Date(), to: Date())
         }
     }
+
+    private func calculatedHeight() -> CGFloat {
+        view.layoutIfNeeded()
+
+        let targetSize = CGSize(
+            width: view.bounds.width,
+            height: UIView.layoutFittingCompressedSize.height
+        )
+
+        let height = contentView.systemLayoutSizeFitting(
+            targetSize,
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height
+
+        let maxHeight =
+            view.bounds.height
+            - view.safeAreaInsets.top
+            - 12
+
+        return min(height, maxHeight)
+    }
+
 
     private func validateSelection() {
         let calendar = Calendar.current
@@ -110,15 +144,17 @@ final class CustomPeriodViewController: UIViewController {
 }
 
 extension CustomPeriodViewController: PanModalPresentable {
-    var panScrollable: UIScrollView? {
-        nil
-    }
-    
+    var panScrollable: UIScrollView? { nil }
+
     var longFormHeight: PanModalHeight {
-        return .maxHeightWithTopInset(200)
+        .contentHeight(calculatedHeight())
+    }
+
+    var shortFormHeight: PanModalHeight {
+        longFormHeight
     }
 
     var showDragIndicator: Bool {
-        return false
+        false
     }
 }

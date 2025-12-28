@@ -73,6 +73,8 @@ enum PeriodType: Equatable {
 }
 
 final class SelectPeriodViewController: UIViewController {
+    private let contentView = UIView()
+
     private let viewModel: SelectPeriodViewModel
     private var cancellables = Set<AnyCancellable>()
 
@@ -144,29 +146,45 @@ final class SelectPeriodViewController: UIViewController {
 
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        view.addSubview(titleLabel)
-        view.addSubview(cancelButton)
-        view.addSubview(stackView)
-        view.addSubview(applyButton)
+        view.addSubview(contentView)
 
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).inset(20)
-            make.leading.trailing.equalToSuperview().inset(20)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(cancelButton)
+        contentView.addSubview(stackView)
+        contentView.addSubview(applyButton)
+
+        contentView.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+            $0.bottom.equalToSuperview().inset(16)
         }
 
-        cancelButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(20)
-            make.centerY.equalTo(titleLabel)
+        titleLabel.snp.makeConstraints {
+            $0.top.equalToSuperview().inset(16)
+            $0.leading.trailing.equalToSuperview().inset(20)
         }
 
-        stackView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(20)
-            make.leading.trailing.equalToSuperview().inset(16)
-            make.height.equalTo((PeriodType.allCases.count + 1) * 70)
+        cancelButton.snp.makeConstraints {
+            $0.trailing.equalToSuperview().inset(16)
+            $0.centerY.equalTo(titleLabel)
         }
 
-        applyButton.snp.makeConstraints { make in
-            make.leading.trailing.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
+        stackView.snp.makeConstraints {
+            $0.top.equalTo(titleLabel.snp.bottom).offset(16)
+            $0.leading.trailing.equalToSuperview().inset(16)
+        }
+
+        // 🔑 Spacer для гибкого расстояния
+        let spacer = UIView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .vertical)
+        contentView.addSubview(spacer)
+        spacer.snp.makeConstraints {
+            $0.top.equalTo(stackView.snp.bottom)
+            $0.bottom.equalTo(applyButton.snp.top).offset(-44)
+            $0.leading.trailing.equalToSuperview()
+        }
+
+        applyButton.snp.makeConstraints {
+            $0.leading.trailing.bottom.equalToSuperview().inset(16)
         }
 
         PeriodType.allCases.forEach { period in
@@ -207,6 +225,21 @@ final class SelectPeriodViewController: UIViewController {
             }
         }
     }
+
+    private func calculatedContentHeight() -> CGFloat {
+        view.layoutIfNeeded()
+
+        let targetSize = CGSize(
+            width: view.bounds.width,
+            height: UIView.layoutFittingCompressedSize.height
+        )
+
+        return contentView.systemLayoutSizeFitting(
+            targetSize,
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height
+    }
 }
 
 extension Date {
@@ -241,15 +274,26 @@ extension PeriodType {
 }
 
 extension SelectPeriodViewController: PanModalPresentable {
-    var panScrollable: UIScrollView? {
-        nil
-    }
+
+    var panScrollable: UIScrollView? { nil }
 
     var longFormHeight: PanModalHeight {
-        return .maxHeightWithTopInset(200)
+        let contentHeight = calculatedContentHeight()
+        let minHeight: CGFloat = 300   // 👈 минимум
+        let maxHeight =
+            view.bounds.height
+            - view.safeAreaInsets.top
+            - 12
+
+        let finalHeight = min(max(contentHeight, minHeight), maxHeight)
+        return .contentHeight(finalHeight)
+    }
+
+    var shortFormHeight: PanModalHeight {
+        longFormHeight
     }
 
     var showDragIndicator: Bool {
-        return false
+        false
     }
 }

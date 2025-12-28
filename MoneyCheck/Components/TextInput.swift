@@ -18,7 +18,6 @@ final class TextInput: UITextField {
         layer.cornerRadius = 8
         layer.borderColor = UIColor.systemGray5.cgColor
         textColor = .label
-        autocorrectionType = .no
         delegate = self
     }
     

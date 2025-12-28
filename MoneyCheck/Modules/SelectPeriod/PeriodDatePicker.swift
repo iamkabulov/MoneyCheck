@@ -74,11 +74,11 @@ final class CustomPeriodPickerView: UIView {
 
         let stack = UIStackView(arrangedSubviews: [buttonsStack, datePicker])
         stack.axis = .vertical
-        stack.spacing = 12
+        stack.spacing = 4
         addSubview(stack)
 
         stack.snp.makeConstraints { make in
-            make.top.equalTo(safeAreaLayoutGuide).inset(8)
+            make.top.equalTo(safeAreaLayoutGuide)
             make.leading.trailing.bottom.equalToSuperview()
         }
 

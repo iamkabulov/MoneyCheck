@@ -44,6 +44,11 @@ final class TransactionsAnalyticsViewController: UIViewController {
         self.viewModel.bindPeriod()
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.updateTableHeaderHeight()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -56,7 +61,9 @@ final class TransactionsAnalyticsViewController: UIViewController {
     private func bindViewModel() {
         viewModel.$chartDonutItems
                 .receive(on: DispatchQueue.main)
-                .assign(to: \.self.items, on: self)
+                .sink { [weak self] _ in
+                    self?.updateTableHeaderHeight()
+                }
                 .store(in: &cancellables)
         viewModel.$sections
                 .receive(on: DispatchQueue.main)
@@ -71,10 +78,38 @@ final class TransactionsAnalyticsViewController: UIViewController {
                     case .custom(let from, let to): "\(from.periodName) - \(to.periodName)"
                     default: selectedPeriod.displayTitle
                 }
-                self?.tableView.reloadData()
+//                self?.tableView.reloadData()
             }
             .store(in: &cancellables)
     }
+
+    private func updateTableHeaderHeight() {
+        guard let headerView = tableView.tableHeaderView else { return }
+
+        // Форсируем layout SwiftUI
+        headerView.setNeedsLayout()
+        headerView.layoutIfNeeded()
+
+        // Вычисляем корректную высоту
+        let targetSize = headerView.systemLayoutSizeFitting(
+            CGSize(
+                width: tableView.bounds.width,
+                height: UIView.layoutFittingCompressedSize.height
+            ),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        )
+
+        // Обновляем frame
+        if headerView.frame.height != targetSize.height {
+            var frame = headerView.frame
+            frame.size.height = targetSize.height
+            headerView.frame = frame
+
+            tableView.tableHeaderView = headerView
+        }
+    }
+
 
     private func setupUI() {
         title = String(localized: "analytics")
@@ -112,8 +147,7 @@ final class TransactionsAnalyticsViewController: UIViewController {
 
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).inset(4)
-            make.leading.trailing.bottom.equalTo(view.safeAreaLayoutGuide)
+            make.edges.equalTo(view.safeAreaLayoutGuide)
         }
     }
 
