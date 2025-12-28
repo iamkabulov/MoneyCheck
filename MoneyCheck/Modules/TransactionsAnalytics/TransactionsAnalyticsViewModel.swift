@@ -187,8 +187,7 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
     private func makeDateInterval(for period: PeriodType, basedOn date: Date, endDate: Date? = nil) -> (start: Date, end: Date) {
         switch period {
             case .week:
-                //TODO: - ИСПРАВИТЬ чтобы всегда была текущая неделя, а не неделя начало месяца
-                guard let start = calendar.dateInterval(of: .weekOfYear, for: date)?.start,
+                guard let start = calendar.dateInterval(of: .weekOfYear, for: Date())?.start,
                       let end = calendar.date(byAdding: .day, value: 6, to: start) else { return (Date(), Date()) }
                 return (start, end)
 
@@ -315,30 +314,6 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
         for itemId in itemIds {
             transactions += self.transactions.filter {
                 $0.destinationId == itemId
-            }
-        }
-
-        guard !transactions.isEmpty else { return [] } // если пусто — вернём []
-
-        let grouped = Dictionary(grouping: transactions) { transaction in
-            self.calendar.startOfDay(for: transaction.date)
-        }
-        let sortedDays = grouped.keys.sorted(by: >)
-
-        return sortedDays.map { date in
-            let sectionTransactions = grouped[date]?.sorted(by: { $0.date > $1.date }) ?? []
-            return TransactionSection(
-                date: date,
-                transactions: sectionTransactions,
-                itemId: UUID())
-        }
-    }
-
-    func excludedTransactions(itemIds: Set<UUID>) -> [TransactionSection] {
-        var transactions = [TransactionModel]()
-        for itemId in itemIds {
-            transactions += self.transactions.filter {
-                $0.destinationId != itemId
             }
         }
 

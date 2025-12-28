@@ -212,7 +212,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     private func makeDateInterval(for period: PeriodType, basedOn date: Date, endDate: Date? = nil) -> (start: Date, end: Date) {
         switch period {
             case .week:
-                guard let start = calendar.dateInterval(of: .weekOfYear, for: date)?.start,
+                guard let start = calendar.dateInterval(of: .weekOfYear, for: Date())?.start,
                       let end = calendar.date(byAdding: .day, value: 6, to: start) else { return (Date(), Date()) }
                 return (start, end)
 
