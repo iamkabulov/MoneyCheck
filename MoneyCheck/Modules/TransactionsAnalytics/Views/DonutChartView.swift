@@ -27,6 +27,12 @@ struct DonutChartView: View {
 
     var body: some View {
         VStack {
+            SegmentedPicker(
+                items: [.expense, .income],
+                selectedItem: $viewModel.type
+            )
+            .padding(.top, 4)
+            .padding(.horizontal, 8)
             ZStack {
                 let displayedItems = viewModel.chartDonutItems.filter {
                     viewModel.selectedCategoryIds.contains($0.id)
@@ -51,7 +57,11 @@ struct DonutChartView: View {
                         }
                     }
                 }
-                .animation(.easeInOut(duration: 0.5), value: displayedItems)
+                //TODO: - подумать над анимацией только чарта
+//                .animation(
+//                    .interpolatingSpring(duration: 0.7),
+//                    value: displayedItems
+//                )
                 .chartLegend(.hidden)
                 
 
@@ -63,7 +73,6 @@ struct DonutChartView: View {
                 }
             }
             .frame(height: 180)
-            .padding(.top, 8)
         }
         // Легенда
         LazyVGrid(
@@ -115,6 +124,3 @@ struct DonutChartView: View {
         .padding(.top, 8)
     }
 }
-
-//TODO: - TEST
-//MARK: - TEST2

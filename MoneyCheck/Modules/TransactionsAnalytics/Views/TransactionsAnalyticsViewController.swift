@@ -60,17 +60,17 @@ final class TransactionsAnalyticsViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.$chartDonutItems
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] _ in
-                    self?.updateTableHeaderHeight()
-                }
-                .store(in: &cancellables)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateTableHeaderHeight()
+            }
+            .store(in: &cancellables)
         viewModel.$sections
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] _ in
-                    self?.tableView.reloadData()
-                }
-                .store(in: &cancellables)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.tableView.reloadData()
+            }
+            .store(in: &cancellables)
         viewModel.$selectedPeriod
             .receive(on: DispatchQueue.main)
             .sink { [weak self] selectedPeriod in
@@ -78,7 +78,13 @@ final class TransactionsAnalyticsViewController: UIViewController {
                     case .custom(let from, let to): "\(from.periodName) - \(to.periodName)"
                     default: selectedPeriod.displayTitle
                 }
-//                self?.tableView.reloadData()
+                //                self?.tableView.reloadData()
+            }
+            .store(in: &cancellables)
+        viewModel.$type
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.tableView.reloadData()
             }
             .store(in: &cancellables)
     }

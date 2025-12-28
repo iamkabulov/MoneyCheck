@@ -17,16 +17,17 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
     @Published var chartDonutItems: [DonutChartItem] = []
     @Published var sections: [TransactionSection] = []
     private var transactions: [TransactionModel] = []
-    let type: TransactionType = .expense
+    @Published var type: TransactionType = .expense {
+        didSet {
+            self.bindType()
+        }
+    }
     private let calendar = Calendar.current
     var currentDate: Date {
         didSet {
 //            updatePeriodTitle()
         }
     }
-
-    @Published private(set) var wallets: [WalletModel] = []
-    @Published private(set) var incomes: [IncomeModel] = []
     @Published private(set) var error: Error?
     @Published private(set) var isLoading = false
     @Published private(set) var selectedPeriod: PeriodType = .month
@@ -69,6 +70,15 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
             .store(in: &cancellables)
     }
 
+    func bindType() {
+        let interval = makeDateInterval(
+            for: selectedPeriod,
+            basedOn: currentDate
+        )
+        self.getTransactions(start: interval.start, end: interval.end)
+        self.loadDonutChartModel()
+    }
+
     private func bindDataChanges() {
         useCase.dataDidChange
             .receive(on: DispatchQueue.main)
@@ -86,31 +96,58 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
 
     func loadDonutChartModel() {
         isLoading = true
-        useCase.getCategories(period: selectedPeriod)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                self?.isLoading = false
-                if case .failure(let error) = completion {
-                    self?.error = error
-                    print("Error loading data: \(error)")
+        if type == .income {
+            useCase.getIncomes(period: selectedPeriod)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.error = error
+                        print("Error loading data: \(error)")
+                    }
+                } receiveValue: { wallets in
+                    self.chartDonutItems = wallets.map { wallet in
+                        let calculatedBalance = self.calculateBalance(
+                            for: wallet.id,
+                            transactions: wallet.transactions
+                        )
+                        return DonutChartItem(
+                            id: wallet.id,
+                            title: wallet.name,
+                            value: abs(calculatedBalance),
+                            color: Color(hex: wallet.color)
+                        )
+                    }
+                    self.selectedCategoryIds = Set(self.chartDonutItems.map(\.id))
                 }
-            } receiveValue: { categories in
-                self.chartDonutItems = categories.map { category in
-                    let calculatedBalance = self.calculateBalance(
-                        for: category.id,
-                        transactions: category.transactions
-                    )
-                    return DonutChartItem(
-                        id: category.id,
-                        title: category.name,
-                        value: abs(calculatedBalance),
-                        color: Color(hex: category.color)
-                    )
+                .store(in: &cancellables)
+        } else if type == .expense {
+            useCase.getCategories(period: selectedPeriod)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] completion in
+                    self?.isLoading = false
+                    if case .failure(let error) = completion {
+                        self?.error = error
+                        print("Error loading data: \(error)")
+                    }
+                } receiveValue: { categories in
+                    self.chartDonutItems = categories.map { category in
+                        let calculatedBalance = self.calculateBalance(
+                            for: category.id,
+                            transactions: category.transactions
+                        )
+                        return DonutChartItem(
+                            id: category.id,
+                            title: category.name,
+                            value: abs(calculatedBalance),
+                            color: Color(hex: category.color)
+                        )
+                    }
+                    //MARK: - Изначально выбранный
+                    self.selectedCategoryIds = Set(self.chartDonutItems.map(\.id))
                 }
-                //MARK: - Изначально выбранный
-                self.selectedCategoryIds = Set(self.chartDonutItems.map(\.id))
-            }
-            .store(in: &cancellables)
+                .store(in: &cancellables)
+        }
     }
 
     private func getTransactions(start: Date, end: Date) {
@@ -146,44 +183,6 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
             .store(in: &cancellables)
     }
 
-//    func loadTransactions(endDate: Date?) {
-//        let interval = self.makeDateInterval(
-//            for: self.period.period,
-//            basedOn: self.currentDate,
-//            endDate: endDate
-//        )
-//
-//        switch period.period {
-//        case .week:
-//            guard let newPeriod = PeriodType.from(id: 0, from: interval.start, to: interval.end) else {
-//                return
-//            }
-//            self.period.period = newPeriod
-//            self.currentDate = interval.start
-//            getTransactions(start: interval.start, end: interval.end)
-//
-//        case .month:
-//            guard let newPeriod = PeriodType.from(id: 2, from: interval.start, to: interval.end) else {
-//                return
-//            }
-//            self.period.period = newPeriod
-//            self.currentDate = interval.start
-//            getTransactions(start: interval.start, end: interval.end)
-//
-//        case .custom:
-//            guard let newPeriod = PeriodType.from(id: 3, from: interval.start, to: interval.end) else {
-//                return
-//            }
-//            self.period.period = newPeriod
-//            self.currentDate = interval.start
-//            getTransactions(start: interval.start, end: interval.end)
-//            return // важно: не выполнять общий код ниже
-//
-//        case .lastMonth, .wholeTime:
-//            return
-//        }
-//    }
-
     private func makeDateInterval(for period: PeriodType, basedOn date: Date, endDate: Date? = nil) -> (start: Date, end: Date) {
         switch period {
             case .week:
@@ -207,70 +206,6 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
         }
     }
 
-//    func loadData() {
-//        isLoading = true
-//        Publishers.CombineLatest3(
-//            useCase.getWallets(period: selectedPeriod),
-//            useCase.getCategories(period: selectedPeriod),
-//            useCase.getIncomes(period: selectedPeriod)
-//        )
-//        .receive(on: DispatchQueue.main)
-//        .sink { [weak self] completion in
-//            self?.isLoading = false
-//            if case .failure(let error) = completion {
-//                self?.error = error
-//                print("Error loading data: \(error)")
-//            }
-//        } receiveValue: { [weak self] wallets, categories, incomes in
-//            self?.wallets = wallets.map { wallet in
-//                let calculatedBalance = self?.calculateBalance(
-//                    for: wallet.id,
-//                    transactions: wallet.transactions
-//                )
-//                return WalletModel(
-//                    id: wallet.id,
-//                    name: wallet.name,
-//                    type: wallet.type,
-//                    amount: calculatedBalance ?? 0,
-//                    icon: wallet.icon,
-//                    color: wallet.color,
-//                    transactions: wallet.transactions
-//                )
-//            }
-//            self?.categories = categories.map { category in
-//                let calculatedBalance = self?.calculateBalance(
-//                    for: category.id,
-//                    transactions: category.transactions
-//                )
-//                return CategoryModel(
-//                    id: category.id,
-//                    name: category.name,
-//                    type: category.type,
-//                    amount: abs(calculatedBalance ?? 0),
-//                    icon: category.icon,
-//                    color: category.color,
-//                    transactions: category.transactions
-//                )
-//            }
-//            self?.incomes = incomes.map { income in
-//                let calculatedBalance = self?.calculateBalance(
-//                    for: income.id,
-//                    transactions: income.transactions
-//                )
-//                return IncomeModel(
-//                    id: income.id,
-//                    name: income.name,
-//                    type: income.type,
-//                    amount: calculatedBalance ?? 0,
-//                    icon: income.icon,
-//                    color: income.color,
-//                    transactions: income.transactions
-//                )
-//            }
-//        }
-//        .store(in: &cancellables)
-//    }
-//
     func calculateBalance(for id: UUID, transactions: [TransactionModel]) -> Double {
         transactions.reduce(0) { partial, transaction in
             switch transaction.type {
@@ -313,7 +248,7 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
         var transactions = [TransactionModel]()
         for itemId in itemIds {
             transactions += self.transactions.filter {
-                $0.destinationId == itemId
+                $0.destinationId == itemId || $0.sourceId == itemId
             }
         }
 
