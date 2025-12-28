@@ -108,9 +108,7 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
                     )
                 }
                 //MARK: - Изначально выбранный
-                if self.selectedCategoryIds.isEmpty {
-                    self.selectedCategoryIds = Set(self.chartDonutItems.map(\.id))
-                }
+                self.selectedCategoryIds = Set(self.chartDonutItems.map(\.id))
             }
             .store(in: &cancellables)
     }
