@@ -18,11 +18,11 @@ final class TabBarController: UITabBarController {
 
     private func setupAppearance() {
         let appearance = UITabBarAppearance()
-        appearance.configureWithDefaultBackground()
-        appearance.backgroundColor = .clear
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundEffect = UIBlurEffect(style: .systemChromeMaterial)
 
         tabBar.standardAppearance = appearance
-        tabBar.scrollEdgeAppearance = appearance // ❗️КРИТИЧНО
+        tabBar.scrollEdgeAppearance = appearance
     }
 
     private func setupTabs() {

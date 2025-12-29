@@ -9,6 +9,7 @@ final class TransactionsAnalyticsViewController: UIViewController {
 
     private lazy var hostingController = UIHostingController(rootView: donutView)
     @Published var items: [DonutChartItem] = []
+    private lazy var emptyView = EmptyView()
 
     private let viewModel: TransactionsAnalyticsViewModel
     private var cancellables = Set<AnyCancellable>()
@@ -63,6 +64,7 @@ final class TransactionsAnalyticsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.updateTableHeaderHeight()
+                self?.updateUI()
             }
             .store(in: &cancellables)
         viewModel.$sections
@@ -78,7 +80,7 @@ final class TransactionsAnalyticsViewController: UIViewController {
                     case .custom(let from, let to): "\(from.periodName) - \(to.periodName)"
                     default: selectedPeriod.displayTitle
                 }
-                //                self?.tableView.reloadData()
+                self?.tableView.reloadData()
             }
             .store(in: &cancellables)
         viewModel.$type
@@ -113,6 +115,14 @@ final class TransactionsAnalyticsViewController: UIViewController {
             headerView.frame = frame
 
             tableView.tableHeaderView = headerView
+        }
+    }
+
+    private func updateUI() {
+        if viewModel.sections.isEmpty {
+            emptyView.isHidden = false
+        } else {
+            emptyView.isHidden = true
         }
     }
 
@@ -153,7 +163,12 @@ final class TransactionsAnalyticsViewController: UIViewController {
 
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+            make.edges.equalToSuperview()
+        }
+
+        view.addSubview(emptyView)
+        emptyView.snp.makeConstraints { make in
+            make.centerY.centerX.equalToSuperview()
         }
     }
 

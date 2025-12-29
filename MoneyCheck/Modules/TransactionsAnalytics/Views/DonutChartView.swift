@@ -67,7 +67,7 @@ struct DonutChartView: View {
 
                 // Центр с суммой
                 VStack(spacing: 4) {
-                    Text("\(Int(total)) ₸")
+                    Text(total > 0 ? "\(Int(total)) ₸" : "")
                         .font(.body)
                         .foregroundStyle(.primary)
                 }
@@ -77,7 +77,7 @@ struct DonutChartView: View {
         // Легенда
         LazyVGrid(
             columns: [
-                GridItem(.adaptive(minimum: 110), spacing: 8)
+                GridItem(.adaptive(minimum: 110), spacing: 2)
             ],
             alignment: .center,
             spacing: 8
@@ -103,8 +103,8 @@ struct DonutChartView: View {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(
                                 viewModel.isSelected(item)
-                                ? item.color.opacity(0.15)
-                                : Color.clear
+                                ? item.color.opacity(0.3)
+                                : Color.secondary
                             )
                     )
                     .overlay(
