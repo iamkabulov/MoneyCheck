@@ -271,4 +271,8 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
     func showSelectPeriod() {
         router.openSelectPeriod()
     }
+
+    func showEditTransaction(for transaction: TransactionModel) {
+        router.showTransactionEditView(transaction)
+    }
 }
