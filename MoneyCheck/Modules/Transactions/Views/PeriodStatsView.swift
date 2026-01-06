@@ -33,6 +33,81 @@ final class PeriodStatsView: UIView {
     private let perDayAmount = AmountLabel()
     private let perDayPercentage = AmountLabel()
 
+
+    private let bottomContainer = UIView()
+    let expenseLabelWalletAmount: AmountLabel = {
+        let label = AmountLabel()
+        label.textColor = .label
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 14, weight: .regular)
+        label.text = String(localized: "expenses")
+        return label
+    }()
+
+    let expenseLabelWallet: AmountLabel = {
+        let label = AmountLabel()
+        label.textColor = .systemRed
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 24, weight: .semibold)
+        label.text = "100000"
+        return label
+    }()
+
+
+    let incomeLabelWalletAmount: AmountLabel = {
+        let label = AmountLabel()
+        label.textColor = .label
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 14, weight: .regular)
+        label.text = String(localized: "incomes")
+        return label
+    }()
+
+    let incomeLabelWallet: AmountLabel = {
+        let label = AmountLabel()
+        label.textColor = .systemGreen
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 24, weight: .semibold)
+        label.text = "100000"
+        return label
+    }()
+
+    private lazy var stackViewIncome: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.distribution = .fillProportionally
+        stackView.alignment = .center
+        stackView.layer.cornerRadius = 20
+        stackView.backgroundColor = .secondarySystemBackground
+        stackView.spacing = 4
+        stackView.addArrangedSubview(incomeLabelWalletAmount)
+        stackView.addArrangedSubview(incomeLabelWallet)
+        return stackView
+    }()
+
+    private lazy var stackViewExpense: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.distribution = .fillProportionally
+        stackView.alignment = .center
+        stackView.layer.cornerRadius = 20
+        stackView.backgroundColor = .secondarySystemBackground
+        stackView.spacing = 4
+        stackView.addArrangedSubview(expenseLabelWalletAmount)
+        stackView.addArrangedSubview(expenseLabelWallet)
+        return stackView
+    }()
+
+    private lazy var stackViewWalletLabels: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.distribution = .fillEqually
+        stackView.spacing = 8
+        stackView.addArrangedSubview(stackViewIncome)
+        stackView.addArrangedSubview(stackViewExpense)
+        return stackView
+    }()
+
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -120,6 +195,7 @@ final class PeriodStatsView: UIView {
         addSubview(persentageStack)
 
         addSubview(collectionView)
+        addSubview(stackViewWalletLabels)
 
         // Layout (SnapKit)
         navStack.snp.makeConstraints { make in
@@ -147,6 +223,26 @@ final class PeriodStatsView: UIView {
         }
 
         collectionView.snp.makeConstraints { make in
+            make.top.equalTo(statsStack.snp.bottom).offset(4)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview().inset(8)
+            make.height.equalTo(100)
+        }
+
+        bottomContainer.addSubview(collectionView)
+        bottomContainer.addSubview(stackViewWalletLabels)
+
+        collectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        stackViewWalletLabels.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        addSubview(bottomContainer)
+
+        bottomContainer.snp.makeConstraints { make in
             make.top.equalTo(statsStack.snp.bottom).offset(4)
             make.leading.trailing.equalToSuperview()
             make.bottom.equalToSuperview().inset(8)
@@ -221,7 +317,6 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     }
 
     func scrollToPeriod(at index: Int) {
-
         guard index < charts.count else { return }
         collectionView.scrollToItem(
             at: IndexPath(item: index, section: 0),
@@ -234,11 +329,11 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
         guard index >= 0 else { return }
         expenseAmount.amountFormatter(charts[index].total)
         perDayAmount.amountFormatter(charts[index].average)
+
         if let percentage = charts[index].percentage {
             switch charts[index].itemType {
                 case .income:
                     if percentage > 0 {
-                        expenseLabel.text = String(localized: "income")
                         expensePercentage.text = "+" + String(format: "%.1f", percentage) + "%"
                         expensePercentage.textColor = .systemGreen
 
@@ -283,6 +378,48 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     func indexOfCurrentPeriod(in charts: [ChartBarData], currentDate: Date) -> Int? {
         return charts.firstIndex { chart in
             return currentDate == chart.startDate && currentDate <= chart.endDate
+        }
+    }
+
+    func updateUI(type: ItemType) {
+        if type == .wallet {
+            budgetLabel.isHidden = true
+            budgetAmount.isHidden = true
+            editButton.isHidden = true
+            expenseLabel.isHidden = true
+            expenseAmount.isHidden = true
+            expensePercentage.isHidden = true
+            perDayLabel.isHidden = true
+            perDayAmount.isHidden = true
+            perDayPercentage.isHidden = true
+            collectionView.isHidden = true
+            stackViewWalletLabels.isHidden = false
+        } else if type == .income {
+            expenseLabel.text = String(localized: "income")
+            budgetLabel.isHidden = false
+            budgetAmount.isHidden = false
+            editButton.isHidden = false
+            expenseLabel.isHidden = false
+            expenseAmount.isHidden = false
+            expensePercentage.isHidden = false
+            perDayLabel.isHidden = false
+            perDayAmount.isHidden = false
+            perDayPercentage.isHidden = false
+            collectionView.isHidden = false
+            stackViewWalletLabels.isHidden = true
+        } else if type == .category {
+            expenseLabel.text = String(localized: "expense")
+            budgetLabel.isHidden = false
+            budgetAmount.isHidden = false
+            editButton.isHidden = false
+            expenseLabel.isHidden = false
+            expenseAmount.isHidden = false
+            expensePercentage.isHidden = false
+            perDayLabel.isHidden = false
+            perDayAmount.isHidden = false
+            perDayPercentage.isHidden = false
+            collectionView.isHidden = false
+            stackViewWalletLabels.isHidden = true
         }
     }
 }

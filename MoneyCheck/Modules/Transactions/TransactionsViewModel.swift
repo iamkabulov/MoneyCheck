@@ -32,6 +32,43 @@ struct TransactionSection {
             return total
         }
     }
+
+    var incomeAmount: Double {
+        transactions.reduce(0) { total, transaction in
+            switch transaction.type {
+            case .income:
+                return total + transaction.amount
+
+            case .transfer:
+                if transaction.destinationId == itemId {
+                    return total + transaction.amount
+                }
+                return total
+
+            default:
+                return total
+            }
+        }
+    }
+
+    var expenseAmount: Double {
+        transactions.reduce(0) { total, transaction in
+            switch transaction.type {
+            case .expense:
+                return total + transaction.amount   // БЕЗ минуса
+
+            case .transfer:
+                if transaction.sourceId == itemId {
+                    return total + transaction.amount
+                }
+                return total
+
+            default:
+                return total
+            }
+        }
+    }
+
 }
 
 typealias UseCase = TransactionsIntervalUserCaseProtocol & TransactionsUseCaseProtocol
@@ -212,7 +249,7 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     private func makeDateInterval(for period: PeriodType, basedOn date: Date, endDate: Date? = nil) -> (start: Date, end: Date) {
         switch period {
             case .week:
-                guard let start = calendar.dateInterval(of: .weekOfYear, for: Date())?.start,
+                guard let start = calendar.dateInterval(of: .weekOfYear, for: date)?.start,
                       let end = calendar.date(byAdding: .day, value: 6, to: start) else { return (Date(), Date()) }
                 return (start, end)
 

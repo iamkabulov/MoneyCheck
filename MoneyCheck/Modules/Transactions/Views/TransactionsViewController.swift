@@ -10,7 +10,7 @@ final class TransactionsViewController: UIViewController {
     private lazy var stats = PeriodStatsView()
 
     private lazy var tableView: UITableView = {
-        let tableView = UITableView(frame: .zero, style: .insetGrouped)
+        let tableView = UITableView(frame: .zero, style: .plain)
         tableView.backgroundColor = .systemBackground
         tableView.separatorStyle = .none
         tableView.register(TransactionCell.self, forCellReuseIdentifier: TransactionCell.reuseIdentifier)
@@ -91,6 +91,12 @@ final class TransactionsViewController: UIViewController {
             .sink { [weak self] sections in
                 print("\(sections.count)")
                 self?.tableView.reloadData()
+                self?.stats.expenseLabelWallet.amountFormatter(sections.reduce(0) { partialResult, transaction in
+                        partialResult + transaction.expenseAmount
+                }, sign: "-")
+                self?.stats.incomeLabelWallet.amountFormatter(sections.reduce(0) { partialResult, transaction in
+                        partialResult + transaction.incomeAmount
+                    }, sign: "+")
             }
             .store(in: &cancellables)
         viewModel.$periodTitle
@@ -104,6 +110,7 @@ final class TransactionsViewController: UIViewController {
             .sink { [weak self] values in
                 guard let self = self else { return }
                 self.stats.reloadData(values, date: self.viewModel.currentDate)
+                self.stats.updateUI(type: viewModel.itemType)
             }
             .store(in: &cancellables)
     }
@@ -153,7 +160,7 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let headerView = UIView()
-        headerView.backgroundColor = .clear
+        headerView.backgroundColor = .systemBackground
         
         let section = viewModel.sections[section]
         
