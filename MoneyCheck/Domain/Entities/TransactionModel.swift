@@ -1,9 +1,15 @@
 import Foundation
 
 enum TransactionType: String, Codable {
-    case income = "Доход"
-    case expense = "Расход"
-    case transfer = "Перевод"
+    case income = "incomes"
+    case expense = "expenses"
+    case transfer = "transfers"
+}
+
+extension TransactionType {
+    var title: String {
+        String(localized: String.LocalizationValue(rawValue))
+    }
 }
 
 struct TransactionModel: Identifiable, Codable {

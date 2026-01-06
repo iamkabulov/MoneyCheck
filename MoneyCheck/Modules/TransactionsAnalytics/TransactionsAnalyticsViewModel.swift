@@ -75,8 +75,8 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
             for: selectedPeriod,
             basedOn: currentDate
         )
-        self.getTransactions(start: interval.start, end: interval.end)
         self.loadDonutChartModel()
+        self.getTransactions(start: interval.start, end: interval.end)
     }
 
     private func bindDataChanges() {

@@ -48,7 +48,7 @@ final class TransactionsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        title = "Transactions"
+        title = String(localized: "transactions")
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -76,7 +76,7 @@ final class TransactionsViewController: UIViewController {
             make.centerY.equalTo(tableView.snp.centerY)
         }
 
-        editButton.title = "Править"
+        editButton.title = String(localized: "edit")
         self.editButton.target = self
         self.editButton.action = #selector(openEditItemViewController)
         self.navigationItem.rightBarButtonItem = editButton

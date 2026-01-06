@@ -10,23 +10,23 @@ class ItemViewController: UIViewController {
     // MARK: - UI Components
     private lazy var nameField: TextInput = {
         let field = TextInput()
-        field.placeholder = "Название"
+        field.placeholder = String(localized: "name")
         return field
     }()
 
     private lazy var iconsView = PagedCollectionView(
-        title: "Иконка",
+        title: String(localized: "icon"),
         itemSize: CGSize(width: 50, height: 50)
     )
 
     private lazy var colorsView = PagedCollectionView(
-        title: "Цвет",
+        title: String(localized: "color"),
         itemSize: CGSize(width: 40, height: 40)
     )
 
     private lazy var saveButton: PrimaryButton = {
         let button = PrimaryButton(type: .system)
-        button.setTitle("Сохранить", for: .normal)
+        button.setTitle(String(localized: "save"), for: .normal)
         button.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -56,7 +56,7 @@ class ItemViewController: UIViewController {
         setupKeyboardDismissGesture()
 
         if viewModel is EditItemViewModel {
-            deleteButton.title = "Удалить"
+            deleteButton.title = String(localized: "delete")
             deleteButton.target = self
             deleteButton.action = #selector(deleteItem)
             navigationItem.rightBarButtonItem = deleteButton

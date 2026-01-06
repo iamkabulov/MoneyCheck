@@ -270,6 +270,6 @@ extension TransactionsAnalyticsViewController: UITableViewDataSource, UITableVie
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let transaction = viewModel.sections[indexPath.section].transactions[indexPath.row]
-        viewModel.showEditTransaction(for: transaction)
+        viewModel.showEditTransaction(for: transaction) 
     }
 }

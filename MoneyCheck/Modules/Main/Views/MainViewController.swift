@@ -310,7 +310,11 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 
 
     private func showError(_ error: Error) {
-        let alert = UIAlertController(title: "Ошибка", message: error.localizedDescription, preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: String(localized: "error"),
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }

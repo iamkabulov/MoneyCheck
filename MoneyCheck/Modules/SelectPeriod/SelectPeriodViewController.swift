@@ -105,7 +105,7 @@ final class SelectPeriodViewController: UIViewController {
 
     private lazy var applyButton: PrimaryButton = {
         let button = PrimaryButton()
-        button.setTitle("Применить", for: .normal)
+        button.setTitle(String(localized: "apply"), for: .normal)
         button.addTarget(self, action: #selector(apply), for: .touchUpInside)
         return button
     }()

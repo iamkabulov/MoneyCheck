@@ -149,7 +149,3 @@ final class CustomPeriodPickerView: UIView {
         }
     }
 }
-
-
-
-

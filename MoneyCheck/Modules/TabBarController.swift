@@ -29,8 +29,8 @@ final class TabBarController: UITabBarController {
         let mainNav = MainFactory.shared.makeMainModule()
         let analyticsNav = TransactionsAnalyticsFactory.shared.makeTransactionsAnalyticsModule()
 
-        addModule(mainNav, title: "Главная", image: "house", selectedImage: "house.fill")
-        addModule(analyticsNav, title: "Аналитика", image: "chart.bar", selectedImage: "chart.bar.fill")
+        addModule(mainNav, title: String(localized: "finance"), image: "house", selectedImage: "house.fill")
+        addModule(analyticsNav, title: String(localized: "analytics"), image: "chart.bar", selectedImage: "chart.bar.fill")
         addModule(UIViewController(), title: "Кошелек", image: "cloud", selectedImage: "cloud.fill")
         addModule(UIViewController(), title: "Настройки", image: "gearshape", selectedImage: "gearshape.fill")
     }

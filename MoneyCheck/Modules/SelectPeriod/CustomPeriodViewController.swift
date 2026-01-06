@@ -28,7 +28,7 @@ final class CustomPeriodViewController: UIViewController {
 
     private lazy var doneButton: PrimaryButton = {
         let button = PrimaryButton()
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(String(localized: "done"), for: .normal)
         button.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
         return button
     }()

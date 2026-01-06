@@ -34,13 +34,13 @@ struct SegmentedPicker: View {
                     .offset(x: CGFloat(items.firstIndex(of: selectedItem) ?? 0) * segmentWidth + 4)
                     .animation(
                         .spring(response: 0.3, dampingFraction: 0.85),
-                        value: selectedItem.rawValue
+                        value: selectedItem.title
                     )
 
                 // Labels
                 HStack(spacing: 0) {
                     ForEach(items.indices, id: \.self) { index in
-                        Text(items[index].rawValue)
+                        Text(items[index].title)
                             .font(
                                 items[index] == selectedItem
                                 ? .system(size: 15, weight: .medium)

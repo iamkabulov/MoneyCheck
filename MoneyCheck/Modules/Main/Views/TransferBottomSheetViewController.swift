@@ -10,11 +10,11 @@ enum TransferType {
     var title: String {
         switch self {
             case .income(_, _):
-                return "Доход"
+                return String(localized: "income")
             case .wallet(_, _):
-                return "Перевод"
+                return String(localized: "transfer")
             case .category(_, _):
-                return "Расход"
+                return String(localized: "expense")
         }
     }
 
@@ -101,7 +101,7 @@ final class TransferBottomSheetViewController: UIViewController {
     private let containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .clear
-        view.layer.cornerRadius = 16
+        view.layer.cornerRadius = 20
         view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         view.clipsToBounds = true
         return view
@@ -115,9 +115,9 @@ final class TransferBottomSheetViewController: UIViewController {
         return stackView
     }()
 
-    private let blur = UIVisualEffectView(
-        effect: UIBlurEffect(style: .systemThickMaterial)
-    )
+//    private let blur = UIVisualEffectView(
+//        effect: UIBlurEffect(style: .systemThickMaterial)
+//    )
 
     private lazy var fromIcon = CircleIconView(
         image: transferType.fromIcon,
@@ -148,7 +148,7 @@ final class TransferBottomSheetViewController: UIViewController {
     
     private lazy var amountInput: AmountInput = {
         let textField = AmountInput()
-        textField.placeholder = "Сумма"
+        textField.placeholder = String(localized: "sum")
         return textField
     }()
 
@@ -156,7 +156,7 @@ final class TransferBottomSheetViewController: UIViewController {
     //TODO: - Сделать общий текстфил
     private lazy var commentInput: TextInput = {
         let textField = TextInput()
-        textField.placeholder = "Комментарий"
+        textField.placeholder = String(localized: "comment")
         return textField
     }()
 
@@ -183,7 +183,7 @@ final class TransferBottomSheetViewController: UIViewController {
     
     private lazy var okButton: PrimaryButton = {
         let button = PrimaryButton(type: .system)
-        button.setTitle("Сохранить", for: .normal)
+        button.setTitle(String(localized: "save"), for: .normal)
         button.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -242,11 +242,12 @@ final class TransferBottomSheetViewController: UIViewController {
         }
         self.sheetPresentationController?.prefersGrabberVisible = false
         titleLabel.text = transferType.title
+        view.backgroundColor = .systemBackground
 
-        blur.frame = view.bounds
-        blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+//        blur.frame = view.bounds
+//        blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 
-        view.addSubview(blur)
+//        view.addSubview(blur)
         view.addSubview(containerView)
         containerView.addSubview(stackView)
         containerView.addSubview(titleLabel)

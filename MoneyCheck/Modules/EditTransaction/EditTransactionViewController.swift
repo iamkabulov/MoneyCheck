@@ -42,7 +42,7 @@ final class EditTransactionViewController: UIViewController {
 
     private lazy var saveButton: PrimaryButton = {
         let button = PrimaryButton()
-        button.setTitle("Сохранить", for: .normal)
+        button.setTitle(String(localized: "save"), for: .normal)
         button.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -51,7 +51,7 @@ final class EditTransactionViewController: UIViewController {
         let button = UIBarButtonItem()
         button.target = self
         button.action = #selector(deleteButtonTapped)
-        button.title = "Удалить"
+        button.title = String(localized: "delete")
         button.tintColor = .systemRed
         return button
     }()

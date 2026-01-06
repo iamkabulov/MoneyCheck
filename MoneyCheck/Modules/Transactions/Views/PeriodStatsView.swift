@@ -93,13 +93,13 @@ final class PeriodStatsView: UIView {
         budgetAmount.textAlignment = .center
         editButton.setTitle("Edit", for: .normal)
 
-        expenseLabel.text = "Расходы"
+        expenseLabel.text = String(localized: "expense")
         expenseLabel.textAlignment = .center
         expenseAmount.textAlignment = .center
         expensePercentage.textAlignment = .center
         expensePercentage.textColor = .systemGreen
 
-        perDayLabel.text = "В день"
+        perDayLabel.text = String(localized: "dayExpense")
         perDayLabel.textAlignment = .center
         perDayAmount.textAlignment = .center
         perDayPercentage.textAlignment = .center
@@ -238,7 +238,7 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
             switch charts[index].itemType {
                 case .income:
                     if percentage > 0 {
-                        expenseLabel.text = "Доход"
+                        expenseLabel.text = String(localized: "income")
                         expensePercentage.text = "+" + String(format: "%.1f", percentage) + "%"
                         expensePercentage.textColor = .systemGreen
 
