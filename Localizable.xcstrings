@@ -13,6 +13,16 @@
     "%lld%%" : {
       "shouldTranslate" : false
     },
+    "Account" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аккаунт"
+          }
+        }
+      }
+    },
     "Amount can't be empty" : {
       "localizations" : {
         "en" : {
@@ -45,6 +55,16 @@
         }
       }
     },
+    "App reviews" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оценка"
+          }
+        }
+      }
+    },
     "apply" : {
       "localizations" : {
         "en" : {
@@ -57,6 +77,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Применить"
+          }
+        }
+      }
+    },
+    "Buy subscription" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Купить подписку"
+          }
+        }
+      }
+    },
+    "Cancel subscription" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить подписку"
           }
         }
       }
@@ -89,6 +129,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Комментарий"
+          }
+        }
+      }
+    },
+    "Contact us" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Связаться с нами"
           }
         }
       }
@@ -138,6 +188,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Удалить"
+          }
+        }
+      }
+    },
+    "Delete account" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить аккаунт"
           }
         }
       }
@@ -239,6 +299,16 @@
         }
       }
     },
+    "Feedback" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оставить отзыв"
+          }
+        }
+      }
+    },
     "finance" : {
       "localizations" : {
         "en" : {
@@ -251,6 +321,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Финансы"
+          }
+        }
+      }
+    },
+    "General" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Общее"
           }
         }
       }
@@ -354,6 +434,36 @@
         }
       }
     },
+    "Premium" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Премиум"
+          }
+        }
+      }
+    },
+    "Privacy" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфиденциальность "
+          }
+        }
+      }
+    },
+    "Promo Code" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Промо код"
+          }
+        }
+      }
+    },
     "save" : {
       "localizations" : {
         "en" : {
@@ -386,6 +496,36 @@
         }
       }
     },
+    "Settings" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки"
+          }
+        }
+      }
+    },
+    "Sign out" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выйти"
+          }
+        }
+      }
+    },
+    "Standard" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стандарт"
+          }
+        }
+      }
+    },
     "sum" : {
       "localizations" : {
         "en" : {
@@ -398,6 +538,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сумма"
+          }
+        }
+      }
+    },
+    "Terms and Conditions" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пользовательское соглашение"
           }
         }
       }
