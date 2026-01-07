@@ -56,7 +56,7 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
     func loadData() {
         isLoading = true
         Publishers.CombineLatest3(
-            useCase.getWallets(period: selectedPeriod),
+            useCase.getWallets(period: .wholeTime),
             useCase.getCategories(period: selectedPeriod),
             useCase.getIncomes(period: selectedPeriod)
         )

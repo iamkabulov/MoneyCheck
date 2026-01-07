@@ -191,8 +191,8 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
                 return (start, end)
 
             case .month:
-                guard let start = calendar.dateInterval(of: .month, for: date)?.start,
-                      let range = calendar.range(of: .day, in: .month, for: date),
+                guard let start = calendar.dateInterval(of: .month, for: Date())?.start,
+                      let range = calendar.range(of: .day, in: .month, for: Date()),
                       let end = calendar.date(byAdding: .day, value: range.count - 1, to: start) else {
                     return (Date(), Date())
                 }

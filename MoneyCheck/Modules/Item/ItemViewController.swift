@@ -146,13 +146,13 @@ class ItemViewController: UIViewController {
 
         iconsView.snp.makeConstraints { make in
             make.top.equalTo(nameField.snp.bottom).offset(20)
-            make.leading.trailing.equalToSuperview().inset(16)
+            make.leading.trailing.equalToSuperview().inset(8)
             make.height.equalTo(120)
         }
 
         colorsView.snp.makeConstraints { make in
             make.top.equalTo(iconsView.snp.bottom).offset(20)
-            make.leading.trailing.equalToSuperview().inset(16)
+            make.leading.trailing.equalToSuperview().inset(8)
             make.height.equalTo(120)
         }
 

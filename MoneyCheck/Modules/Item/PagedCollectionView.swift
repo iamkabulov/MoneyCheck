@@ -45,7 +45,7 @@ final class PagedCollectionView: UIView {
         pageControl.pageIndicatorTintColor = .systemGray4
         pageControl.isUserInteractionEnabled = false
 
-        self.backgroundColor = .secondarySystemBackground
+        self.backgroundColor = .clear
         self.layer.cornerRadius = 10
         addSubview(titleLabel)
         addSubview(collectionView)
