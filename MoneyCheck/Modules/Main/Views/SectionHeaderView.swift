@@ -38,9 +38,15 @@ final class SectionHeaderView: UICollectionReusableView {
     }
     
     // MARK: - Configuration
-    func configure(title: String, amount: Double, collapsed: Bool) {
+    func configure(title: String, amount: Double, collapsed: Bool, symbol: String) {
         titleLabel.text = title
-        amountLabel.amountFormatter(amount)
+        if amount >= 0 {
+            amountLabel.amountFormatter(amount, symbol: symbol)
+            amountLabel.textColor = .label
+        } else {
+            amountLabel.amountFormatter(amount, sign: "-", symbol: symbol)
+            amountLabel.textColor = .systemRed
+        }
 
         // Поворот стрелочки при изменении состояния
         let rotation = CABasicAnimation(keyPath: "transform.rotation")

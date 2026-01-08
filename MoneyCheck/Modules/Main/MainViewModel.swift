@@ -11,6 +11,7 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
     @Published private(set) var error: Error?
     @Published private(set) var isLoading = false
     @Published private(set) var selectedPeriod: PeriodType = .month
+    @Published private(set) var currency: Currency
     private let period = PeriodStore.shared
 
     // MARK: - Calculated properties
@@ -27,6 +28,11 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
     }
 
     override init(useCase: MainUseCaseProtocol, router: MainRouter) {
+        self.currency = .init(
+            code: "USD",
+            name: String(localized: "currency_usd"),
+            symbol: "$"
+        )
         super.init(useCase: useCase, router: router)
         bindPeriod()
         bindDataChanges()
@@ -37,6 +43,7 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.loadData()
+                self?.getSelectedCurrency()
             }
             .store(in: &cancellables)
     }
@@ -53,6 +60,19 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
     }
 
     // MARK: - Public methods
+    func getSelectedCurrency() {
+        useCase.getSelectedCurrency()
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                if case .failure(let error) = completion {
+                    print("Error loading data: \(error)")
+                }
+            } receiveValue: { currency in
+                self.currency = currency
+            }
+            .store(in: &cancellables)
+    }
+
     func loadData() {
         isLoading = true
         Publishers.CombineLatest3(

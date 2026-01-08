@@ -15,7 +15,7 @@ final class SettingsFactory {
     // MARK: - Root
     func makeSettingsModule() -> UINavigationController {
         let navigationController = UINavigationController()
-        let router = SettingsRouter()
+        let router = SettingsRouter(navigationController: navigationController)
 
         let useCase = SettingsUseCase()
         let viewModel = SettingsViewModel(

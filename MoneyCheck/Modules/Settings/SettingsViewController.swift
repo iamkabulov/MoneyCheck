@@ -156,7 +156,7 @@ private extension SettingsViewController {
         let label = UILabel()
         label.font = UIFont.preferredFont(forTextStyle: .footnote)
         label.textAlignment = .right
-        label.textColor = .label
+        label.textColor = .tertiaryLabel
         return label
     }
 }
@@ -203,30 +203,7 @@ extension SettingsViewController: UITableViewDelegate {
 
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-//        switch sections[indexPath.section].options[indexPath.row].option {
-//        case .termsAndConditions:
-//            presenter.didTapTermsAndConditions()
-//        case .privacy:
-//            presenter.didTapPrivacy()
-//        case .icon:
-//            presenter.didTapIcon()
-//        case .feedback:
-//            presenter.didTapFeedback()
-//        case .contactUs:
-//            presenter.didTapContactUs()
-//        case .appReviews:
-//            presenter.didTapAppReviews()
-//        case .deleteAccount:
-//            presenter.didTapDelete()
-//        case .signOut:
-//            presenter.didTapSignOut()
-//        case .promoCode:
-//            presenter.didTapPromoCode()
-//        case .buySubscription:
-//            presenter.didTapBuySubscription()
-//        default:
-//            break
-//        }
+        viewModel.didTapOnSettingsOption(option:sections[indexPath.section].options[indexPath.row].option)
     }
 }
 

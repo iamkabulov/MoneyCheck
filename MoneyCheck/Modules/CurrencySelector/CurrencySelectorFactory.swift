@@ -1,0 +1,32 @@
+//
+//  CurrencySelectorFactory.swift
+//  MoneyCheck
+//
+//  Created by Нурсултан Кабулов on 08.01.2026.
+//
+
+import UIKit
+import PanModal
+
+final class CurrencySelectorFactory {
+    static let shared = CurrencySelectorFactory()
+
+    private init() { }
+
+    // MARK: - Root
+    func makeCurrencySelectorModule(_ nav: UINavigationController) -> UIViewController {
+        let router = CurrencySelectorRouter(navigationController: nav)
+        let currencyRepository: CoreDataSettingsRepositoryProtocol = CoreDataSettingsRepository()
+
+        let useCase = CurrencySelectorUseCase(
+            currencyRepository: currencyRepository
+        )
+        let viewModel = CurrencySelectorViewModel(
+            useCase: useCase,
+            router: router
+        )
+        let vc = CurrencySelectorViewController(viewModel: viewModel)
+
+        return vc
+    }
+}

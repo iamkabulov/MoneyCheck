@@ -6,10 +6,14 @@
 //
 
 protocol SettingsRouterProtocol {
-    
+    func openCurrencySelector()
 }
 
 
-final class SettingsRouter: SettingsRouterProtocol {
-    
+final class SettingsRouter: BaseRouter, SettingsRouterProtocol {
+    func openCurrencySelector() {
+        let vc = CurrencySelectorFactory.shared.makeCurrencySelectorModule(self.navigationController)
+        vc.hidesBottomBarWhenPushed = true
+        self.push(vc, animated: true)
+    }
 }

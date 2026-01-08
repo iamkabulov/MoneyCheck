@@ -23,12 +23,14 @@ final class MainFactory {
         let incomeRepository = CoreDataIncomeRepository()
         let transactionRepository = CoreDataTransactionRepository()
         let periodRepository = CoreDataPeriodRepository()
+        let currencyRepository = CoreDataSettingsRepository()
         let mainUseCase = MainUseCase(
             walletRepository: walletRepository,
             categoryRepository: categoryRepository,
             incomeRepository: incomeRepository,
             transactionRepository: transactionRepository,
-            periodRepository: periodRepository
+            periodRepository: periodRepository,
+            currencyRepository: currencyRepository
         )
         let router = MainRouter(navigationController: navigationController)
         let viewModel = MainViewModel(useCase: mainUseCase,

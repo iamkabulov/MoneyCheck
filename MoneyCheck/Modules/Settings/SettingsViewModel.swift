@@ -34,15 +34,40 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
     }
 
     private func bindDataChanges() {
-//        useCase.dataDidChange
-//            .receive(on: DispatchQueue.main)
-//            .sink { [weak self] in
-//                self?.loadData()
-//            }
-//            .store(in: &cancellables)
-
         useCase.settingsItem { settings in
             self.settingsViewModelEntity = .init(from: settings)
         }
+    }
+
+    func didTapOnSettingsOption(option: SettingsEnum) {
+        switch option {
+        case .icon:
+            self.router.openCurrencySelector()
+        default:
+            break
+        }
+//                case .termsAndConditions:
+//                    presenter.didTapTermsAndConditions()
+//                case .privacy:
+//                    presenter.didTapPrivacy()
+//                case .icon:
+//                    presenter.didTapIcon()
+//                case .feedback:
+//                    presenter.didTapFeedback()
+//                case .contactUs:
+//                    presenter.didTapContactUs()
+//                case .appReviews:
+//                    presenter.didTapAppReviews()
+//                case .deleteAccount:
+//                    presenter.didTapDelete()
+//                case .signOut:
+//                    presenter.didTapSignOut()
+//                case .promoCode:
+//                    presenter.didTapPromoCode()
+//                case .buySubscription:
+//                    presenter.didTapBuySubscription()
+//                default:
+//                    break
+//                }
     }
 }

@@ -153,7 +153,7 @@ private extension SettingsProvider {
         var options = [
             SettingsOption(title: String(localized: "Terms and Conditions"), option: .termsAndConditions, icon: "doc"),
             SettingsOption(title: String(localized: "Privacy"), option: .privacy, icon: "shield.lefthalf.filled.badge.checkmark"),
-//            SettingsOption(title: String(localized: "Icon"), option: .icon, icon: "play.square"),
+            SettingsOption(title: String(localized: "Currency"), option: .icon, icon: "dollarsign"),
             SettingsOption(title: String(localized: "Feedback"), option: .feedback, icon: "bubble.right"),
             SettingsOption(title: String(localized: "Contact us"), option: .contactUs, icon: "phone"),
             SettingsOption(title: String(localized: "App reviews"), option: .appReviews, icon: "checkmark.seal"),

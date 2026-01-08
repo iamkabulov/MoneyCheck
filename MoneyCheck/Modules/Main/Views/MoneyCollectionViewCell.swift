@@ -63,7 +63,8 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         name: String,
         amount: Double?,
         icon: String,
-        color: String
+        color: String,
+        currency: String
     ) {
         if name.isEmpty {
             nameLabel.isHidden = true
@@ -101,10 +102,10 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         nameLabel.text = name
         if let amount = amount {
             if amount >= 0 {
-                amountLabel.amountFormatter(amount)
+                amountLabel.amountFormatter(amount, symbol: currency)
                 amountLabel.textColor = .label
             } else {
-                amountLabel.amountFormatter(amount, sign: "-")
+                amountLabel.amountFormatter(amount, sign: "-", symbol: currency)
                 amountLabel.textColor = .systemRed
             }
         }
@@ -112,21 +113,23 @@ final class MoneyCollectionViewCell: UICollectionViewCell {
         iconContainerView.backgroundColor = UIColor(hex: color)
     }
     
-    func configureForCategory(_ category: CategoryModel) {
+    func configureForCategory(_ category: CategoryModel, currency: String) {
         configure(
             name: category.name,
             amount: category.amount,
             icon: category.icon,
-            color: category.color
+            color: category.color,
+            currency: currency
         )
     }
     
-    func configureForWallet(_ wallet: WalletModel) {
+    func configureForWallet(_ wallet: WalletModel, currency: String) {
         configure(
             name: wallet.name,
             amount: wallet.amount,
             icon: wallet.icon,
-            color: wallet.color
+            color: wallet.color,
+            currency: currency
         )
     }
     

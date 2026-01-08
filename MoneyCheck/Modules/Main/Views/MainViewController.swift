@@ -68,6 +68,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 
         viewModel.loadData()
         setupBindings()
+        viewModel.getSelectedCurrency()
     }
 
     // MARK: - Private methods
@@ -125,6 +126,12 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
             .compactMap { $0 }
             .sink { [weak self] error in
                 self?.showError(error)
+            }
+            .store(in: &cancellables)
+        viewModel.$currency
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.collectionView.reloadData()
             }
             .store(in: &cancellables)
     }
@@ -363,7 +370,8 @@ extension MainViewController: UICollectionViewDataSource {
                     name: "",
                     amount: nil,
                     icon: "plus.circle.fill",
-                    color: "#14C94B"
+                    color: "#14C94B",
+                    currency: viewModel.currency.symbol
                 )
             } else {
                 let income = viewModel.incomes[indexPath.item]
@@ -371,7 +379,8 @@ extension MainViewController: UICollectionViewDataSource {
                     name: income.name,
                     amount: income.amount,
                     icon: income.icon,
-                    color: income.color
+                    color: income.color,
+                    currency: viewModel.currency.symbol
                 )
             }
         case 1:
@@ -380,10 +389,12 @@ extension MainViewController: UICollectionViewDataSource {
                     name: "",
                     amount: nil,
                     icon: "plus.circle.fill",
-                    color: "#580FF7"
+                    color: "#580FF7",
+                    currency: viewModel.currency.symbol
                 )
             } else {
-                cell.configureForWallet(viewModel.wallets[indexPath.item])
+                cell.configureForWallet(viewModel.wallets[indexPath.item],
+                                        currency: viewModel.currency.symbol)
             }
         case 2:
             if indexPath.item == viewModel.categories.count {
@@ -391,10 +402,15 @@ extension MainViewController: UICollectionViewDataSource {
                     name: "",
                     amount: nil,
                     icon: "plus.circle.fill",
-                    color: "#0FF7AE"
+                    color: "#0FF7AE",
+                    currency: viewModel.currency.symbol
                 )
             } else {
-                cell.configureForCategory(viewModel.categories[indexPath.item])
+                cell
+                    .configureForCategory(
+                        viewModel.categories[indexPath.item],
+                        currency: viewModel.currency.symbol
+                    )
             }
         default:
             break
@@ -412,11 +428,29 @@ extension MainViewController: UICollectionViewDataSource {
 
             switch indexPath.section {
                 case 0:
-                    header.configure(title: "Доходы", amount: viewModel.totalIncome, collapsed: collapsedSections[0])
+                    header
+                        .configure(
+                            title: "Доходы",
+                            amount: viewModel.totalIncome,
+                            collapsed: collapsedSections[0],
+                            symbol: viewModel.currency.symbol
+                        )
                 case 1:
-                    header.configure(title: "Кошельки", amount: viewModel.totalBalance, collapsed: collapsedSections[1])
+                    header
+                        .configure(
+                            title: "Кошельки",
+                            amount: viewModel.totalBalance,
+                            collapsed: collapsedSections[1],
+                            symbol: viewModel.currency.symbol
+                        )
                 case 2:
-                    header.configure(title: "Расходы", amount: viewModel.totalExpenses, collapsed: collapsedSections[2])
+                    header
+                        .configure(
+                            title: "Расходы",
+                            amount: viewModel.totalExpenses,
+                            collapsed: collapsedSections[2],
+                            symbol: viewModel.currency.symbol
+                        )
                 default:
                     break
             }

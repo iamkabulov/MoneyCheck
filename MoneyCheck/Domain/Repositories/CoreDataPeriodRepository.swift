@@ -21,7 +21,6 @@ final class CoreDataPeriodRepository: PeriodRepositoryProtocol {
 
     func getPeriod() -> AnyPublisher<PeriodType, any Error> {
         let result = coreDataManager.getPeriod()
-        print("Core: \(result)")
         return Just(result)
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()

@@ -7,6 +7,11 @@
         <attribute name="name" attributeType="String"/>
         <attribute name="type" attributeType="String"/>
     </entity>
+    <entity name="CurrencyCore" representedClassName="CurrencyCore" syncable="YES" codeGenerationType="class">
+        <attribute name="code" optional="YES" attributeType="String"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="symbol" optional="YES" attributeType="String"/>
+    </entity>
     <entity name="Income" representedClassName="Income" syncable="YES" codeGenerationType="class">
         <attribute name="color" attributeType="String"/>
         <attribute name="icon" attributeType="String"/>

@@ -93,10 +93,10 @@ final class TransactionsViewController: UIViewController {
                 self?.tableView.reloadData()
                 self?.stats.expenseLabelWallet.amountFormatter(sections.reduce(0) { partialResult, transaction in
                         partialResult + transaction.expenseAmount
-                }, sign: "-")
+                }, sign: "-", symbol: "SYMBOL")
                 self?.stats.incomeLabelWallet.amountFormatter(sections.reduce(0) { partialResult, transaction in
                         partialResult + transaction.incomeAmount
-                    }, sign: "+")
+                }, sign: "+", symbol: "SYMBOL")
             }
             .store(in: &cancellables)
         viewModel.$periodTitle

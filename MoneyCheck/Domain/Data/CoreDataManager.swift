@@ -457,6 +457,46 @@ final class CoreDataManager {
             return []
         }
     }
+
+    func getCurrency() -> Currency {
+        let request: NSFetchRequest<CurrencyCore> = CurrencyCore.fetchRequest()
+        do {
+            let res = try context.fetch(request)
+            let result = Currency(code: res[0].code ?? "",
+                                        name: res[0].name ?? "",
+                                        symbol: res[0].symbol ?? "")
+            return result
+        } catch {
+            print("Error fetching wallets: \(error)")
+            return Currency(code: "KZT", name: String(localized: "currency_kzt"), symbol: "T")
+        }
+    }
+
+    func saveCurrency(_ value: Currency) {
+        deleteCurrency()
+
+        do {
+            let currency = CurrencyCore(context: context)
+            currency.code = value.code
+            currency.name = value.name
+            currency.symbol = value.symbol
+            try context.save()
+        } catch {
+            print("Error saving period: \(error)")
+        }
+    }
+
+    private func deleteCurrency() {
+        let request: NSFetchRequest<CurrencyCore> = CurrencyCore.fetchRequest()
+        do {
+            if let entity = try context.fetch(request).first {
+                context.delete(entity)
+                try context.save()
+            }
+        } catch {
+            print("Error deleting period: \(error)")
+        }
+    }
 }
 
 extension Calendar {
