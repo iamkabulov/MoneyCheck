@@ -126,6 +126,7 @@ final class PeriodStatsView: UIView {
 
     // MARK: - Data
     private var charts: [ChartBarData] = []
+    private var currency: String = "$"
     private var maxValue: Double {
         charts.map { $0.total }.max() ?? 0
     }
@@ -164,7 +165,7 @@ final class PeriodStatsView: UIView {
         // Статистика
         budgetLabel.text = "Бюджет"
         budgetLabel.textAlignment = .center
-        budgetAmount.text = "0 ₸"
+        budgetAmount.text = "0 \(self.currency)"
         budgetAmount.textAlignment = .center
         editButton.setTitle("Edit", for: .normal)
 
@@ -259,7 +260,7 @@ final class PeriodStatsView: UIView {
         collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false
         currentIndex -= 1
         scrollToPeriod(at: currentIndex)
-        configure(index: currentIndex)
+        configure(index: currentIndex, currency: self.currency)
         delegate?.leftButtonTapped(startDate: charts[currentIndex].startDate, endDate: charts[currentIndex].endDate)
     }
 
@@ -268,7 +269,7 @@ final class PeriodStatsView: UIView {
         collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false
         currentIndex += 1
         scrollToPeriod(at: currentIndex)
-        configure(index: currentIndex)
+        configure(index: currentIndex, currency: self.currency)
         delegate?.rightButtonTapped(startDate: charts[currentIndex].startDate, endDate: charts[currentIndex].endDate)
     }
 
@@ -276,17 +277,19 @@ final class PeriodStatsView: UIView {
         periodButton.setTitle(title, for: .normal)
     }
 
-    func reloadData(_ values: [ChartBarData], date: Date) {
+    func reloadData(_ values: [ChartBarData], date: Date, currency: String) {
         self.charts = values
+        self.currency = currency
+        budgetAmount.text = "0 \(self.currency)"
         collectionView.reloadData()
 
         if let index = indexOfCurrentPeriod(in: charts, currentDate: date) {
-            configure(index: index)
+            configure(index: index, currency: self.currency)
             scrollToPeriod(at: index)
             currentIndex = index
             collectionView.selectItem(at: IndexPath(row: index, section: 0), animated: false, scrollPosition: [])
         } else {
-            configure(index: charts.count - 1)
+            configure(index: charts.count - 1, currency: self.currency)
             scrollToPeriod(at: charts.count - 1)
             currentIndex = charts.count - 1
             collectionView.selectItem(at: IndexPath(row: charts.count - 1, section: 0), animated: false, scrollPosition: [])
@@ -310,7 +313,7 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.cellForItem(at: IndexPath(row: currentIndex , section: 0))?.isSelected = false
         scrollToPeriod(at: indexPath.row)
-        configure(index: indexPath.row)
+        configure(index: indexPath.row, currency: self.currency)
         currentIndex = indexPath.row
         delegate?.didSelectChart(startDate: charts[indexPath.row].startDate,
                                  endDate: charts[indexPath.row].endDate)
@@ -325,10 +328,10 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
         )
     }
 
-    func configure(index: Int) {
+    func configure(index: Int, currency: String) {
         guard index >= 0 else { return }
-        expenseAmount.amountFormatter(charts[index].total, symbol: "SYMBOL")
-        perDayAmount.amountFormatter(charts[index].average, symbol: "SYMBOL")
+        expenseAmount.amountFormatter(charts[index].total, symbol: currency)
+        perDayAmount.amountFormatter(charts[index].average, symbol: currency)
 
         if let percentage = charts[index].percentage {
             switch charts[index].itemType {
@@ -339,14 +342,14 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
 
                         let result = charts[index].average - charts[index - 1].average
                         perDayPercentage.textColor = .systemGreen
-                        perDayPercentage.amountFormatter(result, sign: "+", symbol: "SYMBOL")
+                        perDayPercentage.amountFormatter(result, sign: "+", symbol: currency)
                     } else {
                         expensePercentage.text = String(format: "%.1f", percentage) + "%"
                         expensePercentage.textColor = .systemRed
 
                         let result = charts[index].average - charts[index - 1].average
                         perDayPercentage.textColor = .systemRed
-                        perDayPercentage.amountFormatter(result, sign: "-", symbol: "SYMBOL")
+                        perDayPercentage.amountFormatter(result, sign: "-", symbol: currency)
                     }
                 case .category, .wallet:
                     if percentage > 0 {
@@ -355,14 +358,14 @@ extension PeriodStatsView: UICollectionViewDataSource, UICollectionViewDelegate 
 
                         let result = charts[index].average - charts[index - 1].average
                         perDayPercentage.textColor = .systemRed
-                        perDayPercentage.amountFormatter(result, sign: "+", symbol: "SYMBOL")
+                        perDayPercentage.amountFormatter(result, sign: "+", symbol: currency)
                     } else {
                         expensePercentage.text = String(format: "%.1f", percentage) + "%"
                         expensePercentage.textColor = .systemGreen
 
                         let result = charts[index].average - charts[index - 1].average
                         perDayPercentage.textColor = .systemGreen
-                        perDayPercentage.amountFormatter(result, sign: "-", symbol: "SYMBOL")
+                        perDayPercentage.amountFormatter(result, sign: "-", symbol: currency)
                     }
             }
         } else {

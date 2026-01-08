@@ -12,7 +12,7 @@ final class CurrencySelectorViewModel: BaseViewModel<CurrencySelectorRouterProto
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Published properties
-    @Published private(set) var selectedCurrency: Currency?
+    @Published private(set) var selectedCurrency: Currency
 
     let allCurrencies: [Currency] = [
         Currency(code: "USD", name: String(localized: "currency_usd"), symbol: "$"),
@@ -24,11 +24,14 @@ final class CurrencySelectorViewModel: BaseViewModel<CurrencySelectorRouterProto
     ]
 
     var filteredCurrencies: [Currency] = []
+    private let configurations: Configurations
 
-    init(useCase: CurrencySelectorUseCase, router: CurrencySelectorRouter) {
+    init(useCase: CurrencySelectorUseCase, router: CurrencySelectorRouter, configurations: Configurations) {
+        self.configurations = configurations
+        self.selectedCurrency = configurations.selectedCurrency
         super.init(useCase: useCase, router: router)
         filteredCurrencies = allCurrencies
-        getSelectedCurrency()
+        bind()
     }
 
     deinit {
@@ -47,30 +50,27 @@ final class CurrencySelectorViewModel: BaseViewModel<CurrencySelectorRouterProto
         }
     }
 
-    func selectCurrency(_ currency: Currency) {
-        useCase.saveSelectedCurrency(currency)
-            .receive(on: DispatchQueue.main)
-            .sink { completion in
-                if case .failure(let error) = completion {
-                    print("Error loading data: \(error)")
-                }
-            } receiveValue: {
-                self.router.closeCurrencySelectorView()
-//                self.getSelectedCurrency()
-            }
-            .store(in: &cancellables)
+    private func bind() {
+        configurations.$selectedCurrency
+            .removeDuplicates()
+            .assign(to: &$selectedCurrency)
     }
 
-    func getSelectedCurrency() {
-        useCase.getSelectedCurrency()
-            .receive(on: DispatchQueue.main)
-            .sink { completion in
-                if case .failure(let error) = completion {
-                    print("Error loading data: \(error)")
-                }
-            } receiveValue: { currency in
-                self.selectedCurrency = currency
-            }
-            .store(in: &cancellables)
+    func selectCurrency(_ currency: Currency) {
+        configurations.selectCurrency(currency)
+        router.closeCurrencySelectorView()
     }
+
+//    func getSelectedCurrency() {
+//        useCase.getSelectedCurrency()
+//            .receive(on: DispatchQueue.main)
+//            .sink { completion in
+//                if case .failure(let error) = completion {
+//                    print("Error loading data: \(error)")
+//                }
+//            } receiveValue: { currency in
+//                self.selectedCurrency = currency
+//            }
+//            .store(in: &cancellables)
+//    }
 }

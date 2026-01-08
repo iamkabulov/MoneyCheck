@@ -13,6 +13,7 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
     @Published private(set) var selectedPeriod: PeriodType = .month
     @Published private(set) var currency: Currency
     private let period = PeriodStore.shared
+    private let configurations = Configurations.shared
 
     // MARK: - Calculated properties
     var totalBalance: Double {
@@ -36,6 +37,7 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
         super.init(useCase: useCase, router: router)
         bindPeriod()
         bindDataChanges()
+        bindSelectedCurrency()
     }
 
     private func bindDataChanges() {
@@ -43,7 +45,6 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.loadData()
-                self?.getSelectedCurrency()
             }
             .store(in: &cancellables)
     }
@@ -60,8 +61,8 @@ final class MainViewModel: BaseViewModel<MainRouter, MainUseCaseProtocol> {
     }
 
     // MARK: - Public methods
-    func getSelectedCurrency() {
-        useCase.getSelectedCurrency()
+    func bindSelectedCurrency() {
+        configurations.$selectedCurrency
             .receive(on: DispatchQueue.main)
             .sink { completion in
                 if case .failure(let error) = completion {

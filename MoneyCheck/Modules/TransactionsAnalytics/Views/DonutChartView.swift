@@ -67,7 +67,9 @@ struct DonutChartView: View {
 
                 // Центр с суммой
                 VStack(spacing: 4) {
-                    Text(total > 0 ? "\(Int(total)) ₸" : "")
+                    Text(
+                        total > 0 ? "\(Int(total)) \(viewModel.configurations.selectedCurrency.symbol)" : ""
+                    )
                         .font(.body)
                         .foregroundStyle(.primary)
                 }

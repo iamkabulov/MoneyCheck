@@ -89,14 +89,14 @@ final class TransactionsViewController: UIViewController {
         viewModel.$sections
             .receive(on: DispatchQueue.main)
             .sink { [weak self] sections in
-                print("\(sections.count)")
-                self?.tableView.reloadData()
-                self?.stats.expenseLabelWallet.amountFormatter(sections.reduce(0) { partialResult, transaction in
+                guard let self = self else { return }
+                self.tableView.reloadData()
+                self.stats.expenseLabelWallet.amountFormatter(sections.reduce(0) { partialResult, transaction in
                         partialResult + transaction.expenseAmount
-                }, sign: "-", symbol: "SYMBOL")
-                self?.stats.incomeLabelWallet.amountFormatter(sections.reduce(0) { partialResult, transaction in
+                }, sign: "-", symbol: " \(self.viewModel.configuations.selectedCurrency.symbol)")
+                self.stats.incomeLabelWallet.amountFormatter(sections.reduce(0) { partialResult, transaction in
                         partialResult + transaction.incomeAmount
-                }, sign: "+", symbol: "SYMBOL")
+                }, sign: "+", symbol: " \(self.viewModel.configuations.selectedCurrency.symbol)")
             }
             .store(in: &cancellables)
         viewModel.$periodTitle
@@ -109,7 +109,9 @@ final class TransactionsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] values in
                 guard let self = self else { return }
-                self.stats.reloadData(values, date: self.viewModel.currentDate)
+                self.stats.reloadData(values,
+                                      date: self.viewModel.currentDate,
+                                      currency: viewModel.configuations.selectedCurrency.symbol)
                 self.stats.updateUI(type: viewModel.itemType)
             }
             .store(in: &cancellables)
@@ -122,10 +124,10 @@ final class TransactionsViewController: UIViewController {
         return formatter.string(from: date)
     }
     
-    private func formatAmount(_ amount: Double) -> String {
+    private func formatAmount(_ amount: Double, currency: String) -> String {
         let formattedAmount = Double.amountFormatter(amount)
         let sign = amount >= 0 ? "+" : "-"
-        return "\(sign)\(formattedAmount) ₸"
+        return "\(sign)\(formattedAmount) \(currency)"
     }
 
     @objc func openEditItemViewController() {
@@ -150,7 +152,12 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "TransactionCell", for: indexPath) as? TransactionCell else { return UITableViewCell() }
         let transaction = viewModel.sections[indexPath.section].transactions[indexPath.row]
-        cell.configure(with: transaction, currentWalletId: viewModel.itemId)
+        cell
+            .configure(
+                with: transaction,
+                currentWalletId: viewModel.itemId,
+                currency: viewModel.configuations.selectedCurrency.symbol
+            )
         return cell
     }
     
@@ -170,7 +177,9 @@ extension TransactionsViewController: UITableViewDataSource, UITableViewDelegate
         
         let amountLabel = AmountLabel()
         amountLabel.font = .systemFont(ofSize: 17, weight: .semibold)
-        amountLabel.text = formatAmount(section.totalAmount)
+        amountLabel.text = formatAmount(
+            section.totalAmount,
+            currency: self.viewModel.configuations.selectedCurrency.symbol)
         amountLabel.textAlignment = .right
         
         if section.totalAmount > 0 {

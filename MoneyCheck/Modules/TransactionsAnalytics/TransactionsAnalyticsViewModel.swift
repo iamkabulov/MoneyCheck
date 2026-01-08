@@ -32,6 +32,7 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
     @Published private(set) var isLoading = false
     @Published private(set) var selectedPeriod: PeriodType = .month
     private let period = PeriodStore.shared
+    let configurations = Configurations.shared
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization

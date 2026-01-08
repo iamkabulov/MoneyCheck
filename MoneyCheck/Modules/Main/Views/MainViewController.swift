@@ -68,7 +68,6 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 
         viewModel.loadData()
         setupBindings()
-        viewModel.getSelectedCurrency()
     }
 
     // MARK: - Private methods

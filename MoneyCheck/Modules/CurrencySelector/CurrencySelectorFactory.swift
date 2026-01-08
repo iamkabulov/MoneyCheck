@@ -23,7 +23,8 @@ final class CurrencySelectorFactory {
         )
         let viewModel = CurrencySelectorViewModel(
             useCase: useCase,
-            router: router
+            router: router,
+            configurations: Configurations.shared
         )
         let vc = CurrencySelectorViewController(viewModel: viewModel)
 

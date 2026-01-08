@@ -84,6 +84,8 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
     @Published var barCharts: [ChartBarData] = []
     private var cancellables = Set<AnyCancellable>()
     private let period: PeriodStore
+    let configuations: Configurations
+
     var currentDate: Date {
         didSet {
             updatePeriodTitle()
@@ -96,11 +98,13 @@ final class TransactionsViewModel: BaseViewModel<TransactionsRouterProtocol, Use
         itemId: UUID,
         itemType: ItemType,
         router: TransactionsRouterProtocol,
-        periodStore: PeriodStore
+        periodStore: PeriodStore,
+        configuations: Configurations
     ) {
         self.itemId = itemId
         self.itemType = itemType
         self.period = periodStore
+        self.configuations = configuations
         self.currentDate = switch periodStore.period {
             case .month: Date()
             case .week: Date()

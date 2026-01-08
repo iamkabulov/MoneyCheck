@@ -187,10 +187,10 @@ final class TransactionsAnalyticsViewController: UIViewController {
         // • показать BottomSheet
     }
 
-    private func formatAmount(_ amount: Double) -> String {
+    private func formatAmount(_ amount: Double, currency: String) -> String {
         let formattedAmount = Double.amountFormatter(amount)
         let sign = amount >= 0 ? "+" : "-"
-        return "\(sign)\(formattedAmount) ₸"
+        return "\(sign)\(formattedAmount) \(currency)"
     }
 
     private func formatDate(_ date: Date) -> String {
@@ -214,7 +214,9 @@ extension TransactionsAnalyticsViewController: UITableViewDataSource, UITableVie
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "TransactionCell", for: indexPath) as? TransactionCell else { return UITableViewCell() }
         let transaction = viewModel.sections[indexPath.section].transactions[indexPath.row]
-        cell.configure(with: transaction, currentWalletId: UUID())
+        cell.configure(with: transaction,
+                       currentWalletId: UUID(),
+                       currency: viewModel.configurations.selectedCurrency.symbol)
         return cell
     }
 
@@ -234,7 +236,8 @@ extension TransactionsAnalyticsViewController: UITableViewDataSource, UITableVie
 
         let amountLabel = AmountLabel()
         amountLabel.font = .systemFont(ofSize: 17, weight: .semibold)
-        amountLabel.text = formatAmount(section.totalAmount)
+        amountLabel.text = formatAmount(section.totalAmount,
+                                        currency: viewModel.configurations.selectedCurrency.symbol)
         amountLabel.textAlignment = .right
 
         if section.totalAmount > 0 {

@@ -22,7 +22,8 @@ final class TransactionsFactory {
                                               itemId: entity.id,
                                               itemType: entity.type,
                                               router: router,
-                                              periodStore: PeriodStore.shared)
+                                              periodStore: PeriodStore.shared,
+                                              configuations: Configurations.shared)
         let vc = TransactionsViewController(viewModel: viewModel)
         return vc
     }

@@ -10,6 +10,7 @@ import Combine
 protocol CurrencySelectorUseCaseProtocol {
     var dataDidChange: AnyPublisher<Void, Never> { get }
     func getSelectedCurrency() -> AnyPublisher<Currency, Error>
+    func saveSelectedCurrency(_ currency: Currency) -> AnyPublisher<Void, Error>
 }
 
 final class CurrencySelectorUseCase: CurrencySelectorUseCaseProtocol {

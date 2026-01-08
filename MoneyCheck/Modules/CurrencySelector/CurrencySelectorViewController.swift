@@ -100,7 +100,7 @@ extension CurrencySelectorViewController: UITableViewDataSource, UITableViewDele
         content.secondaryText = currency.name
         cell.contentConfiguration = content
 
-        cell.accessoryType = (currency == viewModel.selectedCurrency) ? .checkmark : .none
+        cell.accessoryType = (currency.symbol == viewModel.selectedCurrency.symbol) ? .checkmark : .none
         return cell
     }
 

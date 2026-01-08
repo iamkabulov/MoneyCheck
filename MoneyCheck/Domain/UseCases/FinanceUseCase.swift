@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-typealias MainUseCaseProtocol = TransactionsUseCaseProtocol & PeriodUseCaseProtocol & ItemUseCaseProtocol & CurrencySelectorUseCaseProtocol
+typealias MainUseCaseProtocol = TransactionsUseCaseProtocol & PeriodUseCaseProtocol & ItemUseCaseProtocol
 
 final class MainUseCase: MainUseCaseProtocol {
 
@@ -15,7 +15,6 @@ final class MainUseCase: MainUseCaseProtocol {
     private let incomeRepository: IncomeRepositoryProtocol
     private let transactionRepository: TransactionRepositoryProtocol
     private let periodRepository: PeriodRepositoryProtocol
-    private let currencyRepository: CoreDataSettingsRepositoryProtocol
 
     init(walletRepository: WalletRepositoryProtocol,
          categoryRepository: CategoryRepositoryProtocol,
@@ -29,7 +28,6 @@ final class MainUseCase: MainUseCaseProtocol {
         self.incomeRepository = incomeRepository
         self.transactionRepository = transactionRepository
         self.periodRepository = periodRepository
-        self.currencyRepository = currencyRepository
     }
 
     deinit {
@@ -63,9 +61,4 @@ final class MainUseCase: MainUseCaseProtocol {
     func getPeriod() -> AnyPublisher<PeriodType, Error> {
         return periodRepository.getPeriod()
     }
-
-    func getSelectedCurrency() -> AnyPublisher<Currency, any Error> {
-        return currencyRepository.getCurrency()
-    }
-
 }
