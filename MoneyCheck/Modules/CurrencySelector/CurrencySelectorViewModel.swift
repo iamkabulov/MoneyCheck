@@ -58,7 +58,7 @@ final class CurrencySelectorViewModel: BaseViewModel<CurrencySelectorRouterProto
 
     func selectCurrency(_ currency: Currency) {
         configurations.selectCurrency(currency)
-        router.closeCurrencySelectorView()
+//        router.closeCurrencySelectorView()
     }
 
 //    func getSelectedCurrency() {

@@ -215,7 +215,7 @@ extension TransactionsAnalyticsViewController: UITableViewDataSource, UITableVie
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "TransactionCell", for: indexPath) as? TransactionCell else { return UITableViewCell() }
         let transaction = viewModel.sections[indexPath.section].transactions[indexPath.row]
         cell.configure(with: transaction,
-                       currentWalletId: UUID(),
+                       currentWalletId: transaction.sourceId,
                        currency: viewModel.configurations.selectedCurrency.symbol)
         return cell
     }

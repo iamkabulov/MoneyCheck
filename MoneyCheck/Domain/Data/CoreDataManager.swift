@@ -460,15 +460,30 @@ final class CoreDataManager {
 
     func getCurrency() -> Currency {
         let request: NSFetchRequest<CurrencyCore> = CurrencyCore.fetchRequest()
+
         do {
             let res = try context.fetch(request)
-            let result = Currency(code: res[0].code ?? "",
-                                        name: res[0].name ?? "",
-                                        symbol: res[0].symbol ?? "")
-            return result
+
+            guard let currencyCore = res.first else {
+                return Currency(
+                    code: "KZT",
+                    name: String(localized: "currency_kzt"),
+                    symbol: "₸"
+                )
+            }
+
+            return Currency(
+                code: currencyCore.code ?? "KZT",
+                name: currencyCore.name ?? String(localized: "currency_kzt"),
+                symbol: currencyCore.symbol ?? "₸"
+            )
         } catch {
-            print("Error fetching wallets: \(error)")
-            return Currency(code: "KZT", name: String(localized: "currency_kzt"), symbol: "T")
+            print("Error fetching currency: \(error)")
+            return Currency(
+                code: "KZT",
+                name: String(localized: "currency_kzt"),
+                symbol: "₸"
+            )
         }
     }
 

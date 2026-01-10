@@ -152,6 +152,7 @@ final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsR
     }
 
     private func getTransactions(start: Date, end: Date) {
+        //TODO: - тут баг иногда не находит транзакции, но чарт считает. (Возможно и не баг) UUID() посмотреть
         useCase.getTransactionsForInterval(type: type, start: start, end: end)
             .map { [weak self] transactions -> [TransactionSection] in
                 guard let self = self else { return [] }

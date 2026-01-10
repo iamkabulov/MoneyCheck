@@ -109,6 +109,22 @@
         }
       }
     },
+    "category" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Категория"
+          }
+        }
+      }
+    },
     "color" : {
       "localizations" : {
         "en" : {
@@ -578,6 +594,64 @@
         }
       }
     },
+    "Reminder" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Напоминание"
+          }
+        }
+      }
+    },
+    "reminder_body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder body push "
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тело сообщения ПОТОМ ПОМЕНЯТЬ"
+          }
+        }
+      }
+    },
+    "reminder_settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose time to Daily reminder"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите время для ежедневного уведомления"
+          }
+        }
+      }
+    },
+    "reminder_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder title"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заголовок пушки"
+          }
+        }
+      }
+    },
     "save" : {
       "localizations" : {
         "en" : {
@@ -727,6 +801,22 @@
     },
     "Value" : {
       "shouldTranslate" : false
+    },
+    "wallet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кошелек"
+          }
+        }
+      }
     },
     "week" : {
       "extractionState" : "manual",

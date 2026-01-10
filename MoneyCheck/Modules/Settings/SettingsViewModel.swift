@@ -6,6 +6,7 @@
 //
 
 import Combine
+import Foundation
 
 public struct SettingsViewModelEntity {
     public let title: String
@@ -27,6 +28,7 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
 
     // MARK: - Published properties
     @Published private(set) var settingsViewModelEntity: SettingsViewModelEntity?
+    @Published private(set) var reminder: StoredReminder?
 
     init(useCase: SettingsUseCaseProtocol, router: SettingsRouter) {
         super.init(useCase: useCase, router: router)
@@ -37,14 +39,31 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
         useCase.settingsItem { settings in
             self.settingsViewModelEntity = .init(from: settings)
         }
+
+        useCase.dataDidChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.loadData()
+            }
+            .store(in: &cancellables)
+    }
+
+    func loadData() {
+        useCase.loadReminder { [weak self] reminder in
+            DispatchQueue.main.async {
+                self?.reminder = reminder
+            }
+        }
     }
 
     func didTapOnSettingsOption(option: SettingsEnum) {
         switch option {
-        case .icon:
-            self.router.openCurrencySelector()
-        default:
-            break
+            case .currency:
+                self.router.openCurrencySelector()
+            case .reminder:
+                self.router.openReminderSettings()
+            default:
+                break
         }
 //                case .termsAndConditions:
 //                    presenter.didTapTermsAndConditions()

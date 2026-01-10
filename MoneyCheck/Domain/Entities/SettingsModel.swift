@@ -63,18 +63,27 @@ public struct SettingsOption {
     public let title: String
     public let option: SettingsEnum
     public let icon: String
+    public let type: SettingsOptionType?
 
-    public init(title: String, option: SettingsEnum, icon: String) {
+    public init(title: String, option: SettingsEnum, icon: String, type: SettingsOptionType? = nil) {
         self.title = title
         self.option = option
         self.icon = icon
+        self.type = type
     }
+}
+
+public enum SettingsOptionType: Equatable {
+    case navigation
+    case toggle(isOn: Bool)
 }
 
 public enum SettingsEnum: String, CaseIterable {
     case termsAndConditions
     case privacy
     case icon
+    case currency
+    case reminder
     case feedback
     case contactUs
     case appReviews
@@ -153,10 +162,11 @@ private extension SettingsProvider {
         var options = [
             SettingsOption(title: String(localized: "Terms and Conditions"), option: .termsAndConditions, icon: "doc"),
             SettingsOption(title: String(localized: "Privacy"), option: .privacy, icon: "shield.lefthalf.filled.badge.checkmark"),
-            SettingsOption(title: String(localized: "Currency"), option: .icon, icon: "dollarsign"),
+            SettingsOption(title: String(localized: "Currency"), option: .currency, icon: "dollarsign"),
             SettingsOption(title: String(localized: "Feedback"), option: .feedback, icon: "bubble.right"),
             SettingsOption(title: String(localized: "Contact us"), option: .contactUs, icon: "phone"),
             SettingsOption(title: String(localized: "App reviews"), option: .appReviews, icon: "checkmark.seal"),
+            SettingsOption(title: String(localized: "Reminder"), option: .reminder, icon: "alarm", type: .toggle(isOn: false)),
             SettingsOption(title: String(localized: "Promo Code"), option: .promoCode, icon: "gift")
         ]
 

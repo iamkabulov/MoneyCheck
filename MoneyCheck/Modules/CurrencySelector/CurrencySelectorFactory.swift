@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import PanModal
 
 final class CurrencySelectorFactory {
     static let shared = CurrencySelectorFactory()

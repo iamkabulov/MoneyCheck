@@ -12,9 +12,9 @@ enum ItemType:String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .income: return "Доход"
-        case .wallet: return "Кошелек"
-        case .category: return "Категория"
+            case .income: return String(localized: "income")
+            case .wallet: return String(localized: "wallet")
+            case .category: return String(localized: "category")
         }
     }
 

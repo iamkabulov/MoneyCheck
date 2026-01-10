@@ -45,6 +45,7 @@ public class SettingsViewController: UIViewController {
     private var sections = [SettingsOptionSection]()
     private var viewModel: SettingsViewModel
     private var cancellables = Set<AnyCancellable>()
+    var onToggle: ((Bool) -> Void)?
 
     init(viewModel: SettingsViewModel) {
         self.viewModel = viewModel
@@ -90,6 +91,12 @@ public class SettingsViewController: UIViewController {
                 self.tableView.reloadData()
             }
             .store(in: &cancellables)
+        viewModel.$reminder
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.tableView.reloadData()
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -112,7 +119,7 @@ private extension SettingsViewController {
         
     }
 
-    func configureCell(cell: UITableViewCell, title: String, icon: String) {
+    func configureCell(cell: UITableViewCell, title: String, icon: String, type: SettingsOptionType? = nil) {
 //        cell.backgroundColor = UIColor(red: 30/255, green: 30/255, blue: 29/255, alpha: 1.0)
         let iconContainerView = UIView()
         iconContainerView.backgroundColor = .secondarySystemGroupedBackground
@@ -130,9 +137,54 @@ private extension SettingsViewController {
         titleLabel.font = .systemFont(ofSize: 16)
         titleLabel.textColor = .label
 
+        let bodyLabel = UILabel()
+        bodyLabel.text = title
+        bodyLabel.font = .systemFont(ofSize: 10)
+        bodyLabel.textColor = .secondaryLabel
+
+        let toggleSwitch = UISwitch()
+
         iconContainerView.addSubview(iconImageView)
         cell.contentView.addSubview(iconContainerView)
-        cell.contentView.addSubview(titleLabel)
+
+        if type == .toggle(isOn: false) || type == .toggle(isOn: true) {
+            let titleLabel = UILabel()
+            titleLabel.text = title
+            titleLabel.font = .systemFont(ofSize: 16)
+            titleLabel.textColor = .label
+
+            let bodyLabel = UILabel()
+            bodyLabel.text = title
+            bodyLabel.font = .systemFont(ofSize: 10)
+            bodyLabel.textColor = .secondaryLabel
+            bodyLabel.text = viewModel.reminder?.time?.description ?? "No Reminder"
+
+            let stackView = UIStackView(arrangedSubviews: [titleLabel, bodyLabel])
+            stackView.axis = .vertical
+            stackView.spacing = 2
+            cell.contentView.addSubview(stackView)
+            cell.contentView.addSubview(toggleSwitch)
+
+            stackView.snp.makeConstraints { make in
+                make.leading.equalTo(iconContainerView.snp.trailing).offset(Constants.mediumSpacing)
+                make.trailing.equalToSuperview().offset(-Constants.mediumSpacing)
+                make.centerY.equalToSuperview()
+            }
+
+            toggleSwitch.snp.makeConstraints { make in
+                make.centerY.equalToSuperview()
+                make.trailing.equalToSuperview().offset(-Constants.mediumSpacing)
+            }
+        } else {
+            // Non-toggle cell
+            cell.contentView.addSubview(titleLabel)
+            titleLabel.snp.makeConstraints { make in
+                make.leading.equalTo(iconContainerView.snp.trailing).offset(Constants.mediumSpacing)
+                make.trailing.equalToSuperview().offset(-Constants.mediumSpacing)
+                make.centerY.equalToSuperview()
+            }
+        }
+
 
         iconContainerView.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(Constants.largeSpacing)
@@ -143,12 +195,6 @@ private extension SettingsViewController {
         iconImageView.snp.makeConstraints { make in
             make.center.equalToSuperview()
             make.height.width.equalTo(Constants.Size.small)
-        }
-
-        titleLabel.snp.makeConstraints { make in
-            make.leading.equalTo(iconContainerView.snp.trailing).offset(Constants.mediumSpacing)
-            make.trailing.equalToSuperview().offset(-Constants.mediumSpacing)
-            make.centerY.equalToSuperview()
         }
     }
 
@@ -217,7 +263,12 @@ extension SettingsViewController: UITableViewDataSource {
         )
         let option = sections[indexPath.section].options[indexPath.row]
         cell.accessoryType = .disclosureIndicator
-        configureCell(cell: cell, title: option.title, icon: option.icon)
+        configureCell(
+            cell: cell,
+            title: option.title,
+            icon: option.icon,
+            type: option.type
+        )
         return cell
     }
 
