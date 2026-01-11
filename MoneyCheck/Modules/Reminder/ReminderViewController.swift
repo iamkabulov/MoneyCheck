@@ -16,8 +16,9 @@ final class ReminderViewController: UIViewController {
     private let viewModel: ReminderViewModel
     private var cancellables = Set<AnyCancellable>()
 
-    private let reminderSwitch = UISwitch()
     private let datePicker = UIDatePicker()
+    private var didSave = false
+
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 17, weight: .medium)
@@ -27,9 +28,31 @@ final class ReminderViewController: UIViewController {
         return label
     }()
 
+    private let saveButton: PrimaryButton = {
+        let button = PrimaryButton()
+        button.setTitle(String(localized: "save"), for: .normal)
+        return button
+    }()
+
+    private lazy var cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        button.tintColor = .systemGray3
+        button.addAction(UIAction { [weak self] _ in
+            guard let self = self else { return }
+                cancelTapped()
+        }, for: .touchDown)
+        return button
+    }()
+    
+
     init(viewModel: ReminderViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
+    }
+
+    deinit {
+        print("Deinited ReminderViewController")
     }
 
     required init?(coder: NSCoder) {
@@ -50,31 +73,41 @@ final class ReminderViewController: UIViewController {
 
         let stack = UIStackView(arrangedSubviews: [
             titleLabel,
-            reminderSwitch,
             datePicker
         ])
         stack.axis = .vertical
-        stack.spacing = 16
+        stack.spacing = 20
 
         view.addSubview(stack)
+        view.addSubview(saveButton)
+        view.addSubview(cancelButton)
 
         stack.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview()
+            make.top.leading.trailing.equalToSuperview().inset(24)
+        }
+
+        saveButton.snp.makeConstraints { make in
+            make.bottom.leading.trailing.equalToSuperview().inset(32)
+        }
+
+        cancelButton.snp.makeConstraints { make in
+            make.centerY.equalTo(titleLabel.snp.centerY)
+            make.trailing.equalToSuperview().inset(16)
         }
     }
 
     private func bind() {
-        reminderSwitch.addTarget(self, action: #selector(switchChanged), for: .valueChanged)
-        datePicker.addTarget(self, action: #selector(timeChanged), for: .valueChanged)
+        saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
     }
 
-    @objc private func switchChanged() {
-        viewModel.isEnabled = reminderSwitch.isOn
+    @objc private func saveTapped() {
+        didSave = true
+        viewModel.saveReminder(self.datePicker.date)
+        viewModel.closeReminderView(didSave: true, time: datePicker.date)
     }
 
-    @objc private func timeChanged() {
-        viewModel.time = datePicker.date
+    @objc private func cancelTapped() {
+        viewModel.closeReminderView(didSave: false, time: datePicker.date)
     }
 }
 
@@ -100,5 +133,11 @@ extension ReminderViewController: PanModalPresentable {
 
     var shouldRoundTopCorners: Bool {
         true
+    }
+
+    func panModalDidDismiss() {
+        if !didSave {
+            viewModel.closeReminderView(didSave: false, time: datePicker.date)
+        }
     }
 }

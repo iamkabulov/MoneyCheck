@@ -20,7 +20,8 @@ final class SettingsFactory {
         let useCase = SettingsUseCase()
         let viewModel = SettingsViewModel(
             useCase: useCase,
-            router: router
+            router: router,
+            configuration: Configurations.shared
         )
         let vc = SettingsViewController(viewModel: viewModel)
 

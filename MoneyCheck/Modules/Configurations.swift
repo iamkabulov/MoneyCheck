@@ -10,11 +10,13 @@ import Combine
 final class Configurations {
 
     static let shared = Configurations(
-        useCase: CurrencySelectorUseCase(
+        useCase: ConfigurationsUseCase(
             currencyRepository: CoreDataSettingsRepository()
         )
     )
     @Published var selectedCurrency: Currency
+    @Published var reminder: StoredReminder?
+
     let useCase: CurrencySelectorUseCaseProtocol
     private var cancellables = Set<AnyCancellable>()
 

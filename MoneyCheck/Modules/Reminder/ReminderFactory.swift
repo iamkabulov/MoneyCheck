@@ -20,7 +20,8 @@ final class ReminderFactory {
         let useCase = ReminderService()
         let viewModel = ReminderViewModel(
             useCase: useCase,
-            router: router
+            router: router,
+            configuration: Configurations.shared
         )
         let vc = ReminderViewController(viewModel: viewModel)
 

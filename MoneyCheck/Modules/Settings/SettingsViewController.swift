@@ -59,7 +59,6 @@ public class SettingsViewController: UIViewController {
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
 //        navigationController?.setNavigationBarHidden(false, animated: true)
     }
     
@@ -71,7 +70,6 @@ public class SettingsViewController: UIViewController {
     
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
 //        navigationController?.setNavigationBarHidden(true, animated: true)
     }
 
@@ -120,6 +118,8 @@ private extension SettingsViewController {
     }
 
     func configureCell(cell: UITableViewCell, title: String, icon: String, type: SettingsOptionType? = nil) {
+
+        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
 //        cell.backgroundColor = UIColor(red: 30/255, green: 30/255, blue: 29/255, alpha: 1.0)
         let iconContainerView = UIView()
         iconContainerView.backgroundColor = .secondarySystemGroupedBackground
@@ -147,6 +147,7 @@ private extension SettingsViewController {
         iconContainerView.addSubview(iconImageView)
         cell.contentView.addSubview(iconContainerView)
 
+
         if type == .toggle(isOn: false) || type == .toggle(isOn: true) {
             let titleLabel = UILabel()
             titleLabel.text = title
@@ -157,7 +158,7 @@ private extension SettingsViewController {
             bodyLabel.text = title
             bodyLabel.font = .systemFont(ofSize: 10)
             bodyLabel.textColor = .secondaryLabel
-            bodyLabel.text = viewModel.reminder?.time?.description ?? "No Reminder"
+            bodyLabel.text = viewModel.reminderSubtitle
 
             let stackView = UIStackView(arrangedSubviews: [titleLabel, bodyLabel])
             stackView.axis = .vertical
@@ -175,6 +176,19 @@ private extension SettingsViewController {
                 make.centerY.equalToSuperview()
                 make.trailing.equalToSuperview().offset(-Constants.mediumSpacing)
             }
+
+            toggleSwitch.isOn = viewModel.reminder?.isEnabled ?? false
+
+            toggleSwitch.addAction(
+                UIAction { [weak self] action in
+                    guard let self = self,
+                          let toggle = action.sender as? UISwitch else { return }
+
+                    self.viewModel.setReminderEnabled(toggle.isOn)
+                },
+                for: .valueChanged
+            )
+
         } else {
             // Non-toggle cell
             cell.contentView.addSubview(titleLabel)

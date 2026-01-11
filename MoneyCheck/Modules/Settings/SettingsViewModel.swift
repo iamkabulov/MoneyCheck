@@ -29,8 +29,29 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
     // MARK: - Published properties
     @Published private(set) var settingsViewModelEntity: SettingsViewModelEntity?
     @Published private(set) var reminder: StoredReminder?
+    private let configuration: Configurations
 
-    init(useCase: SettingsUseCaseProtocol, router: SettingsRouter) {
+    var reminderSubtitle: String {
+        guard let reminder else {
+            return String(localized: "no_reminder")
+        }
+
+        if let time = reminder.time {
+            let formatter = DateFormatter()
+            formatter.timeStyle = .short
+            return formatter.string(from: time)
+        }
+
+        return String(localized: "select_time")
+    }
+
+    init(
+        useCase: SettingsUseCaseProtocol,
+        router: SettingsRouter,
+        configuration: Configurations
+    ) {
+        self.configuration = configuration
+        self.reminder = self.configuration.reminder
         super.init(useCase: useCase, router: router)
         self.bindDataChanges()
     }
@@ -43,17 +64,55 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
         useCase.dataDidChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
-                self?.loadData()
+                self?.reminder = self?.configuration.reminder
+            }
+            .store(in: &cancellables)
+
+        configuration.$reminder
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] reminder in
+                self?.reminder = reminder
             }
             .store(in: &cancellables)
     }
 
-    func loadData() {
-        useCase.loadReminder { [weak self] reminder in
-            DispatchQueue.main.async {
-                self?.reminder = reminder
+    func setReminderEnabled(_ isEnabled: Bool) {
+        let current = reminder
+
+        if let time = current?.time {
+            reminder = StoredReminder(
+                isEnabled: isEnabled,
+                time: time,
+                title: current?.title,
+                message: current?.message
+            )
+            enableReminder(time)
+        } else {
+            if isEnabled {
+                return router.openReminderSettings()
             }
         }
+    }
+
+    func disableReminder() {
+        useCase.removeReminder(id: Reminder.id)
+    }
+
+    func enableReminder(_ time: Date) {
+        useCase.removeReminder(id: Reminder.id)
+
+        let components = Calendar.current.dateComponents([.hour, .minute], from: time)
+
+        let reminder = Reminder(
+            title: String(localized: "reminder_title"),
+            body: String(localized: "reminder_body"),
+            hour: components.hour ?? 21,
+            minute: components.minute ?? 0,
+            isEnabled: true
+        )
+
+        useCase.requestPermission()
+        useCase.scheduleDaily(reminder: reminder)
     }
 
     func didTapOnSettingsOption(option: SettingsEnum) {

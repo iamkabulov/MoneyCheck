@@ -12,29 +12,29 @@ import Combine
 final class ReminderViewModel: BaseViewModel<ReminderRouterProtocol, ReminderServiceProtocol> {
 
     // Input
-    @Published var isEnabled: Bool = false
-    @Published var time: Date = Date()
 
     // Output
     @Published private(set) var title: String = "Daily Reminder"
 
 //    private let service: ReminderServiceProtocol
     private var cancellables = Set<AnyCancellable>()
+    private let configuration: Configurations
 
-    override init(
+    init(
         useCase: ReminderServiceProtocol,
-        router: ReminderRouterProtocol
+        router: ReminderRouterProtocol,
+        configuration: Configurations
     ) {
+        self.configuration = configuration
         super.init(useCase: useCase, router: router)
-        bind()
     }
 
-    private func bind() {
-        Publishers.CombineLatest($isEnabled, $time)
-            .sink { [weak self] isEnabled, time in
-                self?.updateReminder(isEnabled: isEnabled, time: time)
-            }
-            .store(in: &cancellables)
+    deinit {
+        print("Deinited ReminderViewModel")
+    }
+
+    func saveReminder(_ time: Date) {
+        updateReminder(isEnabled: true, time: time)
     }
 
     private func updateReminder(isEnabled: Bool, time: Date) {
@@ -54,5 +54,24 @@ final class ReminderViewModel: BaseViewModel<ReminderRouterProtocol, ReminderSer
 
         useCase.requestPermission()
         useCase.scheduleDaily(reminder: reminder)
+    }
+
+    func closeReminderView(didSave: Bool, time: Date) {
+        if !didSave, let reminder = configuration.reminder {
+            configuration.reminder = StoredReminder(
+                isEnabled: reminder.isEnabled,
+                time: reminder.time,
+                title: Reminder.id,
+                message: String(localized: "no_reminder")
+            )
+        } else {
+            configuration.reminder = StoredReminder(
+                isEnabled: didSave,
+                time: time,
+                title: Reminder.id,
+                message: String(localized: "no_reminder")
+            )
+        }
+        router.closeReminderView()
     }
 }

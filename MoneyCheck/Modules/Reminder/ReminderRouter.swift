@@ -13,6 +13,6 @@ protocol ReminderRouterProtocol {
 final class ReminderRouter: BaseRouter, ReminderRouterProtocol {
 
     func closeReminderView() {
-        self.pop(animated: true)
+        self.dismiss(animated: true)
     }
 }

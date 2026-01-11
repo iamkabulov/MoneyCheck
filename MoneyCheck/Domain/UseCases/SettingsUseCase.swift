@@ -12,6 +12,9 @@ protocol SettingsUseCaseProtocol {
     func settingsItem(completion: @escaping (SettingsModel) -> Void)
     func loadReminder(completion: @escaping (StoredReminder) -> Void)
     var dataDidChange: AnyPublisher<Void, Never> { get }
+    func requestPermission()
+    func scheduleDaily(reminder: Reminder)
+    func removeReminder(id: String)
 }
 
 final class SettingsUseCase: SettingsUseCaseProtocol {
@@ -66,5 +69,41 @@ final class SettingsUseCase: SettingsUseCaseProtocol {
                     )
                 )
             }
+    }
+
+    func scheduleDaily(reminder: Reminder) {
+        guard reminder.isEnabled else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = reminder.title
+        content.body = reminder.body
+        content.sound = .default
+
+        var components = DateComponents()
+        components.hour = reminder.hour
+        components.minute = reminder.minute
+
+        let trigger = UNCalendarNotificationTrigger(
+            dateMatching: components,
+            repeats: true
+        )
+
+        let request = UNNotificationRequest(
+            identifier: Reminder.id,
+            content: content,
+            trigger: trigger
+        )
+
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    func removeReminder(id: String) {
+        UNUserNotificationCenter.current()
+            .removePendingNotificationRequests(withIdentifiers: [id])
+    }
+
+    func requestPermission() {
+        UNUserNotificationCenter.current()
+            .requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
     }
 }

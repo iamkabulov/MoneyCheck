@@ -1,27 +1,46 @@
 //
-//  ReminderUseCase.swift
+//  CurrencySelectorUseCase.swift
 //  MoneyCheck
 //
-//  Created by Нурсултан Кабулов on 10.01.2026.
+//  Created by Нурсултан Кабулов on 08.01.2026.
 //
 
-import UserNotifications
 import Combine
+import UserNotifications
 
-protocol ReminderServiceProtocol {
-    func requestPermission()
-    func scheduleDaily(reminder: Reminder)
-    func removeReminder(id: String)
+protocol CurrencySelectorUseCaseProtocol {
     var dataDidChange: AnyPublisher<Void, Never> { get }
+    func getSelectedCurrency() -> AnyPublisher<Currency, Error>
+    func saveSelectedCurrency(_ currency: Currency) -> AnyPublisher<Void, Error>
 }
 
-final class ReminderService: ReminderServiceProtocol {
+final class ConfigurationsUseCase: CurrencySelectorUseCaseProtocol {
 
     private let dataChangeCenter = DataChangeCenter.shared
     var dataDidChange: AnyPublisher<Void, Never> {
         dataChangeCenter.dataDidChange
     }
+    private let currencyRepository: CoreDataSettingsRepositoryProtocol
     
+    init(currencyRepository: CoreDataSettingsRepositoryProtocol) {
+        self.currencyRepository = currencyRepository
+    }
+
+    func saveSelectedCurrency(_ currency: Currency) -> AnyPublisher<Void, Error> {
+        return currencyRepository.saveCurrency(currency)
+            .handleEvents(receiveOutput: { [weak self] _ in
+                self?.dataChangeCenter.notify()
+            })
+            .eraseToAnyPublisher()
+    }
+
+
+    func getSelectedCurrency() -> AnyPublisher<Currency, any Error> {
+        return currencyRepository.getCurrency()
+    }
+}
+
+extension ConfigurationsUseCase: ReminderServiceProtocol {
     func requestPermission() {
         UNUserNotificationCenter.current()
             .requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
@@ -51,8 +70,6 @@ final class ReminderService: ReminderServiceProtocol {
         )
 
         UNUserNotificationCenter.current().add(request)
-        print("\(reminder.hour)")
-        print("\(reminder.minute)")
         dataChangeCenter.notify()
     }
 

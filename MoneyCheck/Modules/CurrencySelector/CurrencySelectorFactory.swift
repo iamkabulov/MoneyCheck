@@ -17,7 +17,7 @@ final class CurrencySelectorFactory {
         let router = CurrencySelectorRouter(navigationController: nav)
         let currencyRepository: CoreDataSettingsRepositoryProtocol = CoreDataSettingsRepository()
 
-        let useCase = CurrencySelectorUseCase(
+        let useCase = ConfigurationsUseCase(
             currencyRepository: currencyRepository
         )
         let viewModel = CurrencySelectorViewModel(

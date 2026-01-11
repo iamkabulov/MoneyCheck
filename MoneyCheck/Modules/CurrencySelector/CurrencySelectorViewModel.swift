@@ -8,7 +8,7 @@
 import Combine
 import UIKit
 
-final class CurrencySelectorViewModel: BaseViewModel<CurrencySelectorRouterProtocol, CurrencySelectorUseCase> {
+final class CurrencySelectorViewModel: BaseViewModel<CurrencySelectorRouterProtocol, ConfigurationsUseCase> {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Published properties
@@ -26,7 +26,7 @@ final class CurrencySelectorViewModel: BaseViewModel<CurrencySelectorRouterProto
     var filteredCurrencies: [Currency] = []
     private let configurations: Configurations
 
-    init(useCase: CurrencySelectorUseCase, router: CurrencySelectorRouter, configurations: Configurations) {
+    init(useCase: ConfigurationsUseCase, router: CurrencySelectorRouter, configurations: Configurations) {
         self.configurations = configurations
         self.selectedCurrency = configurations.selectedCurrency
         super.init(useCase: useCase, router: router)

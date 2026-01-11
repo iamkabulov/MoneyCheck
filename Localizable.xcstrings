@@ -564,6 +564,9 @@
         }
       }
     },
+    "no_reminder" : {
+
+    },
     "Premium" : {
       "localizations" : {
         "ru" : {
@@ -693,6 +696,9 @@
           }
         }
       }
+    },
+    "select_time" : {
+
     },
     "Settings" : {
       "localizations" : {
