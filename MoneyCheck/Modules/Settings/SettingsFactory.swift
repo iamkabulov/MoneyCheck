@@ -18,10 +18,12 @@ final class SettingsFactory {
         let router = SettingsRouter(navigationController: navigationController)
 
         let useCase = SettingsUseCase()
+        let permissionUseCase = NotificationPermissionUseCase()
         let viewModel = SettingsViewModel(
             useCase: useCase,
             router: router,
-            configuration: Configurations.shared
+            configuration: Configurations.shared,
+            permissionUseCase: permissionUseCase
         )
         let vc = SettingsViewController(viewModel: viewModel)
 

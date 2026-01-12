@@ -16,16 +16,19 @@ final class ReminderViewModel: BaseViewModel<ReminderRouterProtocol, ReminderSer
     // Output
     @Published private(set) var title: String = "Daily Reminder"
 
-//    private let service: ReminderServiceProtocol
+    //    private let service: ReminderServiceProtocol
     private var cancellables = Set<AnyCancellable>()
     private let configuration: Configurations
+    private let permissionUseCase: NotificationPermissionUseCaseProtocol
 
     init(
         useCase: ReminderServiceProtocol,
         router: ReminderRouterProtocol,
-        configuration: Configurations
+        configuration: Configurations,
+        permissionUseCase: NotificationPermissionUseCaseProtocol
     ) {
         self.configuration = configuration
+        self.permissionUseCase = permissionUseCase
         super.init(useCase: useCase, router: router)
     }
 
@@ -52,24 +55,28 @@ final class ReminderViewModel: BaseViewModel<ReminderRouterProtocol, ReminderSer
             isEnabled: true
         )
 
-        useCase.requestPermission { [weak self] granted in
-            if granted {
-                self?.useCase.scheduleDaily(reminder: reminder)
-            } else {
-                self?.router.showSettingsAlert(
-                    title: String(localized: "notification_permission_denied"),
-                    message: String(localized: "notification_permission_message"),
-                    onCancel: nil,
-                    onSettings: nil
-                )
+        permissionUseCase.checkAndRequestPermission { [weak self] result in
+            switch result {
+                case .granted:
+                    self?.useCase.scheduleDaily(reminder: reminder)
+                case .firstDenied:
+                    // Первый отказ - ничего не делаем
+                    break
+                case .permanentlyDenied:
+                    self?.router.showSettingsAlert(
+                        title: String(localized: "notification_permission_denied"),
+                        message: String(localized: "notification_permission_message"),
+                        onCancel: nil,
+                        onSettings: nil
+                    )
             }
         }
     }
 
     func closeReminderView(didSave: Bool, time: Date) {
-        if !didSave, let reminder = configuration.reminder {
+        if !didSave, let reminder = configuration.reminder, let time = reminder.time {
             configuration.reminder = StoredReminder(
-                isEnabled: didSave,
+                isEnabled: reminder.isEnabled,
                 time: reminder.time,
                 title: Reminder.id,
                 message: String(localized: "no_reminder")

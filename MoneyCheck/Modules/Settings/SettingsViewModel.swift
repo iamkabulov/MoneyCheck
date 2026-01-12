@@ -7,7 +7,6 @@
 
 import Combine
 import Foundation
-import UserNotifications
 import UIKit
 
 public struct SettingsViewModelEntity {
@@ -32,30 +31,29 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
     @Published private(set) var settingsViewModelEntity: SettingsViewModelEntity?
     @Published private(set) var reminder: StoredReminder?
     private let configuration: Configurations
+    private let permissionUseCase: NotificationPermissionUseCaseProtocol
     private var isWaitingForSettingsReturn = false
     private var shouldOpenReminderViewAfterPermission = false
 
     var reminderSubtitle: String {
-        guard let reminder else {
-            return String(localized: "no_reminder")
-        }
-
-        if let time = reminder.time {
+        if let time = reminder?.time {
             let formatter = DateFormatter()
             formatter.timeStyle = .short
             return formatter.string(from: time)
         }
 
-        return String(localized: "select_time")
+        return String(localized: "no_reminder")
     }
 
     init(
         useCase: SettingsUseCaseProtocol,
         router: SettingsRouter,
-        configuration: Configurations
+        configuration: Configurations,
+        permissionUseCase: NotificationPermissionUseCaseProtocol
     ) {
         self.configuration = configuration
         self.reminder = self.configuration.reminder
+        self.permissionUseCase = permissionUseCase
         super.init(useCase: useCase, router: router)
         self.bindDataChanges()
         self.setupForegroundObserver()
@@ -68,50 +66,79 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
     private func setupForegroundObserver() {
         NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
             .sink { [weak self] _ in
-                self?.checkPermissionAfterReturnFromSettings()
+                self?.handleAppWillEnterForeground()
             }
             .store(in: &cancellables)
+    }
+    
+    private func handleAppWillEnterForeground() {
+        if isWaitingForSettingsReturn {
+            // Проверяем разрешение после возврата из настроек
+            checkPermissionAfterReturnFromSettings()
+        } else {
+            // Обычный возврат в приложение - восстанавливаем напоминание если нужно
+            restoreReminderIfNeeded()
+        }
     }
     
     private func checkPermissionAfterReturnFromSettings() {
         guard isWaitingForSettingsReturn else { return }
         isWaitingForSettingsReturn = false
         
-        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                
-                if settings.authorizationStatus != .authorized {
-                    // Разрешение все еще не дано - переводим тоггл в off
-                    let currentReminder = self.reminder
-                    let disabledReminder = StoredReminder(
-                        isEnabled: false,
-                        time: currentReminder?.time,
-                        title: currentReminder?.title,
-                        message: currentReminder?.message
-                    )
-                    self.reminder = disabledReminder
-                    self.configuration.reminder = disabledReminder
-                    self.disableReminder()
+        permissionUseCase.checkCurrentStatus { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .granted:
+                // Разрешение дано
+                if self.shouldOpenReminderViewAfterPermission {
+                    // Нужно открыть ReminderView после получения разрешения (тап на ячейку или включение тоггла без времени)
                     self.shouldOpenReminderViewAfterPermission = false
+                    self.router.openReminderSettings()
                 } else {
-                    // Разрешение дано
-                    if self.shouldOpenReminderViewAfterPermission {
-                        // Нужно открыть ReminderView после получения разрешения (тап на ячейку или включение тоггла без времени)
-                        self.shouldOpenReminderViewAfterPermission = false
+                    // Проверяем состояние reminder
+                    if let time = self.reminder?.time, self.reminder?.isEnabled == true {
+                        // Время установлено - включаем reminder
+                        self.enableReminder(time)
+                    } else if self.reminder?.time == nil && self.reminder?.isEnabled == true {
+                        // Времени нет, но тоггл включен - открываем ReminderView
                         self.router.openReminderSettings()
-                    } else {
-                        // Проверяем состояние reminder
-                        if let time = self.reminder?.time, self.reminder?.isEnabled == true {
-                            // Время установлено - включаем reminder
-                            self.enableReminder(time)
-                        } else if self.reminder?.time == nil && self.reminder?.isEnabled == true {
-                            // Времени нет, но тоггл включен - открываем ReminderView
-                            self.router.openReminderSettings()
-                        }
                     }
                 }
+            case .firstDenied, .permanentlyDenied:
+                // Разрешение все еще не дано - переводим тоггл в off
+                let currentReminder = self.reminder
+                let disabledReminder = StoredReminder(
+                    isEnabled: false,
+                    time: currentReminder?.time,
+                    title: currentReminder?.title,
+                    message: currentReminder?.message
+                )
+                self.reminder = disabledReminder
+                self.configuration.reminder = disabledReminder
+                self.disableReminder()
+                self.shouldOpenReminderViewAfterPermission = false
             }
+        }
+    }
+    
+    private func restoreReminderIfNeeded() {
+        guard let reminder = reminder,
+              reminder.isEnabled,
+              let time = reminder.time else {
+            return
+        }
+        
+        // Проверяем разрешение и восстанавливаем напоминание
+        permissionUseCase.checkCurrentStatus { [weak self] result in
+            guard let self = self else { return }
+            
+            guard case .granted = result else {
+                return
+            }
+            
+            // Разрешение есть - восстанавливаем напоминание
+            self.enableReminder(time)
         }
     }
 
@@ -140,7 +167,7 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
         
         if let time = current?.time {
             // Если время уже установлено, обновляем состояние и запрашиваем разрешение
-            reminder = StoredReminder(
+            configuration.reminder = StoredReminder(
                 isEnabled: isEnabled,
                 time: time,
                 title: current?.title,
@@ -149,13 +176,14 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
             
             if isEnabled {
                 // Запрашиваем разрешение перед включением
-                requestPermissionToReceiveNotifications { [weak self] granted in
+                permissionUseCase.checkAndRequestPermission { [weak self] result in
                     guard let self = self else { return }
                     
-                    if granted {
+                    switch result {
+                    case .granted:
                         self.enableReminder(time)
-                    } else {
-                        // Первый отказ или отказ при уже .denied — возвращаем тоггл в off
+                    case .firstDenied:
+                        // Первый отказ - возвращаем тоггл в off
                         let disabledReminder = StoredReminder(
                             isEnabled: false,
                             time: time,
@@ -165,6 +193,29 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
                         self.reminder = disabledReminder
                         self.configuration.reminder = disabledReminder
                         self.disableReminder()
+                    case .permanentlyDenied:
+                        // Статус .denied - показываем алерт с переходом в настройки
+                        self.isWaitingForSettingsReturn = true
+                        self.router.showSettingsAlert(
+                            title: String(localized: "notification_permission_denied"),
+                            message: String(localized: "notification_permission_message"),
+                            onCancel: { [weak self] in
+                                guard let self = self else { return }
+                                self.isWaitingForSettingsReturn = false
+                                let disabledReminder = StoredReminder(
+                                    isEnabled: false,
+                                    time: time,
+                                    title: current?.title,
+                                    message: current?.message
+                                )
+                                self.reminder = disabledReminder
+                                self.configuration.reminder = disabledReminder
+                                self.disableReminder()
+                            },
+                            onSettings: {
+                                // Флаг уже установлен, проверка произойдет при возврате из настроек
+                            }
+                        )
                     }
                 }
             } else {
@@ -182,13 +233,14 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
                 )
                 configuration.reminder = reminder
                 
-                requestPermissionToReceiveNotifications { [weak self] granted in
+                permissionUseCase.checkAndRequestPermission { [weak self] result in
                     guard let self = self else { return }
                     
-                    if granted {
+                    switch result {
+                    case .granted:
                         // Только после получения разрешения открываем ReminderView
                         self.router.openReminderSettings()
-                    } else {
+                    case .firstDenied:
                         // Первый отказ при отсутствии времени — возвращаем тоггл в off
                         let disabledReminder = StoredReminder(
                             isEnabled: false,
@@ -199,6 +251,31 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
                         self.reminder = disabledReminder
                         self.configuration.reminder = disabledReminder
                         self.disableReminder()
+                    case .permanentlyDenied:
+                        // Статус .denied - показываем алерт с переходом в настройки
+                        self.isWaitingForSettingsReturn = true
+                        self.shouldOpenReminderViewAfterPermission = true
+                        self.router.showSettingsAlert(
+                            title: String(localized: "notification_permission_denied"),
+                            message: String(localized: "notification_permission_message"),
+                            onCancel: { [weak self] in
+                                guard let self = self else { return }
+                                self.isWaitingForSettingsReturn = false
+                                self.shouldOpenReminderViewAfterPermission = false
+                                let disabledReminder = StoredReminder(
+                                    isEnabled: false,
+                                    time: nil,
+                                    title: self.reminder?.title,
+                                    message: self.reminder?.message
+                                )
+                                self.reminder = disabledReminder
+                                self.configuration.reminder = disabledReminder
+                                self.disableReminder()
+                            },
+                            onSettings: {
+                                // Флаги уже установлены, проверка произойдет при возврате из настроек
+                            }
+                        )
                     }
                 }
             }
@@ -221,112 +298,41 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
             minute: components.minute ?? 0,
             isEnabled: true
         )
-
+        configuration.reminder = .init(
+            isEnabled: true,
+            time: time,
+            title: String(localized: "reminder_title"),
+            message: String(localized: "reminder_body")
+        )
         useCase.scheduleDaily(reminder: reminder)
     }
 
-    func requestPermissionToReceiveNotifications(completion: @escaping (Bool) -> Void) {
-        // Сначала проверяем текущий статус
-        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
-            switch settings.authorizationStatus {
-            case .notDetermined:
-                // Первый запрос - показываем системный диалог
-                UNUserNotificationCenter.current()
-                    .requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-                        DispatchQueue.main.async {
-                            if granted {
-                                completion(true)
-                            } else {
-                                // Первый отказ - просто возвращаем false, не показываем алерт
-                                completion(false)
-                            }
-                        }
-                    }
-            case .denied:
-                // Статус уже .denied - показываем алерт с переходом в настройки
-                DispatchQueue.main.async {
-                    self?.isWaitingForSettingsReturn = true
-                    // Проверяем, нужно ли открыть ReminderView после получения разрешения
-                    // Если времени нет или это вызов из тапа на ячейку - нужно открыть
-                    if self?.reminder?.time == nil {
-                        self?.shouldOpenReminderViewAfterPermission = true
-                    }
-                    self?.router.showSettingsAlert(
-                        title: String(localized: "notification_permission_denied"),
-                        message: String(localized: "notification_permission_message"),
-                        onCancel: { [weak self] in
-                            guard let self = self else { return }
-                            self.isWaitingForSettingsReturn = false
-                            self.shouldOpenReminderViewAfterPermission = false
-                            // Отключаем reminder при нажатии Cancel
-                            let currentReminder = self.reminder
-                            let disabledReminder = StoredReminder(
-                                isEnabled: false,
-                                time: currentReminder?.time,
-                                title: currentReminder?.title,
-                                message: currentReminder?.message
-                            )
-                            self.reminder = disabledReminder
-                            self.configuration.reminder = disabledReminder
-                            self.disableReminder()
-                            completion(false)
-                        },
-                        onSettings: { [weak self] in
-                            // Флаги уже установлены, проверка произойдет при возврате из настроек
-                        }
-                    )
-                }
-            case .authorized, .provisional, .ephemeral:
-                // Уже разрешено
-                DispatchQueue.main.async {
-                    completion(true)
-                }
-            @unknown default:
-                DispatchQueue.main.async {
-                    completion(false)
-                }
-            }
-        }
-    }
-
     private func checkPermissionAndOpenReminderView() {
-        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                
-                switch settings.authorizationStatus {
-                case .authorized, .provisional, .ephemeral:
-                    // Разрешение есть - открываем ReminderView
-                    self.router.openReminderSettings()
-                case .notDetermined:
-                    // Первый запрос - показываем системный диалог
-                    UNUserNotificationCenter.current()
-                        .requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-                            DispatchQueue.main.async {
-                                if granted {
-                                    self.router.openReminderSettings()
-                                }
-                                // Если отказали, ничего не делаем
-                            }
-                        }
-                case .denied:
-                    // Разрешение отклонено - показываем алерт
-                    self.isWaitingForSettingsReturn = true
-                    self.shouldOpenReminderViewAfterPermission = true
-                    self.router.showSettingsAlert(
-                        title: String(localized: "notification_permission_denied"),
-                        message: String(localized: "notification_permission_message"),
-                        onCancel: { [weak self] in
-                            self?.isWaitingForSettingsReturn = false
-                            self?.shouldOpenReminderViewAfterPermission = false
-                        },
-                        onSettings: {
-                            // Флаги уже установлены, проверка произойдет при возврате из настроек
-                        }
-                    )
-                @unknown default:
-                    break
-                }
+        permissionUseCase.checkAndRequestPermission { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .granted:
+                // Разрешение есть - открываем ReminderView
+                self.router.openReminderSettings()
+            case .firstDenied:
+                // Первый отказ - ничего не делаем
+                break
+            case .permanentlyDenied:
+                // Разрешение отклонено - показываем алерт
+                self.isWaitingForSettingsReturn = true
+                self.shouldOpenReminderViewAfterPermission = true
+                self.router.showSettingsAlert(
+                    title: String(localized: "notification_permission_denied"),
+                    message: String(localized: "notification_permission_message"),
+                    onCancel: { [weak self] in
+                        self?.isWaitingForSettingsReturn = false
+                        self?.shouldOpenReminderViewAfterPermission = false
+                    },
+                    onSettings: {
+                        // Флаги уже установлены, проверка произойдет при возврате из настроек
+                    }
+                )
             }
         }
     }
@@ -336,7 +342,6 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
             case .currency:
                 self.router.openCurrencySelector()
             case .reminder:
-                // Проверяем разрешение перед открытием ReminderView
                 checkPermissionAndOpenReminderView()
             default:
                 break

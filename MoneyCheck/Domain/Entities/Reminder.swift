@@ -18,7 +18,7 @@ struct Reminder {
 
 
 
-struct StoredReminder {
+struct StoredReminder: Codable {
     let isEnabled: Bool
     let time: Date?
     let title: String?

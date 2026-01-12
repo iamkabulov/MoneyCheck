@@ -11,7 +11,6 @@ import Combine
 protocol SettingsUseCaseProtocol {
     func settingsItem(completion: @escaping (SettingsModel) -> Void)
     var dataDidChange: AnyPublisher<Void, Never> { get }
-    func requestPermission(completion: @escaping (Bool) -> Void)
     func scheduleDaily(reminder: Reminder)
     func removeReminder(id: String)
 }
@@ -63,34 +62,5 @@ final class SettingsUseCase: SettingsUseCaseProtocol {
     func removeReminder(id: String) {
         UNUserNotificationCenter.current()
             .removePendingNotificationRequests(withIdentifiers: [id])
-    }
-
-    func requestPermission(completion: @escaping (Bool) -> Void) {
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            switch settings.authorizationStatus {
-            case .notDetermined:
-                // Первый запрос - показываем системный диалог
-                UNUserNotificationCenter.current()
-                    .requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-                        DispatchQueue.main.async {
-                            completion(granted)
-                        }
-                    }
-            case .denied:
-                // Пользователь отказал - нужно показать алерт для перехода в настройки
-                DispatchQueue.main.async {
-                    completion(false)
-                }
-            case .authorized, .provisional, .ephemeral:
-                // Уже разрешено
-                DispatchQueue.main.async {
-                    completion(true)
-                }
-            @unknown default:
-                DispatchQueue.main.async {
-                    completion(false)
-                }
-            }
-        }
     }
 }

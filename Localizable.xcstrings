@@ -100,7 +100,14 @@
       }
     },
     "Cancel" : {
-
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить"
+          }
+        }
+      }
     },
     "Cancel subscription" : {
       "localizations" : {
@@ -568,13 +575,52 @@
       }
     },
     "no_reminder" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No reminder"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет напоминания"
+          }
+        }
+      }
     },
     "notification_permission_denied" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications Not Allowed"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет доступа к уведомлениям"
+          }
+        }
+      }
     },
     "notification_permission_message" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We can’t send reminders without permission. You can enable notifications in the app settings."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мы не можем отправлять напоминания без разрешения. Вы можете включить уведомления в настройках."
+          }
+        }
+      }
     },
     "Premium" : {
       "localizations" : {
@@ -621,13 +667,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reminder body push "
+            "value" : "It’s a good time to record your expenses."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Тело сообщения ПОТОМ ПОМЕНЯТЬ"
+            "value" : "Самое время зафиксировать расходы."
           }
         }
       }
@@ -637,7 +683,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose time to Daily reminder"
+            "value" : "Choose time to daily reminder"
           }
         },
         "ru" : {
@@ -653,13 +699,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reminder title"
+            "value" : "Don’t Forget"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Заголовок пушки"
+            "value" : "Не забудьте"
           }
         }
       }
@@ -705,9 +751,6 @@
           }
         }
       }
-    },
-    "select_time" : {
-
     },
     "Settings" : {
       "localizations" : {

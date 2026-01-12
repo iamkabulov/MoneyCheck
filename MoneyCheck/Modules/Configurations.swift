@@ -6,6 +6,7 @@
 //
 
 import Combine
+import Foundation
 
 final class Configurations {
 
@@ -15,7 +16,11 @@ final class Configurations {
         )
     )
     @Published var selectedCurrency: Currency
-    @Published var reminder: StoredReminder?
+    @Published var reminder: StoredReminder? {
+        didSet {
+            saveReminder()
+        }
+    }
 
     let useCase: CurrencySelectorUseCaseProtocol
     private var cancellables = Set<AnyCancellable>()
@@ -28,6 +33,7 @@ final class Configurations {
         self.selectedCurrency = defaultCurrency
 
         self.getSelectedCurrency()
+        self.loadReminder()
     }
 
     func selectCurrency(_ currency: Currency) {
@@ -51,5 +57,25 @@ final class Configurations {
                 self.selectedCurrency = currency
             }
             .store(in: &cancellables)
+    }
+    
+    private func saveReminder() {
+        guard let reminder = reminder else {
+            UserDefaults.standard.removeObject(forKey: Reminder.id)
+            return
+        }
+
+        if let encoded = try? JSONEncoder().encode(reminder) {
+            UserDefaults.standard.set(encoded, forKey: Reminder.id)
+        }
+    }
+
+    private func loadReminder() {
+        guard let data = UserDefaults.standard.data(forKey: Reminder.id),
+              let reminder = try? JSONDecoder().decode(StoredReminder.self, from: data) else {
+            return
+        }
+
+        self.reminder = reminder
     }
 }

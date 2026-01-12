@@ -18,10 +18,12 @@ final class ReminderFactory {
         let router = ReminderRouter(navigationController: nav)
 
         let useCase = ReminderService()
+        let permissionUseCase = NotificationPermissionUseCase()
         let viewModel = ReminderViewModel(
             useCase: useCase,
             router: router,
-            configuration: Configurations.shared
+            configuration: Configurations.shared,
+            permissionUseCase: permissionUseCase
         )
         let vc = ReminderViewController(viewModel: viewModel)
 

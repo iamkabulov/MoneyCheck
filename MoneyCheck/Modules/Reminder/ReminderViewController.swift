@@ -24,6 +24,7 @@ final class ReminderViewController: UIViewController {
         label.font = .systemFont(ofSize: 17, weight: .medium)
         label.textColor = .label
         label.textAlignment = .center
+        label.numberOfLines = 0
         label.text = String(localized: "reminder_settings")
         return label
     }()

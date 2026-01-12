@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreData
+import UserNotifications
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -32,7 +33,51 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = TabBarFactory().makeTabBarModule()
         window?.makeKeyAndVisible()
         
+        // Восстанавливаем напоминание при старте приложения
+        restoreReminderIfNeeded()
+        
         return true
+    }
+    
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        // Восстанавливаем напоминание при возврате в приложение
+        restoreReminderIfNeeded()
+    }
+    
+    private func restoreReminderIfNeeded() {
+        // Убеждаемся, что Configurations загружен
+        let configuration = Configurations.shared
+        
+        // Небольшая задержка, чтобы Configurations успел загрузить данные
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            guard let reminder = configuration.reminder,
+                  reminder.isEnabled,
+                  let time = reminder.time else {
+                return
+            }
+            
+            // Проверяем разрешение и восстанавливаем напоминание
+            let permissionUseCase = NotificationPermissionUseCase()
+            permissionUseCase.checkCurrentStatus { result in
+                guard case .granted = result else {
+                    return
+                }
+                
+                // Разрешение есть - восстанавливаем напоминание
+                let components = Calendar.current.dateComponents([.hour, .minute], from: time)
+                let reminderModel = Reminder(
+                    title: String(localized: "reminder_title"),
+                    body: String(localized: "reminder_body"),
+                    hour: components.hour ?? 21,
+                    minute: components.minute ?? 0,
+                    isEnabled: true
+                )
+                
+                let settingsUseCase = SettingsUseCase()
+                settingsUseCase.removeReminder(id: Reminder.id)
+                settingsUseCase.scheduleDaily(reminder: reminderModel)
+            }
+        }
     }
     
     // MARK: - Core Data stack
