@@ -5,7 +5,7 @@
 //  Created by Нурсултан Кабулов on 07.01.2026.
 //
 
-protocol SettingsRouterProtocol {
+protocol SettingsRouterProtocol: RouterProtocol {
     func openCurrencySelector()
     func openReminderSettings()
 }

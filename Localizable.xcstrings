@@ -99,6 +99,9 @@
         }
       }
     },
+    "Cancel" : {
+
+    },
     "Cancel subscription" : {
       "localizations" : {
         "ru" : {
@@ -565,6 +568,12 @@
       }
     },
     "no_reminder" : {
+
+    },
+    "notification_permission_denied" : {
+
+    },
+    "notification_permission_message" : {
 
     },
     "Premium" : {

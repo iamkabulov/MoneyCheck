@@ -41,9 +41,33 @@ final class ConfigurationsUseCase: CurrencySelectorUseCaseProtocol {
 }
 
 extension ConfigurationsUseCase: ReminderServiceProtocol {
-    func requestPermission() {
-        UNUserNotificationCenter.current()
-            .requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+    func requestPermission(completion: @escaping (Bool) -> Void) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                // Первый запрос - показываем системный диалог
+                UNUserNotificationCenter.current()
+                    .requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+                        DispatchQueue.main.async {
+                            completion(granted)
+                        }
+                    }
+            case .denied:
+                // Пользователь отказал - нужно показать алерт для перехода в настройки
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+            case .authorized, .provisional, .ephemeral:
+                // Уже разрешено
+                DispatchQueue.main.async {
+                    completion(true)
+                }
+            @unknown default:
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+            }
+        }
     }
 
     func scheduleDaily(reminder: Reminder) {

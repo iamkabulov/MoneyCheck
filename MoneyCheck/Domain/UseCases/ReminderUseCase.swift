@@ -9,10 +9,9 @@ import UserNotifications
 import Combine
 
 protocol ReminderServiceProtocol {
-    func requestPermission()
+    func requestPermission(completion: @escaping (Bool) -> Void)
     func scheduleDaily(reminder: Reminder)
     func removeReminder(id: String)
-    var dataDidChange: AnyPublisher<Void, Never> { get }
 }
 
 final class ReminderService: ReminderServiceProtocol {
@@ -22,9 +21,33 @@ final class ReminderService: ReminderServiceProtocol {
         dataChangeCenter.dataDidChange
     }
     
-    func requestPermission() {
-        UNUserNotificationCenter.current()
-            .requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+    func requestPermission(completion: @escaping (Bool) -> Void) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                // Первый запрос - показываем системный диалог
+                UNUserNotificationCenter.current()
+                    .requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+                        DispatchQueue.main.async {
+                            completion(granted)
+                        }
+                    }
+            case .denied:
+                // Пользователь отказал - нужно показать алерт для перехода в настройки
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+            case .authorized, .provisional, .ephemeral:
+                // Уже разрешено
+                DispatchQueue.main.async {
+                    completion(true)
+                }
+            @unknown default:
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+            }
+        }
     }
 
     func scheduleDaily(reminder: Reminder) {
@@ -51,8 +74,6 @@ final class ReminderService: ReminderServiceProtocol {
         )
 
         UNUserNotificationCenter.current().add(request)
-        print("\(reminder.hour)")
-        print("\(reminder.minute)")
         dataChangeCenter.notify()
     }
 

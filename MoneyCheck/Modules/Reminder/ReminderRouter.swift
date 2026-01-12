@@ -5,7 +5,7 @@
 //  Created by Нурсултан Кабулов on 10.01.2026.
 //
 
-protocol ReminderRouterProtocol {
+protocol ReminderRouterProtocol: RouterProtocol {
     func closeReminderView()
 }
 

@@ -10,9 +10,8 @@ import Combine
 
 protocol SettingsUseCaseProtocol {
     func settingsItem(completion: @escaping (SettingsModel) -> Void)
-    func loadReminder(completion: @escaping (StoredReminder) -> Void)
     var dataDidChange: AnyPublisher<Void, Never> { get }
-    func requestPermission()
+    func requestPermission(completion: @escaping (Bool) -> Void)
     func scheduleDaily(reminder: Reminder)
     func removeReminder(id: String)
 }
@@ -33,42 +32,6 @@ final class SettingsUseCase: SettingsUseCaseProtocol {
         settingsProvider.settingsItem { settingsModel in
             completion(settingsModel)
         }
-    }
-
-    func loadReminder(completion: @escaping (StoredReminder) -> Void) {
-        UNUserNotificationCenter.current()
-            .getPendingNotificationRequests { requests in
-
-                guard let request = requests.first(where: {
-                    $0.identifier == Reminder.id
-                }) else {
-                    completion(
-                        StoredReminder(
-                            isEnabled: false,
-                            time: nil,
-                            title: nil,
-                            message: nil
-                        )
-                    )
-                    return
-                }
-
-                let trigger = request.trigger as? UNCalendarNotificationTrigger
-                let components = trigger?.dateComponents
-
-                let time = components.flatMap {
-                    Calendar.current.date(from: $0)
-                }
-
-                completion(
-                    StoredReminder(
-                        isEnabled: true,
-                        time: time,
-                        title: request.content.title,
-                        message: request.content.body
-                    )
-                )
-            }
     }
 
     func scheduleDaily(reminder: Reminder) {
@@ -102,8 +65,32 @@ final class SettingsUseCase: SettingsUseCaseProtocol {
             .removePendingNotificationRequests(withIdentifiers: [id])
     }
 
-    func requestPermission() {
-        UNUserNotificationCenter.current()
-            .requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+    func requestPermission(completion: @escaping (Bool) -> Void) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                // Первый запрос - показываем системный диалог
+                UNUserNotificationCenter.current()
+                    .requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+                        DispatchQueue.main.async {
+                            completion(granted)
+                        }
+                    }
+            case .denied:
+                // Пользователь отказал - нужно показать алерт для перехода в настройки
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+            case .authorized, .provisional, .ephemeral:
+                // Уже разрешено
+                DispatchQueue.main.async {
+                    completion(true)
+                }
+            @unknown default:
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+            }
+        }
     }
 }

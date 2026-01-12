@@ -18,6 +18,7 @@ protocol RouterProtocol: AnyObject {
     func popToRoot(animated: Bool)
     func present(_ viewController: UIViewController, animated: Bool)
     func showError(_ title: String?, message: String?)
+    func showSettingsAlert(title: String?, message: String?, onCancel: (() -> Void)?, onSettings: (() -> Void)?)
 }
 
 class BaseRouter: RouterProtocol {
@@ -54,6 +55,26 @@ class BaseRouter: RouterProtocol {
             preferredStyle: .alert
         )
         alertController.addAction(UIAlertAction(title: "OK", style: .default))
+        self.present(alertController, animated: true)
+    }
+    
+    func showSettingsAlert(title: String?, message: String?, onCancel: (() -> Void)? = nil, onSettings: (() -> Void)? = nil) {
+        let alertController = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: .alert
+        )
+        
+        alertController.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel) { _ in
+            onCancel?()
+        })
+        alertController.addAction(UIAlertAction(title: String(localized: "Settings"), style: .default) { _ in
+            onSettings?()
+            if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(settingsUrl)
+            }
+        })
+        
         self.present(alertController, animated: true)
     }
 
