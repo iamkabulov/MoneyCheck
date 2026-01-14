@@ -177,6 +177,16 @@
         }
       }
     },
+    "Contact via" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Связаться через"
+          }
+        }
+      }
+    },
     "Currency" : {
       "localizations" : {
         "ru" : {
@@ -300,6 +310,22 @@
         }
       }
     },
+    "daily_reminder_at" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily at: "
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ежедневно в: "
+          }
+        }
+      }
+    },
     "dayExpense" : {
       "localizations" : {
         "en" : {
@@ -386,6 +412,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Редактирование транзакции"
+          }
+        }
+      }
+    },
+    "Email" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Почта"
           }
         }
       }
@@ -798,6 +834,16 @@
         }
       }
     },
+    "Telegram" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telegram"
+          }
+        }
+      }
+    },
     "Terms and Conditions" : {
       "localizations" : {
         "ru" : {
@@ -889,6 +935,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Неделя"
+          }
+        }
+      }
+    },
+    "Whatsapp" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WhatsApp"
           }
         }
       }

@@ -8,6 +8,7 @@
 protocol SettingsRouterProtocol: RouterProtocol {
     func openCurrencySelector()
     func openReminderSettings()
+    func openContactUs()
 }
 
 
@@ -20,6 +21,12 @@ final class SettingsRouter: BaseRouter, SettingsRouterProtocol {
 
     func openReminderSettings() {
         let vc = ReminderFactory.shared.makeReminderModule(self.navigationController)
+        vc.hidesBottomBarWhenPushed = true
+        self.presentPanModal(vc)
+    }
+
+    func openContactUs() {
+        let vc = ContactUsFactory.shared.makeContactUsModule(self.navigationController)
         vc.hidesBottomBarWhenPushed = true
         self.presentPanModal(vc)
     }

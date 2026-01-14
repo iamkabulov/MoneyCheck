@@ -11,7 +11,7 @@ import SnapKit
 final class EmptyView: UIView {
     private let label: UILabel = {
         let label = UILabel()
-        label.text = "Нет данных за выбранный период" //TODO: - Добавить период "Нет данных за выбранный период дд.мм - дд.мм
+        label.text = "Нет данных за выбранный период"
         label.font = .systemFont(ofSize: 17, weight: .medium)
         label.textColor = .systemGray
         return label

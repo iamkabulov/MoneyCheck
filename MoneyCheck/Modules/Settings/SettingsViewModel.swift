@@ -39,7 +39,7 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
         if let time = reminder?.time {
             let formatter = DateFormatter()
             formatter.timeStyle = .short
-            return formatter.string(from: time)
+            return String(localized: "daily_reminder_at") + formatter.string(from: time)
         }
 
         return String(localized: "no_reminder")
@@ -343,6 +343,8 @@ final class SettingsViewModel: BaseViewModel<SettingsRouterProtocol, SettingsUse
                 self.router.openCurrencySelector()
             case .reminder:
                 checkPermissionAndOpenReminderView()
+            case .contactUs:
+                self.router.openContactUs()
             default:
                 break
         }

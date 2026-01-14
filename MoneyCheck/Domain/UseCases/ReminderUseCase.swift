@@ -19,7 +19,7 @@ final class ReminderService: ReminderServiceProtocol {
     var dataDidChange: AnyPublisher<Void, Never> {
         dataChangeCenter.dataDidChange
     }
-    
+
     func scheduleDaily(reminder: Reminder) {
         guard reminder.isEnabled else { return }
 
