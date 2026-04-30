@@ -53,6 +53,7 @@ struct SegmentedPicker: View {
                                 selectedItem = items[index]
                                 UISelectionFeedbackGenerator().selectionChanged()
                             }
+                            .accessibilityIdentifier("testik\(index)")
                     }
                 }
             }

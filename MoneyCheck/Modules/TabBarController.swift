@@ -42,7 +42,7 @@ final class TabBarController: UITabBarController {
             image: UIImage(systemName: image),
             selectedImage: UIImage(systemName: selectedImage)
         )
-
+        module.tabBarItem.accessibilityIdentifier = "TESTID_\(title)"
         if viewControllers == nil {
             viewControllers = [module]
         } else {

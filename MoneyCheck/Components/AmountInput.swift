@@ -52,6 +52,10 @@ final class AmountInput: UITextField {
         super.init(coder: coder)
     }
 
+    deinit {
+        print("DEINIT AmountInput _-_")
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
 

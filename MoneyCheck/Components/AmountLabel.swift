@@ -20,6 +20,10 @@ final class AmountLabel: UILabel {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        print("deinit AmountLabel")
+    }
+
     func amountFormatter(
         _ amount: Double,
         sign: String? = nil,

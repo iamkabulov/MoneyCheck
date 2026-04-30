@@ -8,7 +8,7 @@
 
 import Foundation
 import Combine
-import SwiftUICore
+import SwiftUI
 
 final class TransactionsAnalyticsViewModel: BaseViewModel<TransactionsAnalyticsRouterProtocol, TransactionsAnalyticsUseCaseProtocol>, ObservableObject {
 //    @Published var transaction: TransactionModel

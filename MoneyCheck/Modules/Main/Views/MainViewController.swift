@@ -68,6 +68,7 @@ final class MainViewController: UIViewController, UICollectionViewDelegate {
 
         viewModel.loadData()
         setupBindings()
+        self.view.accessibilityIdentifier = "financeIdentifier"
     }
 
     // MARK: - Private methods
