@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import PanModal
 
 protocol SelectPeriodRouterProtocol: AnyObject {
     func openCustomPeriodView(from: UIViewController, vm: SelectPeriodViewModel)
@@ -25,6 +24,6 @@ final class SelectPeriodRouter: BaseRouter {
 extension SelectPeriodRouter: SelectPeriodRouterProtocol {
     func openCustomPeriodView(from: UIViewController, vm: SelectPeriodViewModel) {
         let vc = CustomPeriodViewController(viewModel: vm)
-        from.presentPanModal(vc)
+        from.present(vc, animated: true)
     }
 }

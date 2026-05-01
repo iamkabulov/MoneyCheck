@@ -40,21 +40,25 @@ struct DonutChartView: View {
                 Chart(displayedItems) { item in
                     let percentage = item.value / total
 
-                    SectorMark(
-                        angle: .value("Value", item.value),
-                        innerRadius: .ratio(0.6),
-                        angularInset: 0
-                    )
-                    .foregroundStyle(item.color)
-                    .annotation(
-                        position: .overlay,
-                        alignment: .trailingLastTextBaseline
-                    ) {
-                        if percentage >= minPercentageToShowLabel {
-                            Text("\(Int(percentage * 100))%")
-                                .font(.caption2.bold())
-                                .foregroundColor(.white)
+                    if #available(iOS 17.0, *) {
+                        SectorMark(
+                            angle: .value("Value", item.value),
+                            innerRadius: .ratio(0.6),
+                            angularInset: 0
+                        )
+                        .foregroundStyle(item.color)
+                        .annotation(
+                            position: .overlay,
+                            alignment: .trailingLastTextBaseline
+                        ) {
+                            if percentage >= minPercentageToShowLabel {
+                                Text("\(Int(percentage * 100))%")
+                                    .font(.caption2.bold())
+                                    .foregroundColor(.white)
+                            }
                         }
+                    } else {
+                        // Fallback on earlier versions
                     }
                 }
                 //TODO: - подумать над анимацией только чарта

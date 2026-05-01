@@ -1,5 +1,4 @@
 import UIKit
-import PanModal
 import Combine
 import SnapKit
 

@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import PanModal
 
 final class ContactUsFactory {
     static let shared = ContactUsFactory()
@@ -14,7 +13,7 @@ final class ContactUsFactory {
     private init() { }
 
     // MARK: - Root
-    func makeContactUsModule(_ nav: UINavigationController) -> UIViewController & PanModalPresentable {
+    func makeContactUsModule(_ nav: UINavigationController) -> UIViewController {
         let router = ContactUsRouter(navigationController: nav)
         let useCase = SettingsUseCase()
         let viewModel = ContactUsViewModel(useCase: useCase, router: router)

@@ -41,6 +41,7 @@ targets:
       - path: MoneyCheck
     dependencies:
       - package: SwiftyEmail
+      - package: SnapKit
     entitlements:
       path: MoneyCheck/MoneyCheck.entitlements
       properties:
@@ -84,6 +85,9 @@ packages:
   SwiftyEmail:
     url: https://github.com/MarcosAtMorais/SwiftyEmail.git
     branch: main
+  SnapKit:
+    url: https://github.com/SnapKit/SnapKit.git
+    from: 5.6.0
 
 schemes:
   MoneyCheck:

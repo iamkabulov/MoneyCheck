@@ -7,7 +7,6 @@
 
 
 import UIKit
-import PanModal
 import SnapKit
 
 final class CalendarPanModalViewController: UIViewController {
@@ -60,30 +59,5 @@ final class CalendarPanModalViewController: UIViewController {
     @objc private func doneTapped() {
         onDateSelected?(datePicker.date)
         dismiss(animated: true)
-    }
-}
-
-extension CalendarPanModalViewController: PanModalPresentable {
-
-    var panScrollable: UIScrollView? { nil }
-
-    var shortFormHeight: PanModalHeight {
-        .contentHeight(420)
-    }
-
-    var longFormHeight: PanModalHeight {
-        .contentHeight(420)
-    }
-
-    var cornerRadius: CGFloat {
-        20
-    }
-
-    var showDragIndicator: BooleanLiteralType {
-        false
-    }
-
-    var shouldRoundTopCorners: Bool {
-        true
     }
 }

@@ -8,7 +8,6 @@
 import UIKit
 import Combine
 import SnapKit
-import PanModal
 
 enum PeriodType: Equatable {
 
@@ -270,30 +269,5 @@ extension PeriodType {
         default:
             return false
         }
-    }
-}
-
-extension SelectPeriodViewController: PanModalPresentable {
-
-    var panScrollable: UIScrollView? { nil }
-
-    var longFormHeight: PanModalHeight {
-        let contentHeight = calculatedContentHeight()
-        let minHeight: CGFloat = 300   // 👈 минимум
-        let maxHeight =
-            view.bounds.height
-            - view.safeAreaInsets.top
-            - 12
-
-        let finalHeight = min(max(contentHeight, minHeight), maxHeight)
-        return .contentHeight(finalHeight)
-    }
-
-    var shortFormHeight: PanModalHeight {
-        longFormHeight
-    }
-
-    var showDragIndicator: Bool {
-        false
     }
 }

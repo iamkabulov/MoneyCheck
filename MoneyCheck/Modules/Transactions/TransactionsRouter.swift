@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import PanModal
 
 protocol TransactionsRouterProtocol: AnyObject {
     func showTransactionEditView(_ transaction: TransactionModel)

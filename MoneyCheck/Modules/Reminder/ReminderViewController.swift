@@ -8,7 +8,6 @@
 
 import UIKit
 import Combine
-import PanModal
 import SnapKit
 
 final class ReminderViewController: UIViewController {
@@ -109,36 +108,5 @@ final class ReminderViewController: UIViewController {
 
     @objc private func cancelTapped() {
         viewModel.closeReminderView(didSave: false, time: datePicker.date)
-    }
-}
-
-
-extension ReminderViewController: PanModalPresentable {
-    var panScrollable: UIScrollView? { nil }
-
-    var shortFormHeight: PanModalHeight {
-        .contentHeight(420)
-    }
-
-    var longFormHeight: PanModalHeight {
-        .contentHeight(420)
-    }
-
-    var cornerRadius: CGFloat {
-        20
-    }
-
-    var showDragIndicator: BooleanLiteralType {
-        false
-    }
-
-    var shouldRoundTopCorners: Bool {
-        true
-    }
-
-    func panModalDidDismiss() {
-        if !didSave {
-            viewModel.closeReminderView(didSave: false, time: datePicker.date)
-        }
     }
 }

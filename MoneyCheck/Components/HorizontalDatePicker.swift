@@ -242,7 +242,7 @@ private extension HorizontalDatePicker {
             self?.selectDate(date)
         }
 
-        parentViewController?.presentPanModal(vc)
+        parentViewController?.present(vc, animated: true)
     }
 
     func selectDate(_ date: Date) {

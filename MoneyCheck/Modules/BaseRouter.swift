@@ -7,7 +7,6 @@
 
 
 import UIKit
-import PanModal
 
 protocol RouterProtocol: AnyObject {
     var navigationController: UINavigationController { get }
@@ -78,7 +77,39 @@ class BaseRouter: RouterProtocol {
         self.present(alertController, animated: true)
     }
 
-    func presentPanModal(_ viewController: PanModalPresentable.LayoutType & UIViewController) {
-        navigationController.presentPanModal(viewController)
+    func presentPanModal(_ viewController: UIViewController) {
+        // 1. Принудительно загружаем view, чтобы сработал viewDidLoad и SnapKit
+        viewController.loadViewIfNeeded()
+        
+        viewController.modalPresentationStyle = .pageSheet
+
+        if let sheet = viewController.sheetPresentationController {
+            sheet.detents = [
+                .custom { context in
+                    // 2. Обновляем разметку
+                    viewController.view.setNeedsLayout()
+                    viewController.view.layoutIfNeeded()
+                    
+                    let targetSize = CGSize(width: context.maximumDetentValue,
+                                            height: UIView.layoutFittingCompressedSize.height)
+                    
+                    let fittingSize = viewController.view.systemLayoutSizeFitting(
+                        targetSize,
+                        withHorizontalFittingPriority: .required,
+                        verticalFittingPriority: .fittingSizeLevel
+                    )
+                    
+                    // 3. Если fittingSize слишком маленький (например, данные еще не пришли),
+                    // можно вернуть дефолтную высоту или добавить отступ для Safe Area
+                    let height = fittingSize.height
+                    return height > 0 ? height : 300
+                }
+            ]
+            sheet.prefersGrabberVisible = true
+            // Позволяет шторке не закрывать весь экран, если контент маленький
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+        }
+        
+        navigationController.present(viewController, animated: true)
     }
 }

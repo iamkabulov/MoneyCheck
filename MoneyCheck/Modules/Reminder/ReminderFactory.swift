@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import PanModal
 
 final class ReminderFactory {
     static let shared = ReminderFactory()
@@ -14,7 +13,7 @@ final class ReminderFactory {
     private init() { }
 
     // MARK: - Root
-    func makeReminderModule(_ nav: UINavigationController) -> UIViewController & PanModalPresentable {
+    func makeReminderModule(_ nav: UINavigationController) -> UIViewController {
         let router = ReminderRouter(navigationController: nav)
 
         let useCase = ReminderService()

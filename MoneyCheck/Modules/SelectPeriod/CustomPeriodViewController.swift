@@ -1,5 +1,4 @@
 import UIKit
-import PanModal
 import SnapKit
 
 final class CustomPeriodViewController: UIViewController {
@@ -140,21 +139,5 @@ final class CustomPeriodViewController: UIViewController {
 
     @objc private func cancelTapped() {
         viewModel.dismiss(self)
-    }
-}
-
-extension CustomPeriodViewController: PanModalPresentable {
-    var panScrollable: UIScrollView? { nil }
-
-    var longFormHeight: PanModalHeight {
-        .contentHeight(calculatedHeight())
-    }
-
-    var shortFormHeight: PanModalHeight {
-        longFormHeight
-    }
-
-    var showDragIndicator: Bool {
-        false
     }
 }
