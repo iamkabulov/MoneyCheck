@@ -100,28 +100,6 @@ final class CustomPeriodViewController: UIViewController {
         }
     }
 
-    private func calculatedHeight() -> CGFloat {
-        view.layoutIfNeeded()
-
-        let targetSize = CGSize(
-            width: view.bounds.width,
-            height: UIView.layoutFittingCompressedSize.height
-        )
-
-        let height = contentView.systemLayoutSizeFitting(
-            targetSize,
-            withHorizontalFittingPriority: .required,
-            verticalFittingPriority: .fittingSizeLevel
-        ).height
-
-        let maxHeight =
-            view.bounds.height
-            - view.safeAreaInsets.top
-            - 12
-
-        return min(height, maxHeight)
-    }
-
 
     private func validateSelection() {
         let calendar = Calendar.current
