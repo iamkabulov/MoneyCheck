@@ -5,7 +5,7 @@ options:
   xcodeVersion: 16.1
   deploymentTarget:
     iOS: "16.0"
-  postGenCommand: pod install; open MoneyCheck.xcworkspace;
+  postGenCommand: pod install; open MoneyCheck.xcodeproj;
   groupOrdering:
     - order: [MoneyCheck, XcodeGenExampleTests, XcodeGenExampleUITests]
     - pattern: 'MoneyCheck'
@@ -55,7 +55,11 @@ targets:
         CFBundleExecutable: "$(EXECUTABLE_NAME)"
         UILaunchStoryboardName: LaunchScreen
         UIApplicationSceneManifest:
-          enabled: false
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: "Default Configuration"
+                UISceneDelegateClassName: "${PRODUCT_MODULE_NAME}.SceneDelegate"
         LSApplicationQueriesSchemes:
           - googlegmail
           - ms-outlook

@@ -224,21 +224,6 @@ final class SelectPeriodViewController: UIViewController {
             }
         }
     }
-
-    private func calculatedContentHeight() -> CGFloat {
-        view.layoutIfNeeded()
-
-        let targetSize = CGSize(
-            width: view.bounds.width,
-            height: UIView.layoutFittingCompressedSize.height
-        )
-
-        return contentView.systemLayoutSizeFitting(
-            targetSize,
-            withHorizontalFittingPriority: .required,
-            verticalFittingPriority: .fittingSizeLevel
-        ).height
-    }
 }
 
 extension Date {

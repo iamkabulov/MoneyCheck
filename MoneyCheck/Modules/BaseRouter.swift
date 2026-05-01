@@ -102,7 +102,7 @@ class BaseRouter: RouterProtocol {
                     // 3. Если fittingSize слишком маленький (например, данные еще не пришли),
                     // можно вернуть дефолтную высоту или добавить отступ для Safe Area
                     let height = fittingSize.height
-                    return height > 0 ? height : 300
+                    return height > 0 ? height : 360
                 }
             ]
             sheet.prefersGrabberVisible = true

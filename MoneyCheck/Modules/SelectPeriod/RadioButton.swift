@@ -52,8 +52,8 @@ class RadioButton: UIView {
 
         addSubview(label)
         label.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(20)
-            make.centerY.equalToSuperview()
+            make.top.bottom.equalToSuperview().inset(12)
+            make.leading.equalToSuperview().inset(16)
         }
 
         radioButton.image = UIImage(systemName: "circle")
